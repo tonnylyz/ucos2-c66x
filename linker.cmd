@@ -14,8 +14,11 @@
 /*                                                                          */
 /****************************************************************************/
 --heap_size=0x1000
---stack_size=0x1000
+--stack_size=0x10000
 --retain="*(.resource_table)"
+
+-lti.csl.ae66
+-lti.csl.intc.ae66
 
 MEMORY
 {
@@ -29,7 +32,8 @@ MEMORY
 
 SECTIONS
 {
-    .text:_c_int00: load > 0x95000000
+    .text:RESET: load > 0x95000000
+    //.text:_c_int00: load > 0x95000000
     .text: load > EXT_CODE
     .stack: load > EXT_DATA
     GROUP: load > EXT_DATA
@@ -54,6 +58,7 @@ SECTIONS
     .c6xabi.extab: load > EXT_DATA
     .resource_table: load > EXT_CODE, type = NOINIT
     .vecs: load > EXT_CODE
+    .csl_vect: load > EXT_CODE
 }
 
 

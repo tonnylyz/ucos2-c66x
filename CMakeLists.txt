@@ -1,9 +1,15 @@
 project(ucos2-c66x)
 cmake_minimum_required(VERSION 3.12)
 
+set(CMAKE_C_FLAGS "-D SOC_AM572x")
+
 include_directories(
         boot
         kernel
+        platform/c66x
+        platform/csp
+        task
+        /home/tonny/ti/pdk_am57xx_1_0_12/packages
 )
 
 add_executable(
@@ -11,7 +17,6 @@ add_executable(
 
         boot/main.c
         boot/resource_table.h
-        boot/types.h
 
         kernel/os_core.c
         kernel/os_dbg.c
@@ -26,4 +31,19 @@ add_executable(
         kernel/os_tmr.c
         kernel/ucos_ii.h
         kernel/os_cfg.h
-)
+
+        platform/c66x/os_cpu.h
+        platform/c66x/os_cpu_c.c
+
+        platform/csp/types.h
+        platform/csp/timer.c platform/csp/timer.h
+        platform/csp/uart.c platform/csp/uart.h
+        platform/csp/mmio.h
+
+        task/snprintf.c
+        task/snprintf.h
+
+        task/app.c
+        task/app_cfg.h
+
+        platform/csp/intc.c platform/csp/intc.h)

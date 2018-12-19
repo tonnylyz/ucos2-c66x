@@ -1,44 +1,62 @@
+#include <snprintf.h>
+#include <ucos_ii.h>
+#include <intc.h>
+#include <timer.h>
+#include <mmio.h>
 #include "resource_table.h"
-#include "types.h"
 
-#define UC_UART_THR(base)  (base + 0x00)
-#define UC_UART_LSR(base)  (base + 0x14)
+extern void MyTask(void *p_arg);
 
-#define UART_BASE_1 (0x4806a000U)
-#define UART_BASE_2 (0x4806c000U)
-#define UART_BASE_3 (0x48020000U)
-#define UART_BASE_8 (0x48422000U)
-
-static inline u8 mmio_readb(u32 ptr) {
-    return *((u8 *)ptr);
-}
-
-static inline void mmio_writeb(u32 ptr, u8 value) {
-    *((u8 *)ptr) = value;
-}
-
-static inline void _uart_putc(u32 base, char c) {
-    while ((mmio_readb(UC_UART_LSR(base)) & 0x20) == 0);
-    mmio_writeb(UC_UART_THR(base), (u8)c);
-}
-
-static inline void uart_putc(char c) {
-    if (c == '\n') {
-        _uart_putc(UART_BASE_3, '\r');
-    }
-    _uart_putc(UART_BASE_3, c);
-}
-
-static inline void uart_puts(char *str) {
-    char c;
-
-    while (0 != (c = *str++)) {
-        uart_putc(c);
-    }
-}
+INT8U Stk1[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
+INT8U Stk2[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
+INT8U Stk3[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
+INT8U Stk4[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
+INT8U Stk5[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
 
 int main() {
+    printf("DSP OS Build: %s %s\n", __DATE__, __TIME__);
+
+    char sTask1[] = "Task 1";
+    char sTask2[] = "Task 2";
+    char sTask3[] = "Task 3";
+    char sTask4[] = "Task 4";
+    char sTask5[] = "Task 5";
+
+    intc_init();
+    printf("intc_init done\n");
+
+    irq_init();
+    printf("irq_init done\n");
+
+    timer_init();
+    printf("timer_init done\n");
+
+    OSInit();
+    printf("OSInit done\n");
+
+    OSTaskCreate(MyTask, sTask1,
+                 (void *) &Stk1[APP_TASK_START_STK_SIZE - 1],
+                 APP_TASK_1_PRIO);
+
+    OSTaskCreate(MyTask, sTask2,
+                 (void *) &Stk2[APP_TASK_START_STK_SIZE - 1],
+                 APP_TASK_2_PRIO);
+    OSTaskCreate(MyTask, sTask3,
+                 (void *) &Stk3[APP_TASK_START_STK_SIZE - 1],
+                 APP_TASK_3_PRIO);
+
+    OSTaskCreate(MyTask, sTask4,
+                 (void *) &Stk4[APP_TASK_START_STK_SIZE - 1],
+                 APP_TASK_4_PRIO);
+
+    OSTaskCreate(MyTask, sTask5,
+                 (void *) &Stk5[APP_TASK_START_STK_SIZE - 1],
+                 APP_TASK_5_PRIO);
+
+    printf("task create done\n");
+    OSStart();
     while (1) {
-        uart_puts("hello world!\n");
+        __asm ("\tNOP");
     }
+
 }
