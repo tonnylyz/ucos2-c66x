@@ -1,15 +1,12 @@
 project(ucos2-c66x)
 cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_C_FLAGS "-D SOC_AM572x")
-
 include_directories(
         boot
         kernel
         platform/c66x
         platform/csp
         task
-        /home/tonny/ti/pdk_am57xx_1_0_12/packages
 )
 
 add_executable(

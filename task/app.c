@@ -16,7 +16,7 @@ void MyTask(void *p_arg) {
         uart_putc('\n');
         OS_EXIT_CRITICAL();
 
-        OSTimeDly(50);
+        //OSTimeDly(50);
     }
 }
 

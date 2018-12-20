@@ -45,33 +45,12 @@ typedef double         FP64;                     /* Double precision floating po
 
 typedef unsigned int   OS_STK;                   /* Each stack entry is 32-bit wide in C6711DSP        */
 
-#define BYTE  INT8S                              /* Define data types for backward compatibility ...   */
-#define UBYTE INT8U                              /* ... to uC/OS V1.xx.  Not actually needed for ...   */
-#define WORD  INT16S                             /* ... uC/OS-II.                                      */
-#define UWORD INT16U
-#define LONG  INT32S
-#define ULONG INT32U
-
-/*
- *********************************************************************************************************
- *												Interrupter~!
- *
- *										With TI CCS Library of C6x DSP
- *********************************************************************************************************
- */
-
 extern cregister volatile unsigned int CSR;
 void Disable_int(void);                    //function for disable interrupt
 void Enable_int(void);                     //function for enable interrupt
 
 #define  OS_ENTER_CRITICAL() Disable_int() //CSR &= 0xfffe;asm("	nop 4");	/* Disable interrupts*/
 #define  OS_EXIT_CRITICAL()  Enable_int()  //CSR |= 0x0001;asm("	nop 4");	/* Enable  interrupts*/
-
-/*
- *********************************************************************************************************
- *                                  TI C6711 DSP Miscellaneous
- *********************************************************************************************************
- */
 
 #define  OS_STK_GROWTH 1                              /* Stack grows from HIGH to LOW memory */
 
@@ -81,20 +60,8 @@ extern void OSIntCtxSw();
 extern void OSStartHighRdy();
 extern void OSCtxSw();
 
-int DSP_C6x_GetCurrentSP(void);	// It's used in OSTaskStkInit function
-int DSP_C6x_GetCurrentDP(void);	// It's used in any ISR function
-
-
-/*$PAGE*/
-
-/*
- *********************************************************************************************************
- *                              Some Definitions for operation of stack
- *********************************************************************************************************
- */
-
-typedef int REGISTERS;                  /* Define the REGISTERS type - 32bit */
-
+unsigned int DSP_C6x_GetCurrentSP(void);
+unsigned int DSP_C6x_GetCurrentDP(void);
 
 /*------------------------------------------------------------------------
  * /	THE SP MUST BE ALIGNED ON AN 8-BYTE BOUNDARY.  (Ref. Datasheet of C6711 DSP )
@@ -104,21 +71,21 @@ typedef int REGISTERS;                  /* Define the REGISTERS type - 32bit */
 typedef struct
 {
 //The start address of the Task (point of the task function)	-------- 4-BYTE
-    void (*Start_Address)(void *Task_Data_Pointer);
+    INT32U start_address;
 
 //All the General-Purpose Registers of the DSP (32 Registers)	-------- 32 X 4-BYTE
-    REGISTERS A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15;
-    REGISTERS B0, B1, B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15;
+    INT32U A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15;
+    INT32U B0, B1, B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15;
 
 //Save all Control Registers of the DSP	-------- 4 X 4-BYTE
-    int
+    INT32U
             AMR,       //Adressing_Mode_Register
             CSR,       //Control_Status_Register
             IER,       //Interrupt_Enable_Register
             IRP;       //Interrupt_Return_Pointer
 
 //A 4-BYTE dummy, just keep the SP is aligned on an 8-BYTE boundary
-    int Dummy;
+    INT32U pad;
 } INIT_STACK_FRAME;
 
 #endif

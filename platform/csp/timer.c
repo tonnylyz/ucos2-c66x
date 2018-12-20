@@ -21,7 +21,7 @@
 #define GP_TIMER_16_BASE         KADDR(0x4882E000)
 
 #define ARM_TIMER_1 GP_TIMER_2_BASE
-#define DSP_1_TIMER_1 GP_TIMER_2_BASE
+#define DSP_1_TIMER_1 GP_TIMER_5_BASE
 
 #define GP_TIMER_IRQSTATUS_RAW(base)        ((base) + 0x24u)
 #define GP_TIMER_IRQSTATUS(base)            ((base) + 0x28u)

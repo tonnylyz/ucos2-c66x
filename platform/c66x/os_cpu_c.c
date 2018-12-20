@@ -52,58 +52,58 @@
  */
 OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT16U opt)
 {
-    INIT_STACK_FRAME *StkFrame, *StackBottom;
-    int              *StackFreePointer;
+    INIT_STACK_FRAME *stack_frame, *stack_bottom;
+    int              *stack_free_ptr;
 
     /*	THE SP MUST BE ALIGNED ON AN 8-BYTE BOUNDARY.*/
-    StkFrame = (INIT_STACK_FRAME *)((int)ptos & ~7);
-    StackBottom = StkFrame;
-    StkFrame--;   /* to the bottom of the frame, to init the struct. */
+    stack_frame = (INIT_STACK_FRAME *)((int)ptos & ~7);
+    stack_bottom = stack_frame;
+    stack_frame--;   /* to the bottom of the frame, to init the struct. */
 
-    StkFrame->Start_Address = task;
+    stack_frame->start_address = (INT32U)task;
 
-    StkFrame->A0 = 0x0A00;
-    StkFrame->A1 = 0x0A01;
-    StkFrame->A2 = 0x0A02;
-    StkFrame->A3 = 0x0A03;
-    StkFrame->A4 = (int)pdata;          /* the first argument of C function here*/
-    StkFrame->A5 = 0x0A05;
-    StkFrame->A6 = 0x0A06;
-    StkFrame->A7 = 0x0A07;
-    StkFrame->A8 = 0x0A08;
-    StkFrame->A9 = 0x0A09;
-    StkFrame->A10 = 0x0A10;
-    StkFrame->A11 = 0x0A11;
-    StkFrame->A12 = 0x0A12;
-    StkFrame->A13 = 0x0A13;
-    StkFrame->A14 = 0x0A14;
-    StkFrame->A15 = 0x0A15;
-    StkFrame->B0 = 0x0B00;
-    StkFrame->B1 = 0x0B01;
-    StkFrame->B2 = 0x0B02;
-    StkFrame->B3 = (int)task;           //for cosmetic reason
-    StkFrame->B4 = 0x0B04;
-    StkFrame->B5 = 0x0B05;
-    StkFrame->B6 = 0x0B06;
-    StkFrame->B7 = 0x0B07;
-    StkFrame->B8 = 0x0B08;
-    StkFrame->B9 = 0x0B09;
-    StkFrame->B10 = 0x0B10;
-    StkFrame->B11 = 0x0B11;
-    StkFrame->B12 = 0x0B12;
-    StkFrame->B13 = 0x0B13;
-    StkFrame->B14 = DSP_C6x_GetCurrentDP(); /* Save current data pointer */
-    StkFrame->B15 = (int)StackBottom;       /* Save the SP */
+    stack_frame->A0 = 0x0A00;
+    stack_frame->A1 = 0x0A01;
+    stack_frame->A2 = 0x0A02;
+    stack_frame->A3 = 0x0A03;
+    stack_frame->A4 = (INT32U) pdata;          /* the first argument of C function here*/
+    stack_frame->A5 = 0x0A05;
+    stack_frame->A6 = 0x0A06;
+    stack_frame->A7 = 0x0A07;
+    stack_frame->A8 = 0x0A08;
+    stack_frame->A9 = 0x0A09;
+    stack_frame->A10 = 0x0A10;
+    stack_frame->A11 = 0x0A11;
+    stack_frame->A12 = 0x0A12;
+    stack_frame->A13 = 0x0A13;
+    stack_frame->A14 = 0x0A14;
+    stack_frame->A15 = 0x0A15;
+    stack_frame->B0 = 0x0B00;
+    stack_frame->B1 = 0x0B01;
+    stack_frame->B2 = 0x0B02;
+    stack_frame->B3 = (INT32U) task;           //for cosmetic reason
+    stack_frame->B4 = 0x0B04;
+    stack_frame->B5 = 0x0B05;
+    stack_frame->B6 = 0x0B06;
+    stack_frame->B7 = 0x0B07;
+    stack_frame->B8 = 0x0B08;
+    stack_frame->B9 = 0x0B09;
+    stack_frame->B10 = 0x0B10;
+    stack_frame->B11 = 0x0B11;
+    stack_frame->B12 = 0x0B12;
+    stack_frame->B13 = 0x0B13;
+    stack_frame->B14 = DSP_C6x_GetCurrentDP(); /* Save current data pointer */
+    stack_frame->B15 = (INT32U) stack_bottom;       /* Save the SP */
 
-    StkFrame->AMR = 0;                      /*default value as it was after reset*/
-    StkFrame->CSR = 0x0103;                 /* Little Endian(bit8 = 1); PGIE set 1; GIE set 1 */
-    StkFrame->IER = 0x4012;                   /* Just set the NMIF bit */
-    StkFrame->IRP = 0xabcdabcd;             /* never return, so any value could used here. */
+    stack_frame->AMR = 0;                      /*default value as it was after reset*/
+    stack_frame->CSR = 0x0103;                 /* Little Endian(bit8 = 1); PGIE set 1; GIE set 1 */
+    stack_frame->IER = 0x4012;                   /* Just set the NMIF bit */
+    stack_frame->IRP = 0xabcdabcd;             /* never return, so any value could used here. */
 
-    StackFreePointer = (int *)StkFrame;
-    StackFreePointer--;     /* Jusr move 4-BYTE(int) to the next free position */
+    stack_free_ptr = (int *)stack_frame;
+    stack_free_ptr--;     /* Jusr move 4-BYTE(int) to the next free position */
 
-    return((OS_STK *)StackFreePointer);
+    return (OS_STK *)stack_free_ptr;
 }
 
 
@@ -117,16 +117,27 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT16U 
  **********************************************************************************************************
  */
 
-extern void timer_clear_irq();
+extern void ContextSave();
+extern void ContextRestore();
 
+extern void irq_clear();
+extern void timer_clear_irq();
 void OSTickISR(void)
 {
+    ContextSave();
+
     printf("OSTickISR called\n");
+
     timer_clear_irq();
+    irq_clear();
 
     OSIntEnter();
     OSTimeTick();
     OSIntExit();
+
+    ContextRestore();
+
+    asm ("\tNOP	5");
 }
 
 

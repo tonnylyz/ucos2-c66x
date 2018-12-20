@@ -13,12 +13,9 @@
 /*                 scheme according to the size of your program.            */
 /*                                                                          */
 /****************************************************************************/
---heap_size=0x1000
+--heap_size=0x0
 --stack_size=0x10000
 --retain="*(.resource_table)"
-
--lti.csl.ae66
--lti.csl.intc.ae66
 
 MEMORY
 {
@@ -32,8 +29,7 @@ MEMORY
 
 SECTIONS
 {
-    .text:RESET: load > 0x95000000
-    //.text:_c_int00: load > 0x95000000
+    .text:VECTOR: load > 0x95000000
     .text: load > EXT_CODE
     .stack: load > EXT_DATA
     GROUP: load > EXT_DATA

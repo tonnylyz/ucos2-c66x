@@ -4,7 +4,7 @@ LINKER_CMD := linker.cmd
 
 
 # Bootstrap Objects
-BSP_OBJS := boot/main.obj
+BSP_OBJS := boot/vector.obj boot/main.obj
 
 # uC/OS-II Kernel Objects
 UCOSII_OBJS := kernel/os_core.obj  kernel/os_flag.obj kernel/os_mbox.obj kernel/os_mem.obj \
@@ -14,7 +14,9 @@ UCOSII_OBJS := kernel/os_core.obj  kernel/os_flag.obj kernel/os_mbox.obj kernel/
 PLATFORM_OBJS := platform/csp/timer.obj \
                  platform/csp/uart.obj \
                  platform/csp/intc.obj \
-                 platform/c66x/os_cpu_a.obj platform/c66x/os_cpu_c.obj
+                 platform/csp/intc_s.obj \
+                 platform/c66x/os_cpu_a.obj \
+                 platform/c66x/os_cpu_c.obj
 
 # Task Objects
 TASK_OBJS := task/app.obj task/snprintf.obj
@@ -27,12 +29,9 @@ INCLUDE_PATH := --include_path="$(CURDIR)" \
                 --include_path="$(CURDIR)/platform/c66x" \
                 --include_path="$(CURDIR)/task" \
                 --include_path="$(CURDIR)/kernel" \
-                --include_path="/home/tonny/ti/pdk_am57xx_1_0_12/packages" \
                 --include_path="$(CG_TOOL_ROOT)/include"
 
-LIBRARY_PATH := -i $(CG_TOOL_ROOT)/lib \
-                -i /home/tonny/ti/pdk_am57xx_1_0_12/packages/ti/csl/lib/am572x/c66/release
-
+LIBRARY_PATH := -i $(CG_TOOL_ROOT)/lib
 
 CL6X_FLAGS := -mv6600 -O2 --define=SOC_AM572x --define=am5728 --define=core1 --diag_warning=225 --diag_wrap=off --display_error_number
 
