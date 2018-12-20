@@ -50,96 +50,105 @@
  * Note(s)    : Interrupts are enabled when your task starts executing.
  *********************************************************************************************************
  */
-OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT16U opt)
+OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U opt)
 {
-    INIT_STACK_FRAME *stack_frame, *stack_bottom;
-    int              *stack_free_ptr;
+    context_frame_t *frame;
+    frame = (context_frame_t *)opt;
+    frame->Entry = (INT32U)task; // Task Entry
 
-    /*	THE SP MUST BE ALIGNED ON AN 8-BYTE BOUNDARY.*/
-    stack_frame = (INIT_STACK_FRAME *)((int)ptos & ~7);
-    stack_bottom = stack_frame;
-    stack_frame--;   /* to the bottom of the frame, to init the struct. */
+    frame->A0 = 0x0A00;
+    frame->A1 = 0x0A01;
+    frame->A2 = 0x0A02;
+    frame->A3 = 0x0A03;
+    frame->A4 = (INT32U) pdata; // Task Parameter
+    frame->A5 = 0x0A05;
+    frame->A6 = 0x0A06;
+    frame->A7 = 0x0A07;
+    frame->A8 = 0x0A08;
+    frame->A9 = 0x0A09;
+    frame->A10 = 0x0A10;
+    frame->A11 = 0x0A11;
+    frame->A12 = 0x0A12;
+    frame->A13 = 0x0A13;
+    frame->A14 = 0x0A14;
+    frame->A15 = 0x0A15;
+    frame->B0 = 0x0B00;
+    frame->B1 = 0x0B01;
+    frame->B2 = 0x0B02;
+    frame->B3 = (INT32U) task; // Return to Entry
+    frame->B4 = 0x0B04;
+    frame->B5 = 0x0B05;
+    frame->B6 = 0x0B06;
+    frame->B7 = 0x0B07;
+    frame->B8 = 0x0B08;
+    frame->B9 = 0x0B09;
+    frame->B10 = 0x0B10;
+    frame->B11 = 0x0B11;
+    frame->B12 = 0x0B12;
+    frame->B13 = 0x0B13;
+    frame->B14 = DSP_C6x_GetCurrentDP(); // Data Ptr
+    frame->B15 = ((INT32U)ptos & ~7); // Stack Ptr
 
-    stack_frame->start_address = (INT32U)task;
+    frame->AMR = 0; // reset value (linear)
+    frame->CSR = 0b100000011;
+             /*  PWRD = 0   No power down
+              *  EN = 1     Little endian
+              *  PGIE = 1   Interrupt will be enabled after return from interrupt
+              *  GIE = 1    Enable all interrupts
+              * */
+    frame->IER = 0b1111111111110011;
+             /* Enable INT4 ~ INT15, NMI
+              * */
 
-    stack_frame->A0 = 0x0A00;
-    stack_frame->A1 = 0x0A01;
-    stack_frame->A2 = 0x0A02;
-    stack_frame->A3 = 0x0A03;
-    stack_frame->A4 = (INT32U) pdata;          /* the first argument of C function here*/
-    stack_frame->A5 = 0x0A05;
-    stack_frame->A6 = 0x0A06;
-    stack_frame->A7 = 0x0A07;
-    stack_frame->A8 = 0x0A08;
-    stack_frame->A9 = 0x0A09;
-    stack_frame->A10 = 0x0A10;
-    stack_frame->A11 = 0x0A11;
-    stack_frame->A12 = 0x0A12;
-    stack_frame->A13 = 0x0A13;
-    stack_frame->A14 = 0x0A14;
-    stack_frame->A15 = 0x0A15;
-    stack_frame->B0 = 0x0B00;
-    stack_frame->B1 = 0x0B01;
-    stack_frame->B2 = 0x0B02;
-    stack_frame->B3 = (INT32U) task;           //for cosmetic reason
-    stack_frame->B4 = 0x0B04;
-    stack_frame->B5 = 0x0B05;
-    stack_frame->B6 = 0x0B06;
-    stack_frame->B7 = 0x0B07;
-    stack_frame->B8 = 0x0B08;
-    stack_frame->B9 = 0x0B09;
-    stack_frame->B10 = 0x0B10;
-    stack_frame->B11 = 0x0B11;
-    stack_frame->B12 = 0x0B12;
-    stack_frame->B13 = 0x0B13;
-    stack_frame->B14 = DSP_C6x_GetCurrentDP(); /* Save current data pointer */
-    stack_frame->B15 = (INT32U) stack_bottom;       /* Save the SP */
+    frame->ELR = (INT32U) task; // Return address (from Int/Exc)
 
-    stack_frame->AMR = 0;                      /*default value as it was after reset*/
-    stack_frame->CSR = 0x0103;                 /* Little Endian(bit8 = 1); PGIE set 1; GIE set 1 */
-    stack_frame->IER = 0x4012;                   /* Just set the NMIF bit */
-    stack_frame->IRP = 0xabcdabcd;             /* never return, so any value could used here. */
+    frame->TSR = 0b1001111;
+              /*  CXM = 1       User Mode
+               *  XEN = 1       Enable all maskable exceptions
+               *  GEE = 1       Enable all exceptions
+               *  SGIE = 1      Enable RINT instruction
+               * */
 
-    stack_free_ptr = (int *)stack_frame;
-    stack_free_ptr--;     /* Jusr move 4-BYTE(int) to the next free position */
 
-    return (OS_STK *)stack_free_ptr;
+    return (OS_STK *) ((INT32U)ptos & ~7);
 }
 
 
-/*$PAGE*/ /*
- *********************************************************************************************************
- *                                           HANDLE TIMER TICK ISR
- *										   - void OSTickISR(void) -
- *
- * Description: This function is the C6x-DSP Timer0 ISR. And the timer tick should be 10~100 /sec.
- *				It also offers the time tick to uC/OS-II.
- **********************************************************************************************************
- */
-
-extern void ContextSave();
-extern void ContextRestore();
-
 extern void irq_clear();
-extern void timer_clear_irq();
-void OSTickISR(void)
-{
-    ContextSave();
+extern void timer_irq_clear();
 
-    printf("OSTickISR called\n");
+extern cregister volatile unsigned int ITSR;
+extern cregister volatile unsigned int NTSR;
+extern cregister volatile unsigned int EFR;
+extern cregister volatile unsigned int ECR;
 
-    timer_clear_irq();
+void OSTimerISR() {
+    printf("OSTimerISR called\n");
+    printf("ITSR [%08x]\n", ITSR);
+    printf("EFR [%08x]\n", EFR);
+    timer_irq_clear();
     irq_clear();
 
     OSIntEnter();
     OSTimeTick();
     OSIntExit();
 
-    ContextRestore();
-
-    asm ("\tNOP	5");
+    // Clear IB bit
+    saved_context.TSR &= ~(1u << 15);
+    printf("Return from OSTimerISR\n");
 }
 
+void OSExceptionISR() {
+    printf("OSExceptionISR called\n");
+    printf("NTSR [%08x]\n", NTSR);
+    printf("EFR [%08x]\n", EFR);
+
+    // Clear SXF (syscall) bit
+    ECR = 0b1;
+
+    // Clear IB bit
+    saved_context.TSR &= ~(1u << 15);
+}
 
 #if OS_CPU_HOOKS_EN > 0 && OS_VERSION > 203
 void OSInitHookBegin(void)

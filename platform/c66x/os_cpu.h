@@ -26,6 +26,8 @@
 #define OS_CPU_EXT extern
 #endif
 
+#include <snprintf.h>
+
 /*
  *********************************************************************************************************
  *                                              DATA TYPES
@@ -45,12 +47,18 @@ typedef double         FP64;                     /* Double precision floating po
 
 typedef unsigned int   OS_STK;                   /* Each stack entry is 32-bit wide in C6711DSP        */
 
-extern cregister volatile unsigned int CSR;
-void Disable_int(void);                    //function for disable interrupt
-void Enable_int(void);                     //function for enable interrupt
+/* Disable Interrupt */
+static inline DINT() {
+    __asm ("\tDINT");
+}
 
-#define  OS_ENTER_CRITICAL() Disable_int() //CSR &= 0xfffe;asm("	nop 4");	/* Disable interrupts*/
-#define  OS_EXIT_CRITICAL()  Enable_int()  //CSR |= 0x0001;asm("	nop 4");	/* Enable  interrupts*/
+/* Restore Interrupt */
+static inline RINT() {
+    __asm ("\tRINT");
+}
+
+#define  OS_ENTER_CRITICAL() DINT()
+#define  OS_EXIT_CRITICAL()  RINT()
 
 #define  OS_STK_GROWTH 1                              /* Stack grows from HIGH to LOW memory */
 
@@ -60,32 +68,27 @@ extern void OSIntCtxSw();
 extern void OSStartHighRdy();
 extern void OSCtxSw();
 
+
 unsigned int DSP_C6x_GetCurrentSP(void);
 unsigned int DSP_C6x_GetCurrentDP(void);
 
-/*------------------------------------------------------------------------
- * /	THE SP MUST BE ALIGNED ON AN 8-BYTE BOUNDARY.  (Ref. Datasheet of C6711 DSP )
- * /	WHICH means that the framesize has to be a multiple of 8-BYTE.
- * /------------------------------------------------------------------------*/
-
 typedef struct
 {
-//The start address of the Task (point of the task function)	-------- 4-BYTE
-    INT32U start_address;
+    // Task Entry
+    INT32U Entry;
 
-//All the General-Purpose Registers of the DSP (32 Registers)	-------- 32 X 4-BYTE
+    // GPR
     INT32U A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15;
     INT32U B0, B1, B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15;
 
-//Save all Control Registers of the DSP	-------- 4 X 4-BYTE
-    INT32U
-            AMR,       //Adressing_Mode_Register
-            CSR,       //Control_Status_Register
-            IER,       //Interrupt_Enable_Register
-            IRP;       //Interrupt_Return_Pointer
+    // Control Reg
+    INT32U AMR;       // Addressing Mode Reg
+    INT32U CSR;       // Control Status Reg
+    INT32U IER;       // Interrupt Enable Reg
+    INT32U ELR;       // Interrupt / Exception Return Ptr
+    INT32U TSR;       // Task State Pointer
+} context_frame_t;
 
-//A 4-BYTE dummy, just keep the SP is aligned on an 8-BYTE boundary
-    INT32U pad;
-} INIT_STACK_FRAME;
+extern context_frame_t saved_context;
 
 #endif

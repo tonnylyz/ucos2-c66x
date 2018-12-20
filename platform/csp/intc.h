@@ -9,9 +9,9 @@ u32 intc_global_nmi_enable();
 
 u32 intc_global_enable(u32 *previous_status);
 
-u32 intc_enable_interrupt(u32 vectId);
+u32 intc_vector_enable(u32 vectId);
 
-u32 intc_disable_interrupt(u32 vectId);
+u32 intc_vector_disable(u32 vectId);
 
 void irq_init();
 

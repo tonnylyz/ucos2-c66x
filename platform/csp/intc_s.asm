@@ -20,8 +20,8 @@ intc_global_enable:
     mvc b0 , csr
     mvk 1, a4
 
-    .global intc_enable_interrupt
-intc_enable_interrupt:
+    .global intc_vector_enable
+intc_vector_enable:
     ;input argument is in a4
     ;return value is in a4
     bnop b3, 1
@@ -33,8 +33,8 @@ intc_enable_interrupt:
     mvc  b0, ier
     ||and a4,1,a4
    
-    .global intc_disable_interrupt
-intc_disable_interrupt:
+    .global intc_vector_disable
+intc_vector_disable:
     ;input argument is in a4
     ;return value is in a4
     bnop b3, 1

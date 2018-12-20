@@ -58,4 +58,11 @@ clean:
 dis:
 	$(CG_TOOL_ROOT)/bin/dis6x dra7-dsp1-fw.xe66 > dis.out
 
-.PHONY: all clean dis
+burn:
+	cp dra7-dsp1-fw.xe66 /media/tonny/BOOT/dra7-dsp1-fw.xe66
+	sync
+	umount /dev/sdc1
+	udisksctl power-off -b /dev/sdc
+
+
+.PHONY: all clean dis burn

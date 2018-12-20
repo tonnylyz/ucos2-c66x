@@ -594,6 +594,10 @@ typedef struct os_tcb {
 #if OS_TASK_REG_TBL_SIZE > 0u
     INT32U           OSTCBRegTbl[OS_TASK_REG_TBL_SIZE];
 #endif
+
+    /* Context Saved in TCB*/
+    context_frame_t context_frame;
+
 } OS_TCB;
 
 /*$PAGE*/
@@ -1317,7 +1321,7 @@ void          OSTaskStatHook          (void);
 OS_STK       *OSTaskStkInit           (void           (*task)(void *p_arg),
                                        void            *p_arg,
                                        OS_STK          *ptos,
-                                       INT16U           opt);
+                                       INT32U           opt);
 
 #if OS_TASK_SW_HOOK_EN > 0u
 void          OSTaskSwHook            (void);

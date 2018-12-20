@@ -73,10 +73,10 @@ void timer_init() {
     _timer_init(DSP_1_TIMER_1);
 }
 
-static void _timer_clear_irq(u32 base) {
+static void _timer_irq_clear(u32 base) {
     mmio_write(GP_TIMER_IRQSTATUS(base), 0b10);
 }
 
-void timer_clear_irq() {
-    _timer_clear_irq(DSP_1_TIMER_1);
+void timer_irq_clear() {
+    _timer_irq_clear(DSP_1_TIMER_1);
 }

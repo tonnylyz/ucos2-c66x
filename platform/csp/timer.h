@@ -5,6 +5,6 @@
 
 void timer_init();
 
-void timer_clear_irq();
+void timer_irq_clear();
 
 #endif //UCOS2_TIMER_H

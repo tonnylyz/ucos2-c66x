@@ -13,6 +13,9 @@ INT8U Stk3[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK
 INT8U Stk4[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
 INT8U Stk5[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
 
+context_frame_t saved_context;
+
+
 int main() {
     printf("DSP OS Build: %s %s\n", __DATE__, __TIME__);
 
@@ -37,6 +40,7 @@ int main() {
     OSTaskCreate(MyTask, sTask1,
                  (void *) &Stk1[APP_TASK_START_STK_SIZE - 1],
                  APP_TASK_1_PRIO);
+/*
 
     OSTaskCreate(MyTask, sTask2,
                  (void *) &Stk2[APP_TASK_START_STK_SIZE - 1],
@@ -52,6 +56,7 @@ int main() {
     OSTaskCreate(MyTask, sTask5,
                  (void *) &Stk5[APP_TASK_START_STK_SIZE - 1],
                  APP_TASK_5_PRIO);
+*/
 
     printf("task create done\n");
     OSStart();

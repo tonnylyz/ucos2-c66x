@@ -687,6 +687,11 @@ void  OSIntExit (void)
                     OSTCBHighRdy->OSTCBCtxSwCtr++;         /* Inc. # of context switches to this task  */
 #endif
                     OSCtxSwCtr++;                          /* Keep track of the number of ctx switches */
+
+                    /* Copy saved context */
+                    OSTCBCur->context_frame = saved_context;
+                    saved_context = OSTCBHighRdy->context_frame;
+
                     OSIntCtxSw();                          /* Perform interrupt level ctx switch       */
                 }
             }
@@ -825,6 +830,8 @@ void  OSSchedUnlock (void)
 *********************************************************************************************************
 */
 
+extern context_frame_t saved_context;
+
 void  OSStart (void)
 {
     if (OSRunning == OS_FALSE) {
@@ -832,6 +839,8 @@ void  OSStart (void)
         OSPrioCur     = OSPrioHighRdy;
         OSTCBHighRdy  = OSTCBPrioTbl[OSPrioHighRdy]; /* Point to highest priority task ready to run    */
         OSTCBCur      = OSTCBHighRdy;
+        /* Copy context frame from TCB*/
+        saved_context = OSTCBCur->context_frame;
         OSStartHighRdy();                            /* Execute target specific code to start task     */
     }
 }
@@ -1968,6 +1977,13 @@ INT8U  OS_TCBInit (INT8U    prio,
         opt                      = opt;
         id                       = id;
 #endif
+
+        /* Load Context Frame */
+        if (pext != 0) {
+            ptcb->context_frame = *((context_frame_t *)pext);
+            printf("%s : ptcb->ctx.elr %08x]\n", __FUNCTION__, ptcb->context_frame.Entry);
+        }
+
 
 #if OS_TASK_DEL_EN > 0u
         ptcb->OSTCBDelReq        = OS_ERR_NONE;

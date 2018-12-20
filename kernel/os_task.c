@@ -240,8 +240,11 @@ INT8U  OSTaskCreate (void   (*task)(void *p_arg),
         OSTCBPrioTbl[prio] = OS_TCB_RESERVED;/* Reserve the priority to prevent others from doing ...  */
                                              /* ... the same thing until task is created.              */
         OS_EXIT_CRITICAL();
-        psp = OSTaskStkInit(task, p_arg, ptos, 0u);             /* Initialize the task's stack         */
-        err = OS_TCBInit(prio, psp, (OS_STK *)0, 0u, 0u, (void *)0, 0u);
+
+        context_frame_t context_frame;
+        /* Pass context frame to OSTaskStkInit */
+        psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame);
+        err = OS_TCBInit(prio, psp, (OS_STK *)0, 0u, 0u, (void *)&context_frame, 0u);
         if (err == OS_ERR_NONE) {
             if (OSRunning == OS_TRUE) {      /* Find highest priority task if multitasking has started */
                 OS_Sched();
@@ -375,8 +378,17 @@ INT8U  OSTaskCreateExt (void   (*task)(void *p_arg),
         OS_TaskStkClr(pbos, stk_size, opt);                    /* Clear the task stack (if needed)     */
 #endif
 
-        psp = OSTaskStkInit(task, p_arg, ptos, opt);           /* Initialize the task's stack          */
-        err = OS_TCBInit(prio, psp, pbos, id, stk_size, pext, opt);
+        if (opt != 0) {
+            printf("%s para opt [%08x] ignored\n", __FUNCTION__, opt);
+        }
+        if (pext != 0) {
+            printf("%s para pext [%08x] ignored\n", __FUNCTION__, pext);
+        }
+
+        context_frame_t context_frame;
+        /* Pass context frame to OSTaskStkInit */
+        psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame);           /* Initialize the task's stack          */
+        err = OS_TCBInit(prio, psp, pbos, id, stk_size, (void *)&context_frame, opt);
         if (err == OS_ERR_NONE) {
             if (OSRunning == OS_TRUE) {                        /* Find HPT if multitasking has started */
                 OS_Sched();

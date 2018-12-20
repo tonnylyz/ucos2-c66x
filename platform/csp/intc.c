@@ -63,7 +63,6 @@ void NMIHandler() {
 
 void INTHandler() {
     printf("INTHandler called\n");
-    printf("current vect id %d\n", intc_table.currentVectId);
 }
 
 static void intc_table_init() {
@@ -128,12 +127,12 @@ static inline void intc_event_clear(u32 eventId) {
     intc_instance->EVTCLR[y] = MMIO_FMKR(x, x, 1U);
 }
 
-#define INTC_EVENT_TIMER 67
+#define INTC_EVENT_TIMER 67 // timer 5
 
 void irq_init() {
     intc_event_map(INTC_EVENT_TIMER, 4);
     intc_event_enable(INTC_EVENT_TIMER);
-    intc_enable_interrupt(4);
+    intc_vector_enable(4);
 }
 
 void irq_clear() {

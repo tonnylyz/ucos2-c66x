@@ -3,20 +3,25 @@
 #include "app_cfg.h"
 #include "snprintf.h"
 
+extern cregister volatile unsigned int TSR;
+
 void MyTask(void *p_arg) {
     char *sTaskName = (char *) p_arg;
-#if OS_CRITICAL_METHOD == 3
-    OS_CPU_SR cpu_sr = 0;
-#endif
 
     while (1) {
-        OS_ENTER_CRITICAL();
-        uart_puts("Name: ");
-        uart_puts(sTaskName);
-        uart_putc('\n');
-        OS_EXIT_CRITICAL();
-
+        printf("Name: %s Mode: %d\n", sTaskName, TSR);
         //OSTimeDly(50);
+
+        __asm ("\tNOP 5");
+        __asm ("\tNOP 5");
+        __asm ("\tSWE");
+        __asm ("\tNOP 5");
+        __asm ("\tNOP 5");
+
+        int j = 0xfffff;
+        while (j --) {
+            __asm volatile ("\tNOP 5");
+        }
     }
 }
 
