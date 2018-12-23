@@ -44,17 +44,11 @@ extern void OSCtxSw();
 
 typedef struct
 {
-    // Task Entry
-    INT32U Entry;
+    INT32U reserved;
 
-    // GPR
     INT32U A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15;
     INT32U B0, B1, B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12, B13, B14, B15;
 
-    // Control Reg
-    INT32U AMR;       // Addressing Mode Reg
-    INT32U CSR;       // Control Status Reg
-    INT32U IER;       // Interrupt Enable Reg
     INT32U ELR;       // Interrupt / Exception Return Ptr
     INT32U TSR;       // Task State Pointer
 } context_frame_t;

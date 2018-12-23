@@ -14,7 +14,6 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
 {
     context_frame_t *frame;
     frame = (context_frame_t *)opt;
-    frame->Entry = (INT32U)task; // Task Entry
 
     frame->A0 = 0x0A00;
     frame->A1 = 0x0A01;
@@ -49,17 +48,6 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
     frame->B14 = __TI_STATIC_BASE;
     frame->B15 = ((INT32U)ptos & ~7); // Stack Ptr
 
-    frame->AMR = 0; // reset value (linear)
-    frame->CSR = 0b100000011;
-             /*  PWRD = 0   No power down
-              *  EN = 1     Little endian
-              *  PGIE = 1   Interrupt will be enabled after return from interrupt
-              *  GIE = 1    Enable all interrupts
-              * */
-    frame->IER = 0b1111111111110011;
-             /* Enable INT4 ~ INT15, NMI
-              * */
-
     frame->ELR = (INT32U) task; // Return address (from Int/Exc)
 
     frame->TSR = 0b1001111;
@@ -68,7 +56,6 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
                *  GEE = 1       Enable all exceptions
                *  SGIE = 1      Enable RINT instruction
                * */
-
 
     return (OS_STK *) ((INT32U)ptos & ~7);
 }
