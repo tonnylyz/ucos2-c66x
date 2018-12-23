@@ -65,14 +65,14 @@ extern void irq_clear();
 extern void timer_irq_clear();
 
 void OSTimerISR() {
-    printf("OSTimerISR ELR [%08x]\n", saved_context.ELR);
+    //printf("OSTimerISR ELR [%08x]\n", saved_context.ELR);
     timer_irq_clear();
     irq_clear();
 
     OSIntEnter();
     OSTimeTick();
     OSIntExit();
-    printf("Return from OSTimerISR ELR [%08x]\n", saved_context.ELR);
+    //printf("Return from OSTimerISR ELR [%08x]\n", saved_context.ELR);
 }
 
 //extern cregister volatile unsigned int NRP;
@@ -100,9 +100,6 @@ void OSExceptionISR(u32 efr) {
         } else if (no == 1) {
             uart_puts((char *)arg[0]);
         } else if (no == 2) {
-            printf("%d", arg[0]);
-            saved_context.A4 = arg[0] + 1;
-        } else if (no == 3) {
             OSTimeDly(arg[0]);
         } else {
             printf("Unknown System Call %d\n", no);

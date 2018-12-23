@@ -15,10 +15,6 @@ void task_puts(char *str) {
     task_syscall((u32) str, 0, 0, 0, 0, 0, 0, 0, 1);
 }
 
-int task_puti(int i) {
-    return task_syscall((u32)i, 0, 0, 0, 0, 0, 0, 0, 3);
-}
-
 void task_time_delay(u32 ticks) {
-    task_syscall(ticks, 0, 0, 0, 0, 0, 0, 0, 3);
+    task_syscall(ticks, 0, 0, 0, 0, 0, 0, 0, 2);
 }

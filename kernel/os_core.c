@@ -1660,7 +1660,7 @@ void  OS_Sched (void)
 
                 OSTCBCur->context_frame = saved_context;
                 saved_context = OSTCBHighRdy->context_frame;
-
+                //printf("Switch from %d to %d\n", OSPrioCur, OSPrioHighRdy);
                 OS_TASK_SW();                          /* Perform a context switch                     */
             }
         }

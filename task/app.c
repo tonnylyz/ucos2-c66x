@@ -6,7 +6,9 @@
 void MyTask(void *p_arg) {
     char *sTaskName = (char *) p_arg;
     while (1) {
+        task_puts("Name: ");
         task_puts(sTaskName);
         task_putc('\n');
+        task_time_delay(10);
     }
 }

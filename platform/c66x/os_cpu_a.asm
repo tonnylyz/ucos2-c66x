@@ -198,7 +198,8 @@ OSStartHighRdy_1:    ;return here from OSTaskSwHook
     OR      B1,B2,B1
     MVC     B1,TSR
 
-    ContextRestore IRP,ITSR
+    B       IntRestore
+    NOP     5
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                    OSCtxSw                                   ;;;
@@ -231,8 +232,12 @@ OSCtxSw_1:    ; return here from OSTaskSwHook
     .global HandlerException
 HandlerException:
     ContextSave NRP,NTSR
+
     MVKL    __TI_STACK_END,SP
     MVKH    __TI_STACK_END,SP
+
+    MVKL    __TI_STATIC_BASE,DP
+    MVKH    __TI_STATIC_BASE,DP
 
     MVC     EFR,B0
     MV      B0,A4 ; OSExceptionISR(EFR)
@@ -255,8 +260,13 @@ ExcRestore:
     .global HandlerTimer
 HandlerTimer:
     ContextSave IRP,ITSR
+
     MVKL    __TI_STACK_END,SP
     MVKH    __TI_STACK_END,SP
+
+    MVKL    __TI_STATIC_BASE,DP
+    MVKH    __TI_STATIC_BASE,DP
+
 
     CALL	OSTimerISR
     NOP		3

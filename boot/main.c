@@ -39,7 +39,6 @@ int main() {
     OSTaskCreate(MyTask, sTask1,
                  (void *) &Stk1[APP_TASK_START_STK_SIZE - 1],
                  APP_TASK_1_PRIO);
-/*
 
     OSTaskCreate(MyTask, sTask2,
                  (void *) &Stk2[APP_TASK_START_STK_SIZE - 1],
@@ -55,7 +54,6 @@ int main() {
     OSTaskCreate(MyTask, sTask5,
                  (void *) &Stk5[APP_TASK_START_STK_SIZE - 1],
                  APP_TASK_5_PRIO);
-*/
 
     printf("task create done\n");
     OSStart();
