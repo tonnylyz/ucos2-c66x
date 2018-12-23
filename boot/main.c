@@ -1,11 +1,11 @@
-#include <snprintf.h>
 #include <ucos_ii.h>
 #include <intc.h>
 #include <timer.h>
-#include <mmio.h>
 #include "resource_table.h"
 
 extern void MyTask(void *p_arg);
+
+//#pragma SET_DATA_SECTION(".data:TASK")
 
 INT8U Stk1[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
 INT8U Stk2[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
@@ -13,17 +13,16 @@ INT8U Stk3[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK
 INT8U Stk4[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
 INT8U Stk5[APP_TASK_START_STK_SIZE]  __attribute__ ((aligned (APP_TASK_START_STK_SIZE)));
 
-context_frame_t saved_context;
+char sTask1[] = "Task 1";
+char sTask2[] = "Task 2";
+char sTask3[] = "Task 3";
+char sTask4[] = "Task 4";
+char sTask5[] = "Task 5";
 
+//#pragma SET_DATA_SECTION()
 
 int main() {
     printf("DSP OS Build: %s %s\n", __DATE__, __TIME__);
-
-    char sTask1[] = "Task 1";
-    char sTask2[] = "Task 2";
-    char sTask3[] = "Task 3";
-    char sTask4[] = "Task 4";
-    char sTask5[] = "Task 5";
 
     intc_init();
     printf("intc_init done\n");

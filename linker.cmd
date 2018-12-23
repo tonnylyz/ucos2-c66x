@@ -23,8 +23,10 @@ MEMORY
     OCMC_RAM1 (RWX) : org = 0x40300000, len = 0x80000
     OCMC_RAM2 (RWX) : org = 0x40400000, len = 0x100000
     OCMC_RAM3 (RWX) : org = 0x40500000, len = 0x100000
-    EXT_CODE (RWX) : org = 0x95000000, len = 0x100000
-    EXT_DATA (RW) : org = 0x95100000, len = 0x100000
+    EXT_CODE (RWX) : org = 0x95000000, len = 0x80000
+    EXT_TASK (RWX) : org = 0x95080000, len = 0x80000
+    EXT_DATA (RW) : org = 0x95100000, len = 0x80000
+    EXT_TDATA (RW) : org = 0x95180000, len = 0x80000
 }
 
 SECTIONS
@@ -53,8 +55,8 @@ SECTIONS
     .c6xabi.exidx: load > EXT_DATA
     .c6xabi.extab: load > EXT_DATA
     .resource_table: load > EXT_CODE, type = NOINIT
-    .vecs: load > EXT_CODE
-    .csl_vect: load > EXT_CODE
+    .text:TASK: load > EXT_TASK
+    .data:TASK: load > EXT_TDATA
 }
 
 

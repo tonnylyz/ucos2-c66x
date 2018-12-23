@@ -74,7 +74,7 @@ void timer_init() {
 }
 
 static void _timer_irq_clear(u32 base) {
-    mmio_write(GP_TIMER_IRQSTATUS(base), 0b10);
+    mmio_write(GP_TIMER_IRQSTATUS(base), 2);
 }
 
 void timer_irq_clear() {

@@ -830,8 +830,6 @@ void  OSSchedUnlock (void)
 *********************************************************************************************************
 */
 
-extern context_frame_t saved_context;
-
 void  OSStart (void)
 {
     if (OSRunning == OS_FALSE) {
@@ -1659,6 +1657,10 @@ void  OS_Sched (void)
                 OSTCBHighRdy->OSTCBCtxSwCtr++;         /* Inc. # of context switches to this task      */
 #endif
                 OSCtxSwCtr++;                          /* Increment context switch counter             */
+
+                OSTCBCur->context_frame = saved_context;
+                saved_context = OSTCBHighRdy->context_frame;
+
                 OS_TASK_SW();                          /* Perform a context switch                     */
             }
         }
@@ -1768,22 +1770,13 @@ INT8U  OS_StrLen (INT8U *psrc)
 *********************************************************************************************************
 */
 
-void  OS_TaskIdle (void *p_arg)
-{
-#if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
-    OS_CPU_SR  cpu_sr = 0u;
-#endif
-
-
-
-    p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
-    for (;;) {
-        OS_ENTER_CRITICAL();
-        OSIdleCtr++;
-        OS_EXIT_CRITICAL();
-        OSTaskIdleHook();                        /* Call user definable HOOK                           */
+//#pragma CODE_SECTION(OS_TaskIdle, ".text:TASK")
+void  OS_TaskIdle (void *p_arg) {
+    while (1) {
+        __asm ("\tNOP 5");
     }
 }
+
 /*$PAGE*/
 /*
 *********************************************************************************************************
@@ -1981,7 +1974,7 @@ INT8U  OS_TCBInit (INT8U    prio,
         /* Load Context Frame */
         if (pext != 0) {
             ptcb->context_frame = *((context_frame_t *)pext);
-            printf("%s : ptcb->ctx.elr %08x]\n", __FUNCTION__, ptcb->context_frame.Entry);
+            printf("%s : ptcb->ctx.elr %08x]\n", __FUNCTION__, ptcb->context_frame.ELR);
         }
 
 

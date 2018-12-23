@@ -1,8 +1,11 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                           Symbol                             ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
     .def VECTOR
     .global _c_int00
     .global HandlerTimer
     .global HandlerException
-    .ref intc_table
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           Macro                              ;;;
@@ -10,27 +13,8 @@
 
 RESV .macro num
     .loop num
-    mvkh _c_int00,a4
+    MVKH _c_int00,A4
     .endloop
-    .endm
-
-INTC_PUSH .macro reg
-    stw reg,*b15--[1]
-    .endm
-
-INTC_POP .macro reg
-    ldw *++b15[1],reg
-    .endm
-
-CALLDISP .macro intr
-    INTC_PUSH a0
-    mvkl intc_table, a0
-    mvkh intc_table, a0
-    ldw *++a0[intr + 1], a0
-    nop 2
-    stw a0, *-a0[intr + 1]
-    INTC_POP a0
-    bnop a0, 5
     .endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,26 +68,26 @@ VEC_INT4:
     NOP 5
     NOP 5
 VEC_INT5:
-    CALLDISP 5
+    RESV 8
 VEC_INT6:
-    CALLDISP 6
+    RESV 8
 VEC_INT7:
-    CALLDISP 7
+    RESV 8
 VEC_INT8:
-    CALLDISP 8
+    RESV 8
 VEC_INT9:
-    CALLDISP 9
+    RESV 8
 VEC_INT10:
-    CALLDISP 10
+    RESV 8
 VEC_INT11:
-    CALLDISP 11
+    RESV 8
 VEC_INT12:
-    CALLDISP 12
+    RESV 8
 VEC_INT13:
-    CALLDISP 13
+    RESV 8
 VEC_INT14:
-    CALLDISP 14
+    RESV 8
 VEC_INT15:
-    CALLDISP 15
+    RESV 8
 
 .end

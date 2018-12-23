@@ -1,31 +1,10 @@
 #include "intc.h"
 #include <types.h>
-#include <snprintf.h>
+#include <printf.h>
 #include <os_cpu.h>
 #include <timer.h>
 #include <ucos_ii.h>
 #include <mmio.h>
-
-typedef struct {
-    u32 currentVectId;
-    void (*resv0)(void);
-    void (*nmiIsr)(void);
-    void (*resv2)(void);
-    void (*resv3)(void);
-    void (*isr4)(void);
-    void (*isr5)(void);
-    void (*isr6)(void);
-    void (*isr7)(void);
-    void (*isr8)(void);
-    void (*isr9)(void);
-    void (*isr10)(void);
-    void (*isr11)(void);
-    void (*isr12)(void);
-    void (*isr13)(void);
-    void (*isr14)(void);
-    void (*isr15)(void);
-} intc_table_t;
-intc_table_t intc_table;
 
 typedef struct  {
     volatile u32 EVTFLAG[4];
@@ -56,34 +35,8 @@ typedef struct  {
 
 static intc_regs_t volatile *intc_instance = (intc_regs_t *)INTC_REGS_BASE;
 
-
-void NMIHandler() {
-    printf("NMIHandler called\n");
-}
-
-void INTHandler() {
-    printf("INTHandler called\n");
-}
-
-static void intc_table_init() {
-    intc_table.nmiIsr = &NMIHandler;
-    intc_table.isr4 = &INTHandler;
-    intc_table.isr5 = &INTHandler;
-    intc_table.isr6 = &INTHandler;
-    intc_table.isr7 = &INTHandler;
-    intc_table.isr8 = &INTHandler;
-    intc_table.isr9 = &INTHandler;
-    intc_table.isr10 = &INTHandler;
-    intc_table.isr11 = &INTHandler;
-    intc_table.isr12 = &INTHandler;
-    intc_table.isr13 = &INTHandler;
-    intc_table.isr14 = &INTHandler;
-    intc_table.isr15 = &INTHandler;
-}
-
 void intc_init() {
     u32 prev_status;
-    intc_table_init();
     intc_global_nmi_enable();
     intc_global_enable(&prev_status);
 }

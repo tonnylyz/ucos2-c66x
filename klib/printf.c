@@ -7,7 +7,7 @@
 //
 
 #include <uart.h>
-#include "snprintf.h"
+#include "printf.h"
 
 #define LDOUBLE long double
 

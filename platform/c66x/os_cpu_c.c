@@ -1,55 +1,15 @@
-/*
- *********************************************************************************************************
- *                                               uC/OS-II
- *                                         The Real-Time Kernel
- *
- *                        (c) Copyright 1992-1998, Jean J. Labrosse, Plantation, FL
- *                                          All Rights Reserved
- *
- *                                     TI C6711 DSP Specific code
- *                                          Little Endian Mode
- *
- *                                      Code Composer Studio V2.2
- *
- * File         : OS_CPU.H
- * By	       : Ming Zeng (ming@zming.net) 2003.11
- * ; History      : Kenneth Blake   (the author of V2.00 port for C6211)
- *********************************************************************************************************
- */
 #define  OS_CPU_GLOBALS
 
 #include <ucos_ii.h>
 #include <os_cpu.h>
-#include <snprintf.h>
+#include <types.h>
+#include <printf.h>
+#include <uart.h>
 
+context_frame_t saved_context __attribute__ ((aligned (1024)));
 
-/*
- *********************************************************************************************************
- *                                        INITIALIZE A TASK'S STACK
- *
- * Description: This function is called by either OSTaskCreate() or OSTaskCreateExt() to initialize the
- *              stack frame of the task being created.  This function is highly processor specific.
- *
- * Arguments  : task          is a pointer to the task code
- *
- *              pdata         is a pointer to a user supplied data area that will be passed to the task
- *                            when the task first executes.--
- *
- *              ptos          is a pointer to the top of stack.  It is assumed that 'ptos' points to
- *                            a 'free' entry on the task stack.  If OS_STK_GROWTH is set to 1 then
- *                            'ptos' will contain the HIGHEST valid address of the stack.  Similarly, if
- *                            OS_STK_GROWTH is set to 0, the 'ptos' will contains the LOWEST valid address
- *                            of the stack.
- *
- *              opt           specifies options that can be used to alter the behavior of OSTaskStkInit().
- *                            (see uCOS_II.H for OS_TASK_OPT_???).
- *
- * Returns    : Always returns the location of the new top-of-stack' once the processor registers have
- *              been placed on the stack in the proper order.
- *
- * Note(s)    : Interrupts are enabled when your task starts executing.
- *********************************************************************************************************
- */
+extern u32 __TI_STATIC_BASE;
+
 OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U opt)
 {
     context_frame_t *frame;
@@ -86,7 +46,7 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
     frame->B11 = 0x0B11;
     frame->B12 = 0x0B12;
     frame->B13 = 0x0B13;
-    frame->B14 = DSP_C6x_GetCurrentDP(); // Data Ptr
+    frame->B14 = __TI_STATIC_BASE;
     frame->B15 = ((INT32U)ptos & ~7); // Stack Ptr
 
     frame->AMR = 0; // reset value (linear)
@@ -117,96 +77,100 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
 extern void irq_clear();
 extern void timer_irq_clear();
 
-extern cregister volatile unsigned int ITSR;
-extern cregister volatile unsigned int NTSR;
-extern cregister volatile unsigned int EFR;
-extern cregister volatile unsigned int ECR;
-
 void OSTimerISR() {
-    printf("OSTimerISR called\n");
-    printf("ITSR [%08x]\n", ITSR);
-    printf("EFR [%08x]\n", EFR);
+    printf("OSTimerISR ELR [%08x]\n", saved_context.ELR);
     timer_irq_clear();
     irq_clear();
 
     OSIntEnter();
     OSTimeTick();
     OSIntExit();
-
-    // Clear IB bit
-    saved_context.TSR &= ~(1u << 15);
-    printf("Return from OSTimerISR\n");
+    printf("Return from OSTimerISR ELR [%08x]\n", saved_context.ELR);
 }
 
-void OSExceptionISR() {
-    printf("OSExceptionISR called\n");
-    printf("NTSR [%08x]\n", NTSR);
-    printf("EFR [%08x]\n", EFR);
+//extern cregister volatile unsigned int NRP;
 
-    // Clear SXF (syscall) bit
-    ECR = 0b1;
-
-    // Clear IB bit
-    saved_context.TSR &= ~(1u << 15);
+void OSExceptionISR(u32 efr) {
+    if (efr & (1u << 1)) { /* IXF Internal Exception */
+        panic("IXF occurred.\n");
+    } else if (efr & (1u << 30)) { /* EXF Exception */
+        panic("EXF occurred.\n");
+    } else if (efr & (1u << 31)) { /* NXF NMI Exception */
+        panic("NXF occurred.\n");
+    } else if (efr & (1u << 0)) { /* SXF aka System Call */
+        u32 no, arg[8];
+        arg[0] = saved_context.A4;
+        arg[1] = saved_context.B4;
+        arg[2] = saved_context.A6;
+        arg[3] = saved_context.B6;
+        arg[4] = saved_context.A8;
+        arg[5] = saved_context.B8;
+        arg[6] = saved_context.A10;
+        arg[7] = saved_context.B10;
+        no = saved_context.A12;
+        if (no == 0) {
+            uart_putc((char) arg[0]);
+        } else if (no == 1) {
+            uart_puts((char *)arg[0]);
+        } else if (no == 2) {
+            printf("%d", arg[0]);
+            saved_context.A4 = arg[0] + 1;
+        } else if (no == 3) {
+            OSTimeDly(arg[0]);
+        } else {
+            printf("Unknown System Call %d\n", no);
+            panic("\n");
+        }
+        return;
+    }
+    if (saved_context.TSR & (1u << 16)) {
+        printf("ELR [%08x]\n", saved_context.ELR);
+        printf("TSR [%08x]\n", saved_context.TSR);
+        printf("SP [%08x]\n", saved_context.B15);
+        printf("DP [%08x]\n", saved_context.B14);
+        panic("Hardware Exception (HWE) Occurred. Unable to resume!\n");
+    }
+    panic("Unrecognized Exception\n");
 }
 
-#if OS_CPU_HOOKS_EN > 0 && OS_VERSION > 203
+#if OS_CPU_HOOKS_EN
 void OSInitHookBegin(void)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0 && OS_VERSION > 203
 void OSInitHookEnd(void)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0
 void OSTaskCreateHook(OS_TCB *ptcb)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0
 void OSTaskDelHook(OS_TCB *ptcb)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0 && OS_VERSION >= 251
 void OSTaskIdleHook(void)
 {
+    /* THIS IS USELESS */
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0
 void OSTaskStatHook(void)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0
 void OSTaskSwHook(void)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0 && OS_VERSION > 203
 void OSTCBInitHook(OS_TCB *ptcb)
 {
 }
-#endif
 
-#if OS_CPU_HOOKS_EN > 0
 void OSTimeTickHook(void)
 {
 }
-#endif
 
-
-
-#if OS_CPU_HOOKS_EN > 0
 void OSTaskReturnHook(OS_TCB *ptcb)
 {
 }

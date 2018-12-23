@@ -1,22 +1,3 @@
-/*
- *********************************************************************************************************
- *                                               uC/OS-II
- *                                        The Real-Time Kernel
- *
- *                         (c) Copyright 1992-2002, Jean J. Labrosse, Weston, FL
- *                                          All Rights Reserved
- *
- *                                     TI C6711 DSP Specific code
- *                                          Little Endian Mode
- *
- *                                      Code Composer Studio V2.2
- *
- * File         : OS_CPU.H
- * By	       : Ming Zeng (ming@zming.net) 2003.11
- * ; History      : Kenneth Blake   (the author of V2.00 port for C6211)
- *********************************************************************************************************
- */
-
 #ifndef _OS_CPU_H_
 #define _OS_CPU_H_
 
@@ -26,7 +7,7 @@
 #define OS_CPU_EXT extern
 #endif
 
-#include <snprintf.h>
+#include <printf.h>
 
 /*
  *********************************************************************************************************
@@ -45,32 +26,21 @@ typedef signed int     INT32S;                   /* Signed   32 bit quantity    
 typedef float          FP32;                     /* Single precision floating point                    */
 typedef double         FP64;                     /* Double precision floating point                    */
 
-typedef unsigned int   OS_STK;                   /* Each stack entry is 32-bit wide in C6711DSP        */
+typedef unsigned int   OS_STK;
 
-/* Disable Interrupt */
-static inline DINT() {
-    __asm ("\tDINT");
-}
-
-/* Restore Interrupt */
-static inline RINT() {
-    __asm ("\tRINT");
-}
-
-#define  OS_ENTER_CRITICAL() DINT()
-#define  OS_EXIT_CRITICAL()  RINT()
+#define  OS_ENTER_CRITICAL() __asm ("\tNOP 5")
+#define  OS_EXIT_CRITICAL()  __asm ("\tNOP 5")
 
 #define  OS_STK_GROWTH 1                              /* Stack grows from HIGH to LOW memory */
 
 #define  OS_TASK_SW()  OSCtxSw()
 
+#define panic(_) do { printf(_); while (1) { __asm ("\tNOP"); }  } while(0)
+
+/* Prototypes for functions in os_cpu_s.asm */
 extern void OSIntCtxSw();
 extern void OSStartHighRdy();
 extern void OSCtxSw();
-
-
-unsigned int DSP_C6x_GetCurrentSP(void);
-unsigned int DSP_C6x_GetCurrentDP(void);
 
 typedef struct
 {

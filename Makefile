@@ -2,7 +2,6 @@ CG_TOOL_ROOT := /home/tonny/ti/ccs820/ccsv8/tools/compiler/ti-cgt-c6000_8.2.4
 
 LINKER_CMD := linker.cmd
 
-
 # Bootstrap Objects
 BSP_OBJS := boot/vector.obj boot/main.obj
 
@@ -19,9 +18,14 @@ PLATFORM_OBJS := platform/csp/timer.obj \
                  platform/c66x/os_cpu_c.obj
 
 # Task Objects
-TASK_OBJS := task/app.obj task/snprintf.obj
+TASK_OBJS := task/app.obj \
+             task/syscall.obj \
+             task/syscall_s.obj
 
-OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(TASK_OBJS) $(UCOSII_OBJS)
+# Kernel Library Objects
+KLIB_OBJS := klib/printf.obj
+
+OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(TASK_OBJS) $(UCOSII_OBJS) $(KLIB_OBJS)
 
 INCLUDE_PATH := --include_path="$(CURDIR)" \
                 --include_path="$(CURDIR)/boot" \
@@ -29,11 +33,12 @@ INCLUDE_PATH := --include_path="$(CURDIR)" \
                 --include_path="$(CURDIR)/platform/c66x" \
                 --include_path="$(CURDIR)/task" \
                 --include_path="$(CURDIR)/kernel" \
+                --include_path="$(CURDIR)/klib" \
                 --include_path="$(CG_TOOL_ROOT)/include"
 
 LIBRARY_PATH := -i $(CG_TOOL_ROOT)/lib
 
-CL6X_FLAGS := -mv6600 -O2 --define=SOC_AM572x --define=am5728 --define=core1 --diag_warning=225 --diag_wrap=off --display_error_number
+CL6X_FLAGS := -mv6600 --opt_level=0 --define=SOC_AM572x --define=am5728 --define=core1 --diag_warning=225 --diag_wrap=off --display_error_number --call_assumptions=0
 
 %.obj: %.c
 	$(CG_TOOL_ROOT)/bin/cl6x $(INCLUDE_PATH) $(CL6X_FLAGS) --preproc_with_compile --output_file $@ $<
@@ -55,14 +60,13 @@ clean:
 	-rm -rf */*.obj
 	-rm -rf platform/*/*.obj
 
-dis:
+dis: dra7-dsp1-fw.xe66
 	$(CG_TOOL_ROOT)/bin/dis6x dra7-dsp1-fw.xe66 > dis.out
 
-burn:
+burn: dra7-dsp1-fw.xe66
 	cp dra7-dsp1-fw.xe66 /media/tonny/BOOT/dra7-dsp1-fw.xe66
 	sync
 	umount /dev/sdc1
 	udisksctl power-off -b /dev/sdc
-
 
 .PHONY: all clean dis burn

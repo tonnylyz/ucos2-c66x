@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 include_directories(
         boot
         kernel
+        klib
         platform/c66x
         platform/csp
         task
@@ -37,10 +38,10 @@ add_executable(
         platform/csp/uart.c platform/csp/uart.h
         platform/csp/mmio.h
 
-        task/snprintf.c
-        task/snprintf.h
+        klib/printf.c
+        klib/printf.h
 
         task/app.c
         task/app_cfg.h
 
-        platform/csp/intc.c platform/csp/intc.h)
+        platform/csp/intc.c platform/csp/intc.h task/syscall.c task/syscall.h)
