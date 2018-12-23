@@ -1770,7 +1770,7 @@ INT8U  OS_StrLen (INT8U *psrc)
 *********************************************************************************************************
 */
 
-//#pragma CODE_SECTION(OS_TaskIdle, ".text:TASK")
+#pragma CODE_SECTION(OS_TaskIdle, ".text:TASK")
 void  OS_TaskIdle (void *p_arg) {
     while (1) {
         __asm ("\tNOP 5");
