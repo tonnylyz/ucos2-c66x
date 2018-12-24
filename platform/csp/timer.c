@@ -22,6 +22,7 @@
 
 #define ARM_TIMER_1 GP_TIMER_2_BASE
 #define DSP_1_TIMER_1 GP_TIMER_5_BASE
+#define DSP_2_TIMER_1 GP_TIMER_6_BASE
 
 #define GP_TIMER_IRQSTATUS_RAW(base)        ((base) + 0x24u)
 #define GP_TIMER_IRQSTATUS(base)            ((base) + 0x28u)
@@ -70,7 +71,11 @@ static void _timer_init(u32 base) {
 }
 
 void timer_init() {
+#if defined(DSP_CORE_1)
     _timer_init(DSP_1_TIMER_1);
+#elif defined(DSP_CORE_2)
+    _timer_init(DSP_2_TIMER_1);
+#endif
 }
 
 static void _timer_irq_clear(u32 base) {

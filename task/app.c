@@ -3,6 +3,7 @@
 
 #pragma SET_CODE_SECTION(".text:TASK")
 
+#pragma SET_DATA_SECTION(".data:TASK")
 void MyTask(void *p_arg) {
     char *sTaskName = (char *) p_arg;
     while (1) {

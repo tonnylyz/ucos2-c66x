@@ -73,22 +73,7 @@ struct fw_rsc_devmem {
 
 #define DSP_MEM_TEXT_SIZE       SZ_1M
 #define DSP_MEM_DATA_SIZE       SZ_1M
-/*
- * Assign fixed RAM addresses to facilitate a fixed MMU table.
- */
 
-//BWC
-#define VAYU_DSP_1
-
-/* See CMA BASE addresses in Linux side: arch/arm/mach-omap2/remoteproc.c */
-#if defined (VAYU_DSP_1)
-#define PHYS_MEM_IPC_VRING      0x99000000
-#elif defined (VAYU_DSP_2)
-#define PHYS_MEM_IPC_VRING      0x9F000000
-#endif
-
-/* Need to be identical to that of IPU */
-#define PHYS_MEM_IOBUFS         0xBA300000
 
 struct my_resource_table {
     struct resource_table base;

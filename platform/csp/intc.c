@@ -80,7 +80,11 @@ static inline void intc_event_clear(u32 eventId) {
     intc_instance->EVTCLR[y] = MMIO_FMKR(x, x, 1U);
 }
 
+#if defined(DSP_CORE_1)
 #define INTC_EVENT_TIMER 67 // timer 5
+#elif defined(DSP_CORE_2)
+#define INTC_EVENT_TIMER 67 // timer 5
+#endif
 
 void irq_init() {
     intc_event_map(INTC_EVENT_TIMER, 4);
