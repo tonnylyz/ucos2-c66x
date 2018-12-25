@@ -142,7 +142,7 @@ ContextRestore .macro ELR,XTSR
 
     ; DON'T mvc from B0 immediatelly after load (causing IXF)
     MVC     B0,ELR
-    MVC     B1,NTSR
+    MVC     B1,XTSR
 
     LDW     *+SP[Ctx_B0],B0
     LDW     *+SP[Ctx_B1],B1
