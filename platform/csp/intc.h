@@ -3,16 +3,23 @@
 
 #include <types.h>
 
+#define INTC_EVENT_TIMER_1  63
+#define INTC_EVENT_TIMER_2  64
+#define INTC_EVENT_TIMER_3  64
+#define INTC_EVENT_TIMER_4  66
+#define INTC_EVENT_TIMER_5  67
+#define INTC_EVENT_TIMER_6  68
+#define INTC_EVENT_TIMER_7  69
+#define INTC_EVENT_TIMER_8  70
+#define INTC_EVENT_TIMER_9  71
+#define INTC_EVENT_TIMER_10 72
+#define INTC_EVENT_TIMER_11 73
+
+#define INTC_EVENT_TASK_TIMER INTC_EVENT_TIMER_5
+#define INTC_EVENT_PART_TIMER INTC_EVENT_TIMER_6
+
 void intc_init();
 
-u32 intc_global_nmi_enable();
-
-u32 intc_global_enable(u32 *previous_status);
-
-u32 intc_vector_enable(u32 vectId);
-
-u32 intc_vector_disable(u32 vectId);
-
-void irq_init();
+void intc_event_clear(u32 eventId);
 
 #endif //UCOS2_C66X_INTC_H

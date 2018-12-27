@@ -4,8 +4,9 @@
 
     .def VECTOR
     .global _c_int00
-    .global HandlerTimer
+    .global HandlerTaskTimer
     .global HandlerException
+    .global HandlerPartitionTimer
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           Macro                              ;;;
@@ -54,7 +55,7 @@ VEC_RSV2:
 VEC_RSV3:
     RESV 8
 VEC_INT4:
-    B HandlerTimer
+    B HandlerTaskTimer
     NOP 5
     NOP 5
     NOP 5
@@ -68,7 +69,19 @@ VEC_INT4:
     NOP 5
     NOP 5
 VEC_INT5:
-    RESV 8
+    B HandlerPartitionTimer
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
 VEC_INT6:
     RESV 8
 VEC_INT7:

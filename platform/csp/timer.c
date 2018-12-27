@@ -3,27 +3,6 @@
 #include <types.h>
 #include <mmio.h>
 
-#define GP_TIMER_1_BASE         KADDR(0x4AE18000)
-#define GP_TIMER_2_BASE         KADDR(0x48032000)
-#define GP_TIMER_3_BASE         KADDR(0x48034000)
-#define GP_TIMER_4_BASE         KADDR(0x48036000)
-#define GP_TIMER_5_BASE         KADDR(0x48820000)
-#define GP_TIMER_6_BASE         KADDR(0x48822000)
-#define GP_TIMER_7_BASE         KADDR(0x48824000)
-#define GP_TIMER_8_BASE         KADDR(0x48826000)
-#define GP_TIMER_9_BASE         KADDR(0x4803E000)
-#define GP_TIMER_10_BASE         KADDR(0x48086000)
-#define GP_TIMER_11_BASE         KADDR(0x48088000)
-#define GP_TIMER_12_BASE         KADDR(0x4AE20000)
-#define GP_TIMER_13_BASE         KADDR(0x48828000)
-#define GP_TIMER_14_BASE         KADDR(0x4882A000)
-#define GP_TIMER_15_BASE         KADDR(0x4882C000)
-#define GP_TIMER_16_BASE         KADDR(0x4882E000)
-
-#define ARM_TIMER_1 GP_TIMER_2_BASE
-#define DSP_1_TIMER_1 GP_TIMER_5_BASE
-#define DSP_2_TIMER_1 GP_TIMER_6_BASE
-
 #define GP_TIMER_IRQSTATUS_RAW(base)        ((base) + 0x24u)
 #define GP_TIMER_IRQSTATUS(base)            ((base) + 0x28u)
 #define GP_TIMER_IRQSTATUS_SET(base)        ((base) + 0x2Cu)
@@ -58,10 +37,10 @@ static inline u32 pend_read(u32 reg, u32 pend) {
     return mmio_read(reg);
 }
 
-static void _timer_init(u32 base) {
-    const int TIMER_FREQUENCY = 0x100000;
 
-    unsigned int load_val = 0xffffffffU - TIMER_FREQUENCY;
+static void _timer_init(u32 base, u32 interval) {
+
+    unsigned int load_val = 0xffffffffU - interval;
 
     pend_write(GP_TIMER_TLDR(base), GP_TIMER_TLDR_PEND, load_val);
     pend_write(GP_TIMER_TCRR(base), GP_TIMER_TCRR_PEND, load_val);
@@ -71,17 +50,14 @@ static void _timer_init(u32 base) {
 }
 
 void timer_init() {
-#if defined(DSP_CORE_1)
-    _timer_init(DSP_1_TIMER_1);
-#elif defined(DSP_CORE_2)
-    _timer_init(DSP_2_TIMER_1);
-#endif
+    _timer_init(GP_TASK_TIMER_BASE, GP_TIMER_INTERVAL_10MS);
+    //_timer_init(GP_PART_TIMER_BASE, GP_TIMER_INTERVAL_1S);
 }
 
 static void _timer_irq_clear(u32 base) {
     mmio_write(GP_TIMER_IRQSTATUS(base), 2);
 }
 
-void timer_irq_clear() {
-    _timer_irq_clear(DSP_1_TIMER_1);
+void timer_irq_clear(u32 base) {
+    _timer_irq_clear(base);
 }

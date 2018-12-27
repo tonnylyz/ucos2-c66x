@@ -35,12 +35,6 @@ typedef struct  {
 
 static intc_regs_t volatile *intc_instance = (intc_regs_t *)INTC_REGS_BASE;
 
-void intc_init() {
-    u32 prev_status;
-    intc_global_nmi_enable();
-    intc_global_enable(&prev_status);
-}
-
 static inline void intc_event_map(u32 eventId, u32 vectId) {
     u32 bitLow;
     if (vectId < 8) {
@@ -72,7 +66,7 @@ static inline u32 intc_event_enable(u32 eventId) {
     return previous_state;
 }
 
-static inline void intc_event_clear(u32 eventId) {
+void intc_event_clear(u32 eventId) {
     u32 x;
     u32 y;
     y = (eventId) >> 5U;
@@ -80,18 +74,11 @@ static inline void intc_event_clear(u32 eventId) {
     intc_instance->EVTCLR[y] = MMIO_FMKR(x, x, 1U);
 }
 
-#if defined(DSP_CORE_1)
-#define INTC_EVENT_TIMER 67 // timer 5
-#elif defined(DSP_CORE_2)
-#define INTC_EVENT_TIMER 67 // timer 5
-#endif
 
-void irq_init() {
-    intc_event_map(INTC_EVENT_TIMER, 4);
-    intc_event_enable(INTC_EVENT_TIMER);
-    intc_vector_enable(4);
-}
+void intc_init() {
+    intc_event_map(INTC_EVENT_TASK_TIMER, 4);
+    intc_event_enable(INTC_EVENT_TASK_TIMER);
 
-void irq_clear() {
-    intc_event_clear(INTC_EVENT_TIMER);
+    intc_event_map(INTC_EVENT_PART_TIMER, 5);
+    intc_event_enable(INTC_EVENT_PART_TIMER);
 }

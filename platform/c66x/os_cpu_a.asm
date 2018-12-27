@@ -48,7 +48,8 @@ Ctx_TSR          .set 34
 
 
     .global OSTaskSwHook
-    .global OSTimerISR
+    .global OSTaskTimerISR
+    .global OSPartitionTimerISR
     .global OSExceptionISR
     .ref OSTCBHighRdy
     .ref OSTCBCur
@@ -60,8 +61,9 @@ Ctx_TSR          .set 34
     .ref __TI_STACK_END
     .ref __TI_STATIC_BASE
 
-    .def HandlerTimer
+    .def HandlerTaskTimer
     .def HandlerException
+    .def HandlerPartitionTimer
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           Macro                              ;;;
@@ -240,7 +242,9 @@ HandlerException:
     MVKH    __TI_STATIC_BASE,DP
 
     MVC     EFR,B0
-    MV      B0,A4 ; OSExceptionISR(EFR)
+    MV      B0,A4
+    MVC     IERR,B0
+    MV      B0,B4 ; OSExceptionISR(EFR,IERR)
     CALL	OSExceptionISR
     NOP		3
     MVKL	ExcRestore,B3
@@ -255,10 +259,10 @@ ExcRestore:
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;                         Timer Handler                        ;;;
+;;;                    Task Timer Handler                        ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    .global HandlerTimer
-HandlerTimer:
+    .global HandlerTaskTimer
+HandlerTaskTimer:
     ContextSave IRP,ITSR
 
     MVKL    __TI_STACK_END,SP
@@ -268,7 +272,7 @@ HandlerTimer:
     MVKH    __TI_STATIC_BASE,DP
 
 
-    CALL	OSTimerISR
+    CALL	OSTaskTimerISR
     NOP		3
     MVKL	IntRestore,B3
     MVKH	IntRestore,B3
@@ -298,6 +302,24 @@ OSIntCtxSw_1:
 
 IntRestore:
     ContextRestore IRP,ITSR
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                   Partition Timer Handler                    ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    .global HandlerPartitionTimer
+HandlerPartitionTimer:
+    ContextSave IRP,ITSR
+
+    MVKL    __TI_STACK_END,SP
+    MVKH    __TI_STACK_END,SP
+
+    MVKL    __TI_STATIC_BASE,DP
+    MVKH    __TI_STATIC_BASE,DP
+
+    CALL	OSPartitionTimerISR
+    NOP		3
+    MVKL	IntRestore,B3
+    MVKH	IntRestore,B3
 
 .end
 
