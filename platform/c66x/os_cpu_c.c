@@ -5,6 +5,8 @@
 #include <types.h>
 #include <printf.h>
 #include <uart.h>
+#include <timer.h>
+#include <intc.h>
 
 context_frame_t saved_context __attribute__ ((aligned (1024)));
 
@@ -60,25 +62,21 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
     return (OS_STK *) ((INT32U)ptos & ~7);
 }
 
-
-extern void irq_clear();
-extern void timer_irq_clear();
-
-void OSTimerISR() {
-    //printf("OSTimerISR ELR [%08x]\n", saved_context.ELR);
-    timer_irq_clear();
-    irq_clear();
+void OSTaskTimerISR() {
+    timer_irq_clear(GP_TASK_TIMER_BASE);
+    intc_event_clear(INTC_EVENT_TASK_TIMER);
 
     OSIntEnter();
     OSTimeTick();
     OSIntExit();
-    //printf("Return from OSTimerISR ELR [%08x]\n", saved_context.ELR);
 }
 
 //extern cregister volatile unsigned int NRP;
 
-void OSExceptionISR(u32 efr) {
+void OSExceptionISR(u32 efr, u32 ierr) {
     if (efr & (1u << 1)) { /* IXF Internal Exception */
+        printf("IXF: ierr [%02x]\n", ierr);
+        printf("IXF: elr  [%08x]\n", saved_context.ELR);
         panic("IXF occurred.\n");
     } else if (efr & (1u << 30)) { /* EXF Exception */
         panic("EXF occurred.\n");
@@ -115,6 +113,13 @@ void OSExceptionISR(u32 efr) {
         panic("Hardware Exception (HWE) Occurred. Unable to resume!\n");
     }
     panic("Unrecognized Exception\n");
+}
+
+
+void OSPartitionTimerISR() {
+    printf("OSPartitionTimerISR called\n");
+    timer_irq_clear(GP_PART_TIMER_BASE);
+    intc_event_clear(INTC_EVENT_PART_TIMER);
 }
 
 #if OS_CPU_HOOKS_EN

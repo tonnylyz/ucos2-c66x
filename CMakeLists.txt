@@ -1,5 +1,5 @@
 project(ucos2-c66x)
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_FLAGS "-D DSP_CORE_1")
 
@@ -43,7 +43,7 @@ add_executable(
         klib/printf.c
         klib/printf.h
 
-        task/app.c
-        task/app_cfg.h
+        task/part_0.c
+        task/part_0.h
 
-        platform/csp/intc.c platform/csp/intc.h task/syscall.c task/syscall.h)
+        platform/csp/intc.c platform/csp/intc.h task/syscall.c task/syscall.h platform/csp/xmc.c platform/csp/xmc.h klib/partition.c klib/partition.h klib/partition_conf.h)

@@ -1,4 +1,4 @@
-    .sect ".text:TASK"
+    .sect ".text:PART_S"
     .global task_syscall
 task_syscall:
     SWE

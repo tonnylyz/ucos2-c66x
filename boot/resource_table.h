@@ -36,23 +36,23 @@ struct resource_table {
 };
 
 struct fw_rsc_carveout {
-    UInt32  type;
-    UInt32  da;
-    UInt32  pa;
-    UInt32  len;
-    UInt32  flags;
-    UInt32  reserved;
-    Char    name[32];
+    UInt32 type;
+    UInt32 da;
+    UInt32 pa;
+    UInt32 len;
+    UInt32 flags;
+    UInt32 reserved;
+    Char name[32];
 };
 
 struct fw_rsc_devmem {
-    UInt32  type;
-    UInt32  da;
-    UInt32  pa;
-    UInt32  len;
-    UInt32  flags;
-    UInt32  reserved;
-    Char    name[32];
+    UInt32 type;
+    UInt32 da;
+    UInt32 pa;
+    UInt32 len;
+    UInt32 flags;
+    UInt32 reserved;
+    Char name[32];
 };
 
 /* DSP Memory Map */
@@ -77,9 +77,11 @@ struct fw_rsc_devmem {
 
 struct my_resource_table {
     struct resource_table base;
-    UInt32 offset[6];  /* Should match 'num' in actual definition */
-    struct fw_rsc_carveout text_cout;
-    struct fw_rsc_carveout data_cout;
+    UInt32 offset[8];  /* Should match 'num' in actual definition */
+    struct fw_rsc_carveout kern_text;
+    struct fw_rsc_carveout kern_data;
+    struct fw_rsc_carveout part_share;
+    struct fw_rsc_carveout part_private;
     struct fw_rsc_devmem devmem0;
     struct fw_rsc_devmem devmem1;
     struct fw_rsc_devmem devmem2;
@@ -90,54 +92,68 @@ struct my_resource_table {
 #pragma DATA_ALIGN(ti_ipc_remoteproc_ResourceTable, 4096)
 
 struct my_resource_table ti_ipc_remoteproc_ResourceTable = {
-    1,      /* we're the first version that implements this */
-    6,     /* number of entries in the table */
-    0, 0,   /* reserved, must be zero */
-    /* offsets to entries */
-    {
-        offsetof(struct my_resource_table, text_cout),
-        offsetof(struct my_resource_table, data_cout),
-        offsetof(struct my_resource_table, devmem0),
-        offsetof(struct my_resource_table, devmem1),
-        offsetof(struct my_resource_table, devmem2),
-        offsetof(struct my_resource_table, devmem3)
-    },
+        1,      /* we're the first version that implements this */
+        8,     /* number of entries in the table */
+        0, 0,   /* reserved, must be zero */
+        /* offsets to entries */
+        {
+                offsetof(struct my_resource_table, kern_text),
+                offsetof(struct my_resource_table, kern_data),
+                offsetof(struct my_resource_table, part_share),
+                offsetof(struct my_resource_table, part_private),
+                offsetof(struct my_resource_table, devmem0),
+                offsetof(struct my_resource_table, devmem1),
+                offsetof(struct my_resource_table, devmem2),
+                offsetof(struct my_resource_table, devmem3)
+        },
 
-    {
-        TYPE_CARVEOUT,
-        DSP_MEM_TEXT, 0,
-        DSP_MEM_TEXT_SIZE, 0, 0, "DSP_MEM_TEXT",
-    },
+        {
+                TYPE_CARVEOUT,
+                0x95000000, 0,
+                SZ_1M, 0, 0, "KERN_TEXT",
+        },
 
-    {
-        TYPE_CARVEOUT,
-        DSP_MEM_DATA, 0,
-        DSP_MEM_DATA_SIZE, 0, 0, "DSP_MEM_DATA",
-    },
+        {
+                TYPE_CARVEOUT,
+                0x95100000, 0,
+                SZ_1M, 0, 0, "KERN_DATA",
+        },
 
-    {
-        TYPE_DEVMEM,
-        DSP_PERIPHERAL_L4CFG, L4_PERIPHERAL_L4CFG,
-        SZ_16M, 0, 0, "DSP_PERIPHERAL_L4CFG",
-    },
+        {
+                TYPE_CARVEOUT,
+                0x95200000, 0,
+                SZ_1M, 0, 0, "PART_SHARE",
+        },
 
-    {
-        TYPE_DEVMEM,
-        DSP_PERIPHERAL_L4PER1, L4_PERIPHERAL_L4PER1,
-        SZ_2M, 0, 0, "DSP_PERIPHERAL_L4PER1",
-    },
+        {
+                TYPE_CARVEOUT,
+                0x95300000, 0,
+                SZ_8M, 0, 0, "PART_PRIVATE",
+        },
 
-    {
-        TYPE_DEVMEM,
-        DSP_PERIPHERAL_L4PER2, L4_PERIPHERAL_L4PER2,
-        SZ_4M, 0, 0, "DSP_PERIPHERAL_L4PER2",
-    },
+        {
+                TYPE_DEVMEM,
+                DSP_PERIPHERAL_L4CFG, L4_PERIPHERAL_L4CFG,
+                SZ_16M, 0, 0, "DSP_PERIPHERAL_L4CFG",
+        },
 
-    {
-        TYPE_DEVMEM,
-        DSP_PERIPHERAL_L4PER3, L4_PERIPHERAL_L4PER3,
-        SZ_8M, 0, 0, "DSP_PERIPHERAL_L4PER3",
-    }
+        {
+                TYPE_DEVMEM,
+                DSP_PERIPHERAL_L4PER1, L4_PERIPHERAL_L4PER1,
+                SZ_2M, 0, 0, "DSP_PERIPHERAL_L4PER1",
+        },
+
+        {
+                TYPE_DEVMEM,
+                DSP_PERIPHERAL_L4PER2, L4_PERIPHERAL_L4PER2,
+                SZ_4M, 0, 0, "DSP_PERIPHERAL_L4PER2",
+        },
+
+        {
+                TYPE_DEVMEM,
+                DSP_PERIPHERAL_L4PER3, L4_PERIPHERAL_L4PER3,
+                SZ_8M, 0, 0, "DSP_PERIPHERAL_L4PER3",
+        }
 };
 
 #endif /* _RSC_TABLE_VAYU_DSP_H_ */

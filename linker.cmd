@@ -1,62 +1,59 @@
-/****************************************************************************/
-/*  AM57xx_C66.cmd                                                          */
-/*  Copyright (c) 2015  Texas Instruments Incorporated                      */
-/*  Author: Rafael de Souza                                                 */
-/*                                                                          */
-/*    Description: This file is a sample linker command file that can be    */
-/*                 used for linking programs built with the C compiler and  */
-/*                 running the resulting .out file on the C66x DSP core of  */
-/*                 an AM57xx device.                                        */
-/*                 Use it as a guideline.  You will want to                 */
-/*                 change the memory layout to match your specific          */
-/*                 target system.  You may want to change the allocation    */
-/*                 scheme according to the size of your program.            */
-/*                                                                          */
-/****************************************************************************/
 --heap_size=0x0
 --stack_size=0x10000
 --retain="*(.resource_table)"
 
 MEMORY
 {
-    L2SRAM (RWX) : org = 0x800000, len = 0x40000
-    OCMC_RAM1 (RWX) : org = 0x40300000, len = 0x80000
-    OCMC_RAM2 (RWX) : org = 0x40400000, len = 0x100000
-    OCMC_RAM3 (RWX) : org = 0x40500000, len = 0x100000
-    EXT_CODE (RWX) : org = 0x95000000, len = 0x80000
-    EXT_TASK (RWX) : org = 0x95080000, len = 0x80000
-    EXT_DATA (RW) : org = 0x95100000, len = 0x80000
-    EXT_TDATA (RW) : org = 0x95180000, len = 0x80000
+    KERN_TEXT (RWX) : org = 0x95000000, len = 0x100000
+    KERN_DATA (RW)  : org = 0x95100000, len = 0x100000
+
+    PART_SHARE_TEXT (RWX) : org = 0x95200000, len = 0x80000
+    PART_SHARE_DATA (RWX) : org = 0x95280000, len = 0x80000
+
+    PART_TEXT_0 (RW)  : org = 0x95300000, len = 0x80000
+    PART_DATA_0 (RWX) : org = 0x95380000, len = 0x80000
+    PART_TEXT_1 (RW)  : org = 0x95400000, len = 0x80000
+    PART_DATA_1 (RWX) : org = 0x95480000, len = 0x80000
+    PART_TEXT_2 (RW)  : org = 0x95500000, len = 0x80000
+    PART_DATA_2 (RWX) : org = 0x95580000, len = 0x80000
+    PART_TEXT_3 (RW)  : org = 0x95600000, len = 0x80000
+    PART_DATA_3 (RWX) : org = 0x95680000, len = 0x80000
+    PART_TEXT_4 (RW)  : org = 0x95700000, len = 0x80000
+    PART_DATA_4 (RWX) : org = 0x95780000, len = 0x80000
+    PART_TEXT_5 (RW)  : org = 0x95800000, len = 0x80000
+    PART_DATA_5 (RWX) : org = 0x95880000, len = 0x80000
+    PART_TEXT_6 (RW)  : org = 0x95900000, len = 0x80000
+    PART_DATA_6 (RWX) : org = 0x95980000, len = 0x80000
+    PART_TEXT_7 (RW)  : org = 0x95a00000, len = 0x80000
+    PART_DATA_7 (RWX) : org = 0x95a80000, len = 0x80000
 }
 
 SECTIONS
 {
     .text:VECTOR: load > 0x95000000
-    .text: load > EXT_CODE
-    .stack: load > EXT_DATA
-    GROUP: load > EXT_DATA
+    .text: load > KERN_TEXT
+
+    .stack: load > KERN_DATA
+    GROUP: load > KERN_DATA
     {
         .bss:
         .neardata:
         .rodata:
     }
-    .cinit: load > EXT_DATA
-    .pinit: load > EXT_DATA
-    .init_array: load > EXT_DATA
-    .const: load > EXT_DATA
-    .data: load > EXT_DATA
-    .fardata: load > EXT_DATA
-    .switch: load > EXT_DATA
-    .sysmem: load > EXT_DATA
-    .far: load > EXT_DATA
-    .args: load > EXT_DATA align = 0x4, fill = 0 {_argsize = 0x0; }
-    .cio: load > EXT_DATA
-    .ti.handler_table: load > EXT_DATA
-    .c6xabi.exidx: load > EXT_DATA
-    .c6xabi.extab: load > EXT_DATA
-    .resource_table: load > EXT_CODE, type = NOINIT
-    .text:TASK: load > EXT_TASK
-    .data:TASK: load > EXT_TDATA
+    .cinit: load > KERN_DATA
+    .init_array: load > KERN_DATA
+    .const: load > KERN_DATA
+    .data: load > KERN_DATA
+    .fardata: load > KERN_DATA
+    .switch: load > KERN_DATA
+    .far: load > KERN_DATA
+    .resource_table: load > KERN_TEXT, type = NOINIT
+
+    .text:PART_S: load > PART_SHARE_TEXT
+    .data:PART_S: load > PART_SHARE_DATA
+
+    .text:PART_0: load > PART_TEXT_0
+    .data:PART_0: load > PART_DATA_0
 }
 
 
