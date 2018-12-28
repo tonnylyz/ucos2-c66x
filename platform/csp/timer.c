@@ -50,7 +50,7 @@ static void _timer_init(u32 base, u32 interval) {
 }
 
 void timer_init() {
-    _timer_init(GP_TASK_TIMER_BASE, GP_TIMER_INTERVAL_10MS);
+    _timer_init(GP_TASK_TIMER_BASE, GP_TIMER_INTERVAL_100MS);
     _timer_init(GP_PART_TIMER_BASE, GP_TIMER_INTERVAL_1S);
 }
 

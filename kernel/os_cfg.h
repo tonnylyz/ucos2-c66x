@@ -31,7 +31,7 @@
 #define OS_ARG_CHK_EN             0u   /* Enable (1) or Disable (0) argument checking                  */
 #define OS_CPU_HOOKS_EN           1u   /* uC/OS-II hooks are found in the processor port files         */
 
-#define OS_DEBUG_EN               1u   /* Enable(1) debug variables                                    */
+#define OS_DEBUG_EN               0u   /* Enable(1) debug variables                                    */
 
 #define OS_EVENT_MULTI_EN         1u   /* Include code for OSEventPendMulti()                          */
 #define OS_EVENT_NAME_EN          1u   /* Enable names for Sem, Mutex, Mbox and Q                      */
@@ -47,14 +47,14 @@
 
 #define OS_SCHED_LOCK_EN          1u   /* Include code for OSSchedLock() and OSSchedUnlock()           */
 
-#define OS_TICK_STEP_EN           1u   /* Enable tick stepping feature for uC/OS-View                  */
+#define OS_TICK_STEP_EN           0u   /* Enable tick stepping feature for uC/OS-View                  */
 #define OS_TICKS_PER_SEC        100u   /* Set the number of ticks in one second                        */
 
 
                                        /* --------------------- TASK STACK SIZE ---------------------- */
-#define OS_TASK_TMR_STK_SIZE    512u   /* Timer      task stack size (# of OS_STK wide entries)        */
-#define OS_TASK_STAT_STK_SIZE   512u   /* Statistics task stack size (# of OS_STK wide entries)        */
-#define OS_TASK_IDLE_STK_SIZE   512u   /* Idle       task stack size (# of OS_STK wide entries)        */
+#define OS_TASK_TMR_STK_SIZE    128u   /* Timer      task stack size (# of OS_STK wide entries)        */
+#define OS_TASK_STAT_STK_SIZE   128u   /* Statistics task stack size (# of OS_STK wide entries)        */
+#define OS_TASK_IDLE_STK_SIZE   32u   /* Idle       task stack size (# of OS_STK wide entries)        */
 
 
                                        /* --------------------- TASK MANAGEMENT ---------------------- */
@@ -62,7 +62,7 @@
 #define OS_TASK_CREATE_EN         1u   /*     Include code for OSTaskCreate()                          */
 #define OS_TASK_CREATE_EXT_EN     1u   /*     Include code for OSTaskCreateExt()                       */
 #define OS_TASK_DEL_EN            1u   /*     Include code for OSTaskDel()                             */
-#define OS_TASK_NAME_EN           1u   /*     Enable task names                                        */
+#define OS_TASK_NAME_EN           0u   /*     Enable task names                                        */
 #define OS_TASK_PROFILE_EN        1u   /*     Include variables in OS_TCB for profiling                */
 #define OS_TASK_QUERY_EN          1u   /*     Include code for OSTaskQuery()                           */
 #define OS_TASK_REG_TBL_SIZE      1u   /*     Size of task variables array (#of INT32U entries)        */
@@ -73,7 +73,7 @@
 
 
                                        /* ----------------------- EVENT FLAGS ------------------------ */
-#define OS_FLAG_EN                1u   /* Enable (1) or Disable (0) code generation for EVENT FLAGS    */
+#define OS_FLAG_EN                0u   /* Enable (1) or Disable (0) code generation for EVENT FLAGS    */
 #define OS_FLAG_ACCEPT_EN         1u   /*     Include code for OSFlagAccept()                          */
 #define OS_FLAG_DEL_EN            1u   /*     Include code for OSFlagDel()                             */
 #define OS_FLAG_NAME_EN           1u   /*     Enable names for event flag group                        */
@@ -83,7 +83,7 @@
 
 
                                        /* -------------------- MESSAGE MAILBOXES --------------------- */
-#define OS_MBOX_EN                1u   /* Enable (1) or Disable (0) code generation for MAILBOXES      */
+#define OS_MBOX_EN                0u   /* Enable (1) or Disable (0) code generation for MAILBOXES      */
 #define OS_MBOX_ACCEPT_EN         1u   /*     Include code for OSMboxAccept()                          */
 #define OS_MBOX_DEL_EN            1u   /*     Include code for OSMboxDel()                             */
 #define OS_MBOX_PEND_ABORT_EN     1u   /*     Include code for OSMboxPendAbort()                       */
@@ -93,20 +93,20 @@
 
 
                                        /* --------------------- MEMORY MANAGEMENT -------------------- */
-#define OS_MEM_EN                 1u   /* Enable (1) or Disable (0) code generation for MEMORY MANAGER */
+#define OS_MEM_EN                 0u   /* Enable (1) or Disable (0) code generation for MEMORY MANAGER */
 #define OS_MEM_NAME_EN            1u   /*     Enable memory partition names                            */
 #define OS_MEM_QUERY_EN           1u   /*     Include code for OSMemQuery()                            */
 
 
                                        /* ---------------- MUTUAL EXCLUSION SEMAPHORES --------------- */
-#define OS_MUTEX_EN               1u   /* Enable (1) or Disable (0) code generation for MUTEX          */
+#define OS_MUTEX_EN               0u   /* Enable (1) or Disable (0) code generation for MUTEX          */
 #define OS_MUTEX_ACCEPT_EN        1u   /*     Include code for OSMutexAccept()                         */
 #define OS_MUTEX_DEL_EN           1u   /*     Include code for OSMutexDel()                            */
 #define OS_MUTEX_QUERY_EN         1u   /*     Include code for OSMutexQuery()                          */
 
 
                                        /* ---------------------- MESSAGE QUEUES ---------------------- */
-#define OS_Q_EN                   1u   /* Enable (1) or Disable (0) code generation for QUEUES         */
+#define OS_Q_EN                   0u   /* Enable (1) or Disable (0) code generation for QUEUES         */
 #define OS_Q_ACCEPT_EN            1u   /*     Include code for OSQAccept()                             */
 #define OS_Q_DEL_EN               1u   /*     Include code for OSQDel()                                */
 #define OS_Q_FLUSH_EN             1u   /*     Include code for OSQFlush()                              */
@@ -118,7 +118,7 @@
 
 
                                        /* ------------------------ SEMAPHORES ------------------------ */
-#define OS_SEM_EN                 1u   /* Enable (1) or Disable (0) code generation for SEMAPHORES     */
+#define OS_SEM_EN                 0u   /* Enable (1) or Disable (0) code generation for SEMAPHORES     */
 #define OS_SEM_ACCEPT_EN          1u   /*    Include code for OSSemAccept()                            */
 #define OS_SEM_DEL_EN             1u   /*    Include code for OSSemDel()                               */
 #define OS_SEM_PEND_ABORT_EN      1u   /*    Include code for OSSemPendAbort()                         */

@@ -5,6 +5,8 @@
 DP               .set B14
 SP               .set B15
 
+KERN_STACK       .set 0x95108000
+
 ; Ctx_* references platform/c66x/os_cpu.h : context_frame_t
 Ctx_RESV         .set 0
 Ctx_A0           .set 1
@@ -58,7 +60,6 @@ Ctx_TSR          .set 34
     .ref OSRunning
 
     .ref saved_context
-    .ref __TI_STACK_END
     .ref __TI_STATIC_BASE
 
     .def HandlerTaskTimer
@@ -235,8 +236,8 @@ OSCtxSw_1:    ; return here from OSTaskSwHook
 HandlerException:
     ContextSave NRP,NTSR
 
-    MVKL    __TI_STACK_END,SP
-    MVKH    __TI_STACK_END,SP
+    MVKL    KERN_STACK,SP
+    MVKH    KERN_STACK,SP
 
     MVKL    __TI_STATIC_BASE,DP
     MVKH    __TI_STATIC_BASE,DP
@@ -265,8 +266,8 @@ ExcRestore:
 HandlerTaskTimer:
     ContextSave IRP,ITSR
 
-    MVKL    __TI_STACK_END,SP
-    MVKH    __TI_STACK_END,SP
+    MVKL    KERN_STACK,SP
+    MVKH    KERN_STACK,SP
 
     MVKL    __TI_STATIC_BASE,DP
     MVKH    __TI_STATIC_BASE,DP
@@ -310,8 +311,8 @@ IntRestore:
 HandlerPartitionTimer:
     ContextSave IRP,ITSR
 
-    MVKL    __TI_STACK_END,SP
-    MVKH    __TI_STACK_END,SP
+    MVKL    KERN_STACK,SP
+    MVKH    KERN_STACK,SP
 
     MVKL    __TI_STATIC_BASE,DP
     MVKH    __TI_STATIC_BASE,DP

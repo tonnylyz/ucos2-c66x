@@ -54,6 +54,20 @@ SECTIONS
 
     .text:PART_0: load > PART_TEXT_0
     .data:PART_0: load > PART_DATA_0
+    .text:PART_1: load > PART_TEXT_1
+    .data:PART_1: load > PART_DATA_1
+    .text:PART_2: load > PART_TEXT_2
+    .data:PART_2: load > PART_DATA_2
+    .text:PART_3: load > PART_TEXT_3
+    .data:PART_3: load > PART_DATA_3
+    .text:PART_4: load > PART_TEXT_4
+    .data:PART_4: load > PART_DATA_4
+    .text:PART_5: load > PART_TEXT_5
+    .data:PART_5: load > PART_DATA_5
+    .text:PART_6: load > PART_TEXT_6
+    .data:PART_6: load > PART_DATA_6
+    .text:PART_7: load > PART_TEXT_7
+    .data:PART_7: load > PART_DATA_7
 }
 
 

@@ -25,6 +25,7 @@
 #define  OS_GLOBALS
 
 #include <uart.h>
+#include <partition.h>
 #include "ucos_ii.h"
 #endif
 
@@ -572,8 +573,10 @@ INT16U  OSEventPendMulti (OS_EVENT  **pevents_pend,
 *********************************************************************************************************
 */
 
+
 void  OSInit (void)
 {
+    panic("OSInit invoked");
     OSInitHookBegin();                                           /* Call port specific initialization code   */
 
     OS_InitMisc();                                               /* Initialize miscellaneous variables       */
@@ -691,7 +694,14 @@ void  OSIntExit (void)
                     /* Copy saved context */
                     OSTCBCur->context_frame = saved_context;
                     saved_context = OSTCBHighRdy->context_frame;
-
+                    printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
+                           current_partition->index,
+                           OSTCBCur->OSTCBId,
+                           OSTCBCur->OSTCBPrio,
+                           current_partition->index,
+                           OSTCBHighRdy->OSTCBId,
+                           OSTCBHighRdy->OSTCBPrio
+                            );
                     OSIntCtxSw();                          /* Perform interrupt level ctx switch       */
                 }
             }
@@ -943,6 +953,7 @@ void  OSTimeTick (void)
             return;
         }
 #endif
+
         ptcb = OSTCBList;                                  /* Point at first TCB in TCB list               */
         while (ptcb->OSTCBPrio != OS_TASK_IDLE_PRIO) {     /* Go through all TCBs in TCB list              */
             OS_ENTER_CRITICAL();
@@ -1660,7 +1671,14 @@ void  OS_Sched (void)
 
                 OSTCBCur->context_frame = saved_context;
                 saved_context = OSTCBHighRdy->context_frame;
-                //printf("Switch from %d to %d\n", OSPrioCur, OSPrioHighRdy);
+                printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
+                       current_partition->index,
+                       OSTCBCur->OSTCBId,
+                       OSTCBCur->OSTCBPrio,
+                       current_partition->index,
+                       OSTCBHighRdy->OSTCBId,
+                       OSTCBHighRdy->OSTCBPrio
+                );
                 OS_TASK_SW();                          /* Perform a context switch                     */
             }
         }
@@ -1770,11 +1788,9 @@ INT8U  OS_StrLen (INT8U *psrc)
 *********************************************************************************************************
 */
 
-#pragma CODE_SECTION(OS_TaskIdle, ".text:PART_S")
 void  OS_TaskIdle (void *p_arg) {
-    while (1) {
-        __asm ("\tNOP 5");
-    }
+    /* idle task has been embedded into partition */
+    panic("OS_TaskIdle invoked");
 }
 
 /*$PAGE*/

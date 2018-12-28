@@ -6,7 +6,7 @@
 typedef struct {
     u32 address;
     u32 size;
-} memory_layout_t;
+} memory_conf_t;
 
 typedef struct {
     void (*entry)(void *);
@@ -14,12 +14,13 @@ typedef struct {
     u32 stack_size;
     void *arg;
     u8 priority;
-} task_init_t;
+} task_conf_t;
 
 typedef struct {
-    memory_layout_t memory_layout;
+    memory_conf_t memory_conf;
     u8 task_num;
-    task_init_t *task_init;
-} part_init_t;
+    task_conf_t *task_conf_list;
+    u32 slice_ticks;
+} partition_conf_t;
 
 #endif //UCOS2_C66X_PART_CONF_H

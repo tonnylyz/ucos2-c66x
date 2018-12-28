@@ -56,11 +56,13 @@ void xmc_init() {
     /* these settings are based on linker.cmd */
 
     // default map: kernel only
-    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_2G, XMC_SEGMENT_PERM_KERN);
-    xmc_segment_map(1, 0x80000000, XMC_SEGMENT_SIZE_2G, XMC_SEGMENT_PERM_KERN);
+    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_2G, XMC_SEGMENT_PERM_USER);
+    xmc_segment_map(1, 0x80000000, XMC_SEGMENT_SIZE_2G, XMC_SEGMENT_PERM_USER);
 
     // partition share map
     xmc_segment_map(2, 0x95200000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_USER);
+    // TODO: make share segment read only
+
 
     xmc_indices[0] = XMC_INDEX_RESERVED;
     xmc_indices[1] = XMC_INDEX_RESERVED;
@@ -104,7 +106,7 @@ static u8 xmc_segment_find_free() {
     return i;
 }
 
-u8 xmc_segment_allocate(memory_layout_t *layout) {
+u8 xmc_segment_allocate(memory_conf_t *layout) {
     u8 index;
     index = xmc_segment_find_free();
     if (index == XMC_SEGMENT_NUM) {

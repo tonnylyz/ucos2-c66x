@@ -7,6 +7,7 @@
 #include <uart.h>
 #include <timer.h>
 #include <intc.h>
+#include <partition.h>
 
 context_frame_t saved_context __attribute__ ((aligned (1024)));
 
@@ -120,6 +121,8 @@ void OSPartitionTimerISR() {
     printf("OSPartitionTimerISR called\n");
     timer_irq_clear(GP_PART_TIMER_BASE);
     intc_event_clear(INTC_EVENT_PART_TIMER);
+
+    partition_schedule();
 }
 
 #if OS_CPU_HOOKS_EN

@@ -27,7 +27,6 @@ void dsp2_start_core() {    u32 boot_reg;
 
 }
 
-
 int main() {
 #if defined(DSP_CORE_1)
     printf("DSP_1 OS Build: %s %s\n", __DATE__, __TIME__);
@@ -45,20 +44,17 @@ int main() {
     intc_init();
     printf("intc_init done\n");
 
-    OSInit();
-    printf("OSInit done\n");
-
-
     partition_init();
-    printf("task create done\n");
+    printf("partition_init done\n");
 
-    xmc_segment_activate(partitions[0].xmc_id);
-    xmc_mem_map_dump();
+    extern partition_conf_t p0_conf;
+    extern partition_conf_t p1_conf;
+    partition_add(&p0_conf);
+    partition_add(&p1_conf);
 
-    timer_init();
-    printf("timer_init done\n");
+    printf("ready to partition_start\n");
+    partition_start();
 
-    OSStart();
     while (1) {
         __asm ("\tNOP");
     }

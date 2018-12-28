@@ -10,7 +10,7 @@ void xmc_init();
 
 void xmc_mem_map_dump();
 
-u8 xmc_segment_allocate(memory_layout_t *layout);
+u8 xmc_segment_allocate(memory_conf_t *layout);
 
 void xmc_segment_activate(u8 index);
 

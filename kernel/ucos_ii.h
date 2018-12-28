@@ -41,7 +41,6 @@ extern "C" {
 *********************************************************************************************************
 */
 
-#include <part_0.h>
 #include <os_cfg.h>
 #include <os_cpu.h>
 
@@ -645,8 +644,9 @@ typedef  struct  os_tmr_wheel {
 *                                          GLOBAL VARIABLES
 *********************************************************************************************************
 */
+#define PART_CTX // macro to identify partition context
 
-OS_EXT  INT32U            OSCtxSwCtr;               /* Counter of number of context switches           */
+OS_EXT PART_CTX INT32U            OSCtxSwCtr;               /* Counter of number of context switches           */
 
 #if (OS_EVENT_EN) && (OS_MAX_EVENTS > 0u)
 OS_EXT  OS_EVENT         *OSEventFreeList;          /* Pointer to list of free EVENT control blocks    */
@@ -666,35 +666,36 @@ OS_EXT  BOOLEAN           OSStatRdy;                /* Flag indicating that the 
 OS_EXT  OS_STK            OSTaskStatStk[OS_TASK_STAT_STK_SIZE];      /* Statistics task stack          */
 #endif
 
-OS_EXT  INT8U             OSIntNesting;             /* Interrupt nesting level                         */
 
-OS_EXT  INT8U             OSLockNesting;            /* Multitasking lock nesting level                 */
+OS_EXT PART_CTX INT8U             OSIntNesting;             /* Interrupt nesting level                         */
 
-OS_EXT  INT8U             OSPrioCur;                /* Priority of current task                        */
-OS_EXT  INT8U             OSPrioHighRdy;            /* Priority of highest priority task               */
+OS_EXT PART_CTX INT8U             OSLockNesting;            /* Multitasking lock nesting level                 */
 
-OS_EXT  OS_PRIO           OSRdyGrp;                        /* Ready list group                         */
-OS_EXT  OS_PRIO           OSRdyTbl[OS_RDY_TBL_SIZE];       /* Table of tasks which are ready to run    */
+OS_EXT PART_CTX INT8U             OSPrioCur;                /* Priority of current task                        */
+OS_EXT PART_CTX INT8U             OSPrioHighRdy;            /* Priority of highest priority task               */
 
-OS_EXT  BOOLEAN           OSRunning;                       /* Flag indicating that kernel is running   */
+OS_EXT PART_CTX OS_PRIO           OSRdyGrp;                        /* Ready list group                         */
+OS_EXT PART_CTX OS_PRIO           *OSRdyTbl/*[OS_RDY_TBL_SIZE]*/;       /* Table of tasks which are ready to run    */
 
-OS_EXT  INT8U             OSTaskCtr;                       /* Number of tasks created                  */
+OS_EXT PART_CTX BOOLEAN           OSRunning;                       /* Flag indicating that kernel is running   */
 
-OS_EXT  volatile  INT32U  OSIdleCtr;                                 /* Idle counter                   */
+OS_EXT PART_CTX INT8U             OSTaskCtr;                       /* Number of tasks created                  */
+
+OS_EXT PART_CTX volatile  INT32U  OSIdleCtr;                                 /* Idle counter                   */
 
 #ifdef OS_SAFETY_CRITICAL_IEC61508
 OS_EXT  BOOLEAN           OSSafetyCriticalStartFlag;
 #endif
 
-OS_EXT  OS_STK            OSTaskIdleStk[OS_TASK_IDLE_STK_SIZE];      /* Idle task stack                */
+OS_EXT PART_CTX OS_STK            *OSTaskIdleStk/*[OS_TASK_IDLE_STK_SIZE]*/;      /* Idle task stack                */
 
 
-OS_EXT  OS_TCB           *OSTCBCur;                        /* Pointer to currently running TCB         */
-OS_EXT  OS_TCB           *OSTCBFreeList;                   /* Pointer to list of free TCBs             */
-OS_EXT  OS_TCB           *OSTCBHighRdy;                    /* Pointer to highest priority TCB R-to-R   */
-OS_EXT  OS_TCB           *OSTCBList;                       /* Pointer to doubly linked list of TCBs    */
-OS_EXT  OS_TCB           *OSTCBPrioTbl[OS_LOWEST_PRIO + 1u];    /* Table of pointers to created TCBs   */
-OS_EXT  OS_TCB            OSTCBTbl[OS_MAX_TASKS + OS_N_SYS_TASKS];   /* Table of TCBs                  */
+OS_EXT PART_CTX OS_TCB           *OSTCBCur;                        /* Pointer to currently running TCB         */
+OS_EXT PART_CTX OS_TCB           *OSTCBFreeList;                   /* Pointer to list of free TCBs             */
+OS_EXT PART_CTX OS_TCB           *OSTCBHighRdy;                    /* Pointer to highest priority TCB R-to-R   */
+OS_EXT PART_CTX OS_TCB           *OSTCBList;                       /* Pointer to doubly linked list of TCBs    */
+OS_EXT PART_CTX OS_TCB           **OSTCBPrioTbl/*[OS_LOWEST_PRIO + 1u]*/;    /* Table of pointers to created TCBs   */
+OS_EXT PART_CTX OS_TCB            *OSTCBTbl/*[OS_MAX_TASKS + OS_N_SYS_TASKS]*/;   /* Table of TCBs                  */
 
 #if OS_TICK_STEP_EN > 0u
 OS_EXT  INT8U             OSTickStepState;          /* Indicates the state of the tick step feature    */
@@ -711,7 +712,7 @@ OS_EXT  OS_Q              OSQTbl[OS_MAX_QS];        /* Table of QUEUE control bl
 #endif
 
 #if OS_TIME_GET_SET_EN > 0u
-OS_EXT  volatile  INT32U  OSTime;                   /* Current value of system time (in ticks)         */
+OS_EXT PART_CTX volatile  INT32U  OSTime;                   /* Current value of system time (in ticks)         */
 #endif
 
 #if OS_TMR_EN > 0u
