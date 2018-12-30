@@ -11,6 +11,8 @@
 #define DSP2_BOOTADDR                (0x4A002560)
 #define DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK	(0x3FFFFF << 0)
 
+
+
 void dsp2_start_core() {    u32 boot_reg;
 
     boot_reg = mmio_read(DSP2_BOOTADDR);

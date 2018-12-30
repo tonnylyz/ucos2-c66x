@@ -40,7 +40,7 @@ void partition_add(partition_conf_t *conf) {
     }
 
     partition_context_save(context);
-    //pcb_list[part_num].xmc_id = xmc_segment_allocate(&conf->memory_conf);
+    pcb_list[part_num].xmc_id = xmc_segment_allocate(&conf->memory_conf);
     part_num++;
 }
 
@@ -187,7 +187,8 @@ void partition_schedule() {
 void partition_switch() {
     printf("partition_switch: switching to part %d\n", current_partition->index);
     partition_context_load(&(current_partition->partition_context));
-    //xmc_segment_activate(current_partition->xmc_id);
+    xmc_segment_activate(current_partition->xmc_id);
+    //xmc_mem_map_dump();
     if (current_partition->partition_context.OSRunning) {
         saved_context = OSTCBCur->context_frame;
         if (OSTCBCur != OSTCBHighRdy || OSPrioCur != OSPrioHighRdy) {
@@ -220,7 +221,8 @@ void partition_start() {
     current_partition->slice_ticks_left = current_partition->slice_ticks - 1;
     partition_context_load(&(current_partition->partition_context));
     printf("%s: ucos_context_load done\n", __FUNCTION__);
-    //xmc_segment_activate(current_partition->xmc_id);
+    xmc_segment_activate(current_partition->xmc_id);
+    //xmc_mem_map_dump();
 
     timer_init();
     printf("%s: timer_init done\n", __FUNCTION__);

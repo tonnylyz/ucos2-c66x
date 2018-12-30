@@ -6,6 +6,10 @@
 #include <partition_conf.h>
 #include <types.h>
 
+#define XMC_XMPFAR (0x08000200)
+#define XMC_XMPFSR (0x08000204)
+#define XMC_XMPFCR (0x08000208)
+
 void xmc_init();
 
 void xmc_mem_map_dump();

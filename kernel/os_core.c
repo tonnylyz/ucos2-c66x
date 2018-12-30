@@ -694,6 +694,7 @@ void  OSIntExit (void)
                     /* Copy saved context */
                     OSTCBCur->context_frame = saved_context;
                     saved_context = OSTCBHighRdy->context_frame;
+#ifdef DEBUG_CTX_SWITCH
                     printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
                            current_partition->index,
                            OSTCBCur->OSTCBId,
@@ -702,6 +703,7 @@ void  OSIntExit (void)
                            OSTCBHighRdy->OSTCBId,
                            OSTCBHighRdy->OSTCBPrio
                             );
+#endif
                     OSIntCtxSw();                          /* Perform interrupt level ctx switch       */
                 }
             }
@@ -1671,6 +1673,7 @@ void  OS_Sched (void)
 
                 OSTCBCur->context_frame = saved_context;
                 saved_context = OSTCBHighRdy->context_frame;
+#ifdef DEBUG_CTX_SWITCH
                 printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
                        current_partition->index,
                        OSTCBCur->OSTCBId,
@@ -1679,6 +1682,7 @@ void  OS_Sched (void)
                        OSTCBHighRdy->OSTCBId,
                        OSTCBHighRdy->OSTCBPrio
                 );
+#endif
                 OS_TASK_SW();                          /* Perform a context switch                     */
             }
         }
@@ -1990,7 +1994,6 @@ INT8U  OS_TCBInit (INT8U    prio,
         /* Load Context Frame */
         if (pext != 0) {
             ptcb->context_frame = *((context_frame_t *)pext);
-            printf("%s : ptcb->ctx.elr %08x]\n", __FUNCTION__, ptcb->context_frame.ELR);
         }
 
 

@@ -53,6 +53,7 @@ Ctx_TSR          .set 34
     .global OSTaskTimerISR
     .global OSPartitionTimerISR
     .global OSExceptionISR
+    .global OSXMCExceptionISR
     .ref OSTCBHighRdy
     .ref OSTCBCur
     .ref OSPrioCur
@@ -65,6 +66,7 @@ Ctx_TSR          .set 34
     .def HandlerTaskTimer
     .def HandlerException
     .def HandlerPartitionTimer
+    .def HandlerXMCException
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           Macro                              ;;;
@@ -318,6 +320,24 @@ HandlerPartitionTimer:
     MVKH    __TI_STATIC_BASE,DP
 
     CALL	OSPartitionTimerISR
+    NOP		3
+    MVKL	IntRestore,B3
+    MVKH	IntRestore,B3
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                     XMC Exception Handler                    ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    .global HandlerXMCException
+HandlerXMCException:
+    ContextSave IRP,ITSR
+
+    MVKL    KERN_STACK,SP
+    MVKH    KERN_STACK,SP
+
+    MVKL    __TI_STATIC_BASE,DP
+    MVKH    __TI_STATIC_BASE,DP
+
+    CALL	OSXMCExceptionISR
     NOP		3
     MVKL	IntRestore,B3
     MVKH	IntRestore,B3

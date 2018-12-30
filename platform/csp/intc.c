@@ -81,4 +81,7 @@ void intc_init() {
 
     intc_event_map(INTC_EVENT_PART_TIMER, 5);
     intc_event_enable(INTC_EVENT_PART_TIMER);
+
+    intc_event_map(INTC_EVENT_XMC, 6);
+    intc_event_enable(INTC_EVENT_XMC);
 }

@@ -16,7 +16,13 @@ char p1t1_arg[] = "p1t1";
 char p1t2_arg[] = "p1t2";
 char p1t3_arg[] = "p1t3";
 
+void make_xmc_error() {
+    extern u8 p0t1_stack[];
+    p0t1_stack[1] = 0;
+}
+
 void p1t0_entry(void *arg) {
+    make_xmc_error();
     char *task_name = (char *) arg;
     while (1) {
         task_puts("Name: ");
@@ -72,5 +78,5 @@ partition_conf_t p1_conf = {
         },
         .task_num = 4,
         .task_conf_list = p1_tasks,
-        .slice_ticks = 10 // 5 partition timer intervals
+        .slice_ticks = 10 // 10 partition timer intervals
 };

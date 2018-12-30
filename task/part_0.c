@@ -1,5 +1,6 @@
 #include "part_0.h"
 #include "syscall.h"
+#include "part_1.h"
 #include <partition_conf.h>
 #include <printf.h>
 #include <ucos_ii.h>
@@ -20,6 +21,7 @@ char p0t4_arg[] = "p0t4";
 
 void p0t0_entry(void *arg) {
     char *task_name = (char *) arg;
+    //main_dummy = 123;
     while (1) {
         task_puts("Name: ");
         task_puts(task_name);
