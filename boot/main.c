@@ -1,19 +1,15 @@
-#include <ucos_ii.h>
-#include <intc.h>
-#include <timer.h>
-#include "resource_table.h"
 #include <mmio.h>
+#include <printf.h>
 #include <xmc.h>
+#include <intc.h>
 #include <partition.h>
-
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
 #define DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK	(0x3FFFFF << 0)
 
-
-
-void dsp2_start_core() {    u32 boot_reg;
+void dsp2_start_core() {
+    u32 boot_reg;
 
     boot_reg = mmio_read(DSP2_BOOTADDR);
     boot_reg = (boot_reg & (~DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK));

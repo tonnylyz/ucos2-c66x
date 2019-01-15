@@ -7,7 +7,7 @@ SP               .set B15
 
 KERN_STACK       .set 0x95108000
 
-; Ctx_* references platform/c66x/os_cpu.h : context_frame_t
+; Ctx_* references platform/c66x/os_cpu.h : task_context_t
 Ctx_RESV         .set 0
 Ctx_A0           .set 1
 Ctx_A1           .set 2
@@ -60,7 +60,7 @@ Ctx_TSR          .set 34
     .ref OSPrioHighRdy
     .ref OSRunning
 
-    .ref saved_context
+    .ref task_context_saved
     .ref __TI_STATIC_BASE
 
     .def HandlerTaskTimer
@@ -75,8 +75,8 @@ Ctx_TSR          .set 34
 ContextSave .macro ELR,XTSR
     MVC     SP,REP
 
-    MVKL    saved_context,SP
-    MVKH    saved_context,SP
+    MVKL    task_context_saved,SP
+    MVKH    task_context_saved,SP
 
     STW     B0,*+SP[Ctx_B0]
     STW     B1,*+SP[Ctx_B1]
@@ -122,8 +122,8 @@ ContextSave .macro ELR,XTSR
     .endm
 
 ContextRestore .macro ELR,XTSR
-    MVKL    saved_context,SP
-    MVKH    saved_context,SP
+    MVKL    task_context_saved,SP
+    MVKH    task_context_saved,SP
 
     LDW     *+SP[Ctx_ELR],B0
     LDW     *+SP[Ctx_TSR],B1

@@ -1,0 +1,4 @@
+#ifndef UCOS2_C66X_ISR_H
+#define UCOS2_C66X_ISR_H
+
+#endif //UCOS2_C66X_ISR_H

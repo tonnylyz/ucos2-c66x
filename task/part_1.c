@@ -1,7 +1,9 @@
 #include "part_1.h"
-#include "syscall.h"
+
+#include <syscall.h>
+#include <types.h>
+#include <os_cfg.h>
 #include <partition_conf.h>
-#include <printf.h>
 #include <ucos_ii.h>
 
 #pragma SET_CODE_SECTION(".text:PART_1")

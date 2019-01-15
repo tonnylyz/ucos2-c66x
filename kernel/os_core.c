@@ -24,8 +24,6 @@
 #ifndef  OS_MASTER_FILE
 #define  OS_GLOBALS
 
-#include <uart.h>
-#include <partition.h>
 #include "ucos_ii.h"
 #endif
 
@@ -573,10 +571,9 @@ INT16U  OSEventPendMulti (OS_EVENT  **pevents_pend,
 *********************************************************************************************************
 */
 
-
+/* DO NOT INVOKE OSInit, use partition_context_init(ctx) instead */
 void  OSInit (void)
 {
-    panic("OSInit invoked");
     OSInitHookBegin();                                           /* Call port specific initialization code   */
 
     OS_InitMisc();                                               /* Initialize miscellaneous variables       */
@@ -692,8 +689,8 @@ void  OSIntExit (void)
                     OSCtxSwCtr++;                          /* Keep track of the number of ctx switches */
 
                     /* Copy saved context */
-                    OSTCBCur->context_frame = saved_context;
-                    saved_context = OSTCBHighRdy->context_frame;
+                    OSTCBCur->context_frame = task_context_saved;
+                    task_context_saved = OSTCBHighRdy->context_frame;
 #ifdef DEBUG_CTX_SWITCH
                     printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
                            current_partition->index,
@@ -850,7 +847,7 @@ void  OSStart (void)
         OSTCBHighRdy  = OSTCBPrioTbl[OSPrioHighRdy]; /* Point to highest priority task ready to run    */
         OSTCBCur      = OSTCBHighRdy;
         /* Copy context frame from TCB*/
-        saved_context = OSTCBCur->context_frame;
+        task_context_saved = OSTCBCur->context_frame;
         OSStartHighRdy();                            /* Execute target specific code to start task     */
     }
 }
@@ -1671,8 +1668,8 @@ void  OS_Sched (void)
 #endif
                 OSCtxSwCtr++;                          /* Increment context switch counter             */
 
-                OSTCBCur->context_frame = saved_context;
-                saved_context = OSTCBHighRdy->context_frame;
+                OSTCBCur->context_frame = task_context_saved;
+                task_context_saved = OSTCBHighRdy->context_frame;
 #ifdef DEBUG_CTX_SWITCH
                 printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
                        current_partition->index,
@@ -1794,7 +1791,6 @@ INT8U  OS_StrLen (INT8U *psrc)
 
 void  OS_TaskIdle (void *p_arg) {
     /* idle task has been embedded into partition */
-    panic("OS_TaskIdle invoked");
 }
 
 /*$PAGE*/
@@ -1993,7 +1989,7 @@ INT8U  OS_TCBInit (INT8U    prio,
 
         /* Load Context Frame */
         if (pext != 0) {
-            ptcb->context_frame = *((context_frame_t *)pext);
+            ptcb->context_frame = *((task_context_t *)pext);
         }
 
 

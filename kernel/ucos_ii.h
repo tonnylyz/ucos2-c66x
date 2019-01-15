@@ -595,7 +595,7 @@ typedef struct os_tcb {
 #endif
 
     /* Context Saved in TCB*/
-    context_frame_t context_frame;
+    task_context_t context_frame;
 
 } OS_TCB;
 

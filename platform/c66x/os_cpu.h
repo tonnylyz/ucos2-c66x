@@ -7,8 +7,6 @@
 #define OS_CPU_EXT extern
 #endif
 
-#include <printf.h>
-
 /*
  *********************************************************************************************************
  *                                              DATA TYPES
@@ -35,8 +33,6 @@ typedef unsigned int   OS_STK;
 
 #define  OS_TASK_SW()  OSCtxSw()
 
-#define panic(_) do { printf(_); while (1) { __asm ("\tNOP"); }  } while(0)
-
 /* Prototypes for functions in os_cpu_s.asm */
 extern void OSIntCtxSw();
 extern void OSStartHighRdy();
@@ -51,8 +47,8 @@ typedef struct
 
     INT32U ELR;       // Interrupt / Exception Return Ptr
     INT32U TSR;       // Task State Pointer
-} context_frame_t;
+} task_context_t;
 
-extern context_frame_t saved_context;
+extern task_context_t task_context_saved;
 
 #endif

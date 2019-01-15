@@ -3,21 +3,15 @@
 #include <ucos_ii.h>
 #include <os_cpu.h>
 #include <types.h>
-#include <printf.h>
-#include <uart.h>
-#include <timer.h>
-#include <intc.h>
-#include <partition.h>
-#include <xmc.h>
 
-context_frame_t saved_context __attribute__ ((aligned (1024)));
+task_context_t task_context_saved __attribute__ ((aligned (1024)));
 
 extern u32 __TI_STATIC_BASE;
 
 OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U opt)
 {
-    context_frame_t *frame;
-    frame = (context_frame_t *)opt;
+    task_context_t *frame;
+    frame = (task_context_t *)opt;
 
     frame->A0 = 0x0A00;
     frame->A1 = 0x0A01;
@@ -62,75 +56,6 @@ OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U 
                * */
 
     return (OS_STK *) ((INT32U)ptos & ~7);
-}
-
-void OSTaskTimerISR() {
-    timer_irq_clear(GP_TASK_TIMER_BASE);
-    intc_event_clear(INTC_EVENT_TASK_TIMER);
-
-    OSIntEnter();
-    OSTimeTick();
-    OSIntExit();
-}
-
-//extern cregister volatile unsigned int NRP;
-
-void OSExceptionISR(u32 efr, u32 ierr) {
-    if (efr & (1u << 1)) { /* IXF Internal Exception */
-        printf("IXF: ierr [%02x]\n", ierr);
-        printf("IXF: elr  [%08x]\n", saved_context.ELR);
-        panic("IXF occurred.\n");
-    } else if (efr & (1u << 30)) { /* EXF Exception */
-        panic("EXF occurred.\n");
-    } else if (efr & (1u << 31)) { /* NXF NMI Exception */
-        panic("NXF occurred.\n");
-    } else if (efr & (1u << 0)) { /* SXF aka System Call */
-        u32 no, arg[8];
-        arg[0] = saved_context.A4;
-        arg[1] = saved_context.B4;
-        arg[2] = saved_context.A6;
-        arg[3] = saved_context.B6;
-        arg[4] = saved_context.A8;
-        arg[5] = saved_context.B8;
-        arg[6] = saved_context.A10;
-        arg[7] = saved_context.B10;
-        no = saved_context.A12;
-        if (no == 0) {
-            uart_putc((char) arg[0]);
-        } else if (no == 1) {
-            uart_puts((char *)arg[0]);
-        } else if (no == 2) {
-            OSTimeDly(arg[0]);
-        } else {
-            printf("Unknown System Call %d\n", no);
-            panic("\n");
-        }
-        return;
-    }
-    if (saved_context.TSR & (1u << 16)) {
-        printf("ELR [%08x]\n", saved_context.ELR);
-        printf("TSR [%08x]\n", saved_context.TSR);
-        printf("SP [%08x]\n", saved_context.B15);
-        printf("DP [%08x]\n", saved_context.B14);
-        panic("Hardware Exception (HWE) Occurred. Unable to resume!\n");
-    }
-    panic("Unrecognized Exception\n");
-}
-
-
-void OSPartitionTimerISR() {
-    timer_irq_clear(GP_PART_TIMER_BASE);
-    intc_event_clear(INTC_EVENT_PART_TIMER);
-
-    partition_schedule();
-}
-
-void OSXMCExceptionISR() {
-    printf("current part: %d\n", current_partition->index);
-    printf("current task: %d (pri %d)\n", OSTCBCur->OSTCBId, OSTCBCur->OSTCBPrio);
-    printf("xmc fault address: [%08x]\n", (u32 volatile *)XMC_XMPFAR);
-    printf("xmc fault status:  [%08x]\n", (u32 volatile *)XMC_XMPFSR);
-    panic("OSXMCExceptionISR called");
 }
 
 #if OS_CPU_HOOKS_EN

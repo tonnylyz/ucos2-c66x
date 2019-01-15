@@ -8,7 +8,7 @@
 #define PARTITION_MAX_NUM 8
 #define PARTITION_MAX_TASK_NUM (OS_MAX_TASKS + 1)
 
-typedef struct {
+typedef struct _partition_context_t {
     u32 OSCtxSwCtr;
     u8 OSIntNesting;
     u8 OSLockNesting;
@@ -49,7 +49,7 @@ typedef struct {
 
 extern pcb_t pcb_list[];
 
-extern pcb_t *current_partition;
+extern pcb_t *partition_current;
 
 void partition_init();
 

@@ -1,10 +1,12 @@
 #include "partition.h"
+
+#include <printf.h>
 #include <ucos_ii.h>
 #include <xmc.h>
 #include <timer.h>
 #include <intc.h>
 
-pcb_t *current_partition;
+pcb_t *partition_current;
 
 pcb_t pcb_list[PARTITION_MAX_NUM];
 
@@ -46,7 +48,7 @@ void partition_add(partition_conf_t *conf) {
 
 void partition_init() {
     part_num = 0;
-    current_partition = NULL;
+    partition_current = NULL;
     OS_MemClr((INT8U *) pcb_list, sizeof(pcb_list));
 }
 
@@ -150,47 +152,47 @@ void partition_context_load(partition_context_t *context) {
 
 
 static pcb_t *_partition_next() {
-    u32 idx = current_partition->index;
+    u32 idx = partition_current->index;
     return pcb_list + ((idx + 1) % part_num);
 }
 
 void partition_schedule() {
-    if (current_partition == NULL) {
+    if (partition_current == NULL) {
         panic("partition_schedule: current_partition == NULL");
     }
-    if (current_partition->slice_ticks_left == 0) {
-        printf("%s: part %d slice reduced to zero\n", __FUNCTION__, current_partition->index);
+    if (partition_current->slice_ticks_left == 0) {
+        printf("%s: part %d slice reduced to zero\n", __FUNCTION__, partition_current->index);
         /* Need to switch to next partition */
         pcb_t *partition_next = _partition_next();
-        if (partition_next == current_partition) {
-            printf("%s: next part is current one\n");
+        if (partition_next == partition_current) {
+            printf("%s: next part is current one\n", __FUNCTION__);
             /* Refill slice */
-            current_partition->slice_ticks_left = current_partition->slice_ticks - 1;
+            partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
             /* Next partition is current, continue */
             return;
         }
         printf("%s: next part is %d\n", __FUNCTION__, partition_next->index);
-        OSTCBCur->context_frame = saved_context;
-        partition_context_save(&(current_partition->partition_context));
-        current_partition = partition_next;
-        current_partition->slice_ticks_left = current_partition->slice_ticks - 1;
+        OSTCBCur->context_frame = task_context_saved;
+        partition_context_save(&(partition_current->partition_context));
+        partition_current = partition_next;
+        partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
         partition_switch();
         return;
     } else {
-        printf("%s: part %d slice from %d -> %d\n", __FUNCTION__, current_partition->index,
-                current_partition->slice_ticks_left, current_partition->slice_ticks_left - 1);
-        current_partition->slice_ticks_left--;
+        printf("%s: part %d slice from %d -> %d\n", __FUNCTION__, partition_current->index,
+                partition_current->slice_ticks_left, partition_current->slice_ticks_left - 1);
+        partition_current->slice_ticks_left--;
         return;
     }
 }
 
 void partition_switch() {
-    printf("partition_switch: switching to part %d\n", current_partition->index);
-    partition_context_load(&(current_partition->partition_context));
-    xmc_segment_activate(current_partition->xmc_id);
+    printf("partition_switch: switching to part %d\n", partition_current->index);
+    partition_context_load(&(partition_current->partition_context));
+    xmc_segment_activate(partition_current->xmc_id);
     //xmc_mem_map_dump();
-    if (current_partition->partition_context.OSRunning) {
-        saved_context = OSTCBCur->context_frame;
+    if (partition_current->partition_context.OSRunning) {
+        task_context_saved = OSTCBCur->context_frame;
         if (OSTCBCur != OSTCBHighRdy || OSPrioCur != OSPrioHighRdy) {
             panic("partition_switch: corrupted OSTCBCur");
         }
@@ -209,19 +211,19 @@ void partition_switch() {
         OSTCBHighRdy = OSTCBPrioTbl[OSPrioHighRdy];
         OSTCBCur = OSTCBHighRdy;
         OSRunning = OS_TRUE;
-        saved_context = OSTCBCur->context_frame;
+        task_context_saved = OSTCBCur->context_frame;
         printf("%s: OS_SchedNew yield high ready t%d (pri%d)\n", __FUNCTION__, OSTCBHighRdy->OSTCBId, OSPrioHighRdy);
         OSIntCtxSw();
     }
 }
 
 void partition_start() {
-    current_partition = &(pcb_list[0]);
-    printf("%s: starting part %d\n", __FUNCTION__, current_partition->index);
-    current_partition->slice_ticks_left = current_partition->slice_ticks - 1;
-    partition_context_load(&(current_partition->partition_context));
+    partition_current = &(pcb_list[0]);
+    printf("%s: starting part %d\n", __FUNCTION__, partition_current->index);
+    partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
+    partition_context_load(&(partition_current->partition_context));
     printf("%s: ucos_context_load done\n", __FUNCTION__);
-    xmc_segment_activate(current_partition->xmc_id);
+    xmc_segment_activate(partition_current->xmc_id);
     //xmc_mem_map_dump();
 
     timer_init();

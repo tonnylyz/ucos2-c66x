@@ -12,6 +12,7 @@
 #include <types.h>
 #include <stdarg.h>
 
+/*
 u32 vsprintf(char *str, const char *fmt, va_list args);
 
 u32 vsnprintf(char *str, u32 count, const char *fmt, va_list args);
@@ -21,7 +22,10 @@ int vasprintf(char **ptr, const char *format, va_list ap);
 u32 sprintf(char *str, const char *fmt, ...);
 
 u32 snprintf(char *str, u32 size, const char *format, ...);
+*/
 
 int printf(const char *fmt, ...);
+
+#define panic(_) do { printf(_); while (1) { __asm ("\tNOP"); }  } while(0)
 
 #endif /* snprintf_h */

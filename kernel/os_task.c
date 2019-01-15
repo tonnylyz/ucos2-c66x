@@ -25,6 +25,8 @@
 #include "ucos_ii.h"
 #endif
 
+#include <printf.h>
+
 /*$PAGE*/
 /*
 *********************************************************************************************************
@@ -241,7 +243,7 @@ INT8U  OSTaskCreate (void   (*task)(void *p_arg),
                                              /* ... the same thing until task is created.              */
         OS_EXIT_CRITICAL();
 
-        context_frame_t context_frame;
+        task_context_t context_frame;
         /* Pass context frame to OSTaskStkInit */
         psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame);
         err = OS_TCBInit(prio, psp, (OS_STK *)0, 0u, 0u, (void *)&context_frame, 0u);
@@ -385,7 +387,7 @@ INT8U  OSTaskCreateExt (void   (*task)(void *p_arg),
             printf("%s para pext [%08x] ignored\n", __FUNCTION__, pext);
         }
 
-        context_frame_t context_frame;
+        task_context_t context_frame;
         /* Pass context frame to OSTaskStkInit */
         psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame);           /* Initialize the task's stack          */
         err = OS_TCBInit(prio, psp, pbos, id, stk_size, (void *)&context_frame, opt);
