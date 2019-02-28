@@ -9,11 +9,7 @@
 #define UART_BASE_3 (0x48020000U)
 #define UART_BASE_8 (0x48422000U)
 
-#if defined(DSP_CORE_1)
 #define UART_BASE UART_BASE_3
-#elif defined(DSP_CORE_2)
-#define UART_BASE UART_BASE_3
-#endif
 
 static void _uart_putc(u32 base, char c) {
     while ((mmio_readb(UC_UART_LSR(base)) & 0x20) == 0);

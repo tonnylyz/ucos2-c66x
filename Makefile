@@ -42,7 +42,6 @@ INCLUDE_PATH := --include_path="$(CURDIR)" \
 LIBRARY_PATH := -i $(CG_TOOL_ROOT)/lib
 
 CL6X_FLAGS := -mv6600 --opt_level=0 --define=SOC_AM572x --define=am5728 --diag_warning=225 --diag_wrap=off --display_error_number --call_assumptions=0
-CL6X_FLAGS += --define=DSP_CORE_1
 
 TARGET_NAME := dra7-dsp1-fw.xe66
 
@@ -59,7 +58,7 @@ TARGET_NAME := dra7-dsp1-fw.xe66
 all: $(TARGET_NAME)
 
 $(TARGET_NAME): $(OBJS)
-	@$(CG_TOOL_ROOT)/bin/cl6x $(LIBRARY_PATH) $(CL6X_FLAGS) -z -m "linker.map" --reread_libs --warn_sections --rom_model -o $(TARGET_NAME) $(OBJS) $(LINKER_CMD)
+	@$(CG_TOOL_ROOT)/bin/cl6x $(LIBRARY_PATH) $(CL6X_FLAGS) -z -m "linker.map" --reread_libs --warn_sections --ram_model -o $(TARGET_NAME) $(OBJS) $(LINKER_CMD)
 
 clean:
 	-rm -rf $(TARGET_NAME)

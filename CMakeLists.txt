@@ -1,8 +1,6 @@
 project(ucos2-c66x)
 cmake_minimum_required(VERSION 3.10)
 
-set(CMAKE_C_FLAGS "-D DSP_CORE_1")
-
 include_directories(
         boot
         kernel
@@ -16,7 +14,6 @@ add_executable(
         kern
 
         boot/main.c
-        boot/resource_table.h
 
         kernel/os_core.c
         kernel/os_dbg.c

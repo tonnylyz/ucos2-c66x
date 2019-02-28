@@ -8,17 +8,16 @@
 #include "xmc.h"
 #include "mmio.h"
 
-#define XMC_MPAXL0 (0x08000000)
-#define XMC_MPAXH0 (0x08000004)
-#define XMC_MPAXL1 (0x08000008)
-#define XMC_MPAXH1 (0x0800000c)
 
 #define XMC_XPFCMD (0x08000300)
 
 
+#define XMC_SEGMENT_SIZE_256K   0b10001
 #define XMC_SEGMENT_SIZE_512K   0b10010
 #define XMC_SEGMENT_SIZE_1M     0b10011
+#define XMC_SEGMENT_SIZE_16M    0b10111
 #define XMC_SEGMENT_SIZE_2G     0b11110
+#define XMC_SEGMENT_SIZE_4G     0b11111
 
 /*                                               K  U
  *                                              RWXRWX*/
@@ -32,12 +31,14 @@
 #define XMC_INDEX_FREE      0
 #define XMC_INDEX_PART      2
 
+#pragma SET_DATA_SECTION(".data:KERN_SHARE")
+
 static int xmc_indices[XMC_SEGMENT_NUM];
 
 static u32 xmc_values_l[XMC_SEGMENT_NUM];
 static u32 xmc_values_h[XMC_SEGMENT_NUM];
 
-static void xmc_invalidate_buffer() {
+void xmc_invalidate_buffer() {
     *(u32 volatile *)XMC_XPFCMD = 0b1001;
     barrier();
 }
@@ -52,7 +53,7 @@ void xmc_mem_map_dump() {
     }
 }
 
-static void xmc_segment_write(u8 index, u32 lval, u32 hval) {
+static inline void xmc_segment_write(u8 index, u32 lval, u32 hval) {
     u32 volatile *l;
     u32 volatile *h;
     l = (u32 volatile *) (XMC_MPAXL0 + index * 8);
@@ -61,33 +62,32 @@ static void xmc_segment_write(u8 index, u32 lval, u32 hval) {
     *h = hval;
 }
 
-static void xmc_segment_map(u8 index, u32 start_addr, u32 segment_size, u32 perm) {
+static inline void xmc_segment_map(u8 index, u32 start_addr, u32 segment_size, u32 perm) {
     xmc_segment_write(index, ((start_addr >> 4) & ~0xff) | perm, (start_addr & ~0xfff) | segment_size);
 }
 
+static inline void xmc_segment_remap(u8 index, u32 baddr, u32 raddr, u32 segment_size, u32 perm) {
+    xmc_segment_write(index, ((raddr >> 4) & ~0xff) | perm, (baddr & ~0xfff) | segment_size);
+}
 
 void xmc_init() {
     u32 i;
     /* these settings are based on linker.cmd */
 
     // default map: kernel only
-
-    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_2G, XMC_SEGMENT_PERM_KERN_RWX_USER____);
-    xmc_segment_map(1, 0x80000000, XMC_SEGMENT_SIZE_2G, XMC_SEGMENT_PERM_KERN_RWX_USER____);
-
-    xmc_segment_map(2, 0x95000000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER____);
-    xmc_segment_map(3, 0x95100000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER____);
-
+    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_4G, XMC_SEGMENT_PERM_KERN_RWX_USER____);
     // partition share map
-    xmc_segment_map(4, 0x95200000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER_R_X);
+    xmc_segment_map(1, 0x95200000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER_R_X);
 
-    xmc_indices[0] = XMC_INDEX_RESERVED;
-    xmc_indices[1] = XMC_INDEX_RESERVED;
-    xmc_indices[2] = XMC_INDEX_RESERVED;
-    xmc_indices[3] = XMC_INDEX_RESERVED;
-    xmc_indices[4] = XMC_INDEX_RESERVED;
+    for (i = 0; i < 0x40000; i += 4) {
+        u32 volatile *src = (u32 volatile *) (0x95100000 + i);
+        u32 volatile *dst = (u32 volatile *) (0x95140000 + i);
+        *dst = *src;
+    }
 
-    for (i = 5; i < XMC_SEGMENT_NUM; i++) {
+    xmc_segment_remap(2, 0x95100000, 0x95140000, XMC_SEGMENT_SIZE_256K, XMC_SEGMENT_PERM_KERN_RWX_USER____);
+
+    for (i = 0; i < XMC_SEGMENT_NUM; i++) {
         xmc_indices[i] = XMC_INDEX_FREE;
     }
 }
@@ -99,14 +99,6 @@ static inline u32 xmc_size2segment_size(u32 size) {
         printf("xmc_size2segment_size: size %x\n", size);
         panic("Not supported segment size");
     }
-}
-
-static inline void xmc_segment_enable(u8 index) {
-    xmc_segment_write(index, xmc_values_l[index], xmc_values_h[index]);
-}
-
-static inline void xmc_segment_disable(u8 index) {
-    xmc_segment_write(index, 0, 0);
 }
 
 static u8 xmc_segment_find_free() {
@@ -133,18 +125,10 @@ u8 xmc_segment_allocate(memory_conf_t *layout) {
     return index;
 }
 
-
 void xmc_segment_activate(u8 index) {
-    u8 i;
     if (index >= XMC_SEGMENT_NUM || xmc_indices[index] != XMC_INDEX_PART) {
         panic("xmc_segment_activate: Illegal xmc index\n");
     }
-    for (i = 0; i < XMC_SEGMENT_NUM; i++) {
-        if (xmc_indices[i] == XMC_INDEX_PART) {
-            xmc_segment_disable(index);
-            barrier();
-        }
-    }
-    xmc_segment_enable(index);
-    barrier();
+    xmc_segment_write(3, xmc_values_l[index], xmc_values_h[index]);
+    xmc_invalidate_buffer();
 }

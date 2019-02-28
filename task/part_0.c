@@ -37,6 +37,7 @@ void p0_idle_entry(void *arg) {
     }
 }
 
+#pragma SET_DATA_SECTION(".data:KERN_SHARE")
 /* Partition 0 Configuration */
 
 task_conf_t p0_tasks[5] = {

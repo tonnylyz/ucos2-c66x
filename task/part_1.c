@@ -24,7 +24,7 @@ void make_xmc_error() {
 }
 
 void p1t0_entry(void *arg) {
-    make_xmc_error();
+    //make_xmc_error();
     char *task_name = (char *) arg;
     while (1) {
         task_puts("Name: ");
@@ -40,6 +40,7 @@ void p1_idle_entry(void *arg) {
     }
 }
 
+#pragma SET_DATA_SECTION(".data:KERN_SHARE")
 /* Partition 1 Configuration */
 
 task_conf_t p1_tasks[5] = {

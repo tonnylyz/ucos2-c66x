@@ -1,11 +1,11 @@
 --heap_size=0x0
 --stack_size=0x10000
---retain="*(.resource_table)"
 
 MEMORY
 {
     KERN_TEXT (RWX) : org = 0x95000000, len = 0x100000
-    KERN_DATA (RW)  : org = 0x95100000, len = 0x100000
+    KERN_PRIVATE_DATA (RW)  : org = 0x95100000, len = 0x40000
+    KERN_SHARE_DATA   (RW)  : org = 0x95180000, len = 0x80000
 
     PART_SHARE_TEXT (RWX) : org = 0x95200000, len = 0x80000
     PART_SHARE_DATA (RWX) : org = 0x95280000, len = 0x80000
@@ -33,21 +33,21 @@ SECTIONS
     .text:VECTOR: load > 0x95000000
     .text: load > KERN_TEXT
 
-    .stack: load > KERN_DATA
-    GROUP: load > KERN_DATA
+    .stack: load > KERN_PRIVATE_DATA
+    GROUP: load > KERN_PRIVATE_DATA
     {
         .bss:
-        .neardata:
         .rodata:
     }
-    .cinit: load > KERN_DATA
-    .init_array: load > KERN_DATA
-    .const: load > KERN_DATA
-    .data: load > KERN_DATA
-    .fardata: load > KERN_DATA
-    .switch: load > KERN_DATA
-    .far: load > KERN_DATA
-    .resource_table: load > KERN_TEXT, type = NOINIT
+    .cinit: load > KERN_PRIVATE_DATA
+    .init_array: load > KERN_PRIVATE_DATA
+    .data: load > KERN_PRIVATE_DATA
+    .fardata: load > KERN_PRIVATE_DATA
+    .switch: load > KERN_PRIVATE_DATA
+    .far: load > KERN_PRIVATE_DATA
+
+    .const: load > KERN_SHARE_DATA
+    .data:KERN_SHARE: load > KERN_SHARE_DATA
 
     .text:PART_S: load > PART_SHARE_TEXT
     .data:PART_S: load > PART_SHARE_DATA

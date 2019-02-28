@@ -3,6 +3,7 @@
 #include <xmc.h>
 #include <intc.h>
 #include <partition.h>
+#include <os_cpu.h>
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
@@ -22,36 +23,42 @@ void dsp2_start_core() {
 
     mmio_write(DSP2_PRM_BASE + 0x10, 0x0);
     while (((mmio_read(DSP2_PRM_BASE + 0x14) & 0x3) != 0x3));
-
 }
 
 int main() {
-#if defined(DSP_CORE_1)
-    printf("DSP_1 OS Build: %s %s\n", __DATE__, __TIME__);
-    //dsp2_start_core();
-    //printf("dsp2_start_core done.\n");
+    u32 core_id;
+    core_id = CPURegisterDNUM();
+    //xmc_mem_remap();
+    if (core_id == 0) {
+        printf("DSP_1 OS Build: %s %s\n", __DATE__, __TIME__);
 
-#elif defined(DSP_CORE_2)
-    printf("DSP_2 OS Build: %s %s\n", __DATE__, __TIME__);
-#else
-#error "No core number specified."
-#endif
+        intc_init();
+        printf("intc_init done\n");
 
-    xmc_init();
+        xmc_init();
+        printf("xmc_init done\n");
 
-    intc_init();
-    printf("intc_init done\n");
+        dsp2_start_core();
 
-    partition_init();
-    printf("partition_init done\n");
+        partition_init();
+        printf("partition_init done\n");
 
-    extern partition_conf_t p0_conf;
-    extern partition_conf_t p1_conf;
-    partition_add(&p0_conf);
-    partition_add(&p1_conf);
+        extern partition_conf_t p0_conf;
+        extern partition_conf_t p1_conf;
+        partition_add(&p0_conf);
+        partition_add(&p1_conf);
 
-    printf("ready to partition_start\n");
-    partition_start();
+        printf("ready to partition_start\n");
+        partition_start();
+
+
+    } else {
+        printf("DSP_2 OS Build: %s %s\n", __DATE__, __TIME__);
+        while (1) {
+            __asm ("\tNOP");
+        }
+    }
+
 
     while (1) {
         __asm ("\tNOP");

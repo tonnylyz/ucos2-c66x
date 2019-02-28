@@ -342,6 +342,15 @@ HandlerXMCException:
     MVKL	IntRestore,B3
     MVKH	IntRestore,B3
 
+
+    .global CPURegisterDNUM
+CPURegisterDNUM:
+    MV      B3,A0
+    MVC     DNUM,B0
+    MV      B0,A4
+    BNOP    A0,5
+
+
 .end
 
 

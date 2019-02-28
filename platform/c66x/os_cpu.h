@@ -38,6 +38,8 @@ extern void OSIntCtxSw();
 extern void OSStartHighRdy();
 extern void OSCtxSw();
 
+extern u32 CPURegisterDNUM();
+
 typedef struct
 {
     INT32U reserved;

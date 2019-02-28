@@ -8,8 +8,10 @@
 
 pcb_t *partition_current;
 
+#pragma DATA_SECTION(pcb_list, ".data:KERN_SHARE")
 pcb_t pcb_list[PARTITION_MAX_NUM];
 
+#pragma DATA_SECTION(part_num, ".data:KERN_SHARE")
 static u8 part_num;
 
 void partition_add(partition_conf_t *conf) {
