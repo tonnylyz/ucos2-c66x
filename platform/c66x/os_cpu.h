@@ -38,6 +38,10 @@ extern void OSIntCtxSw();
 extern void OSStartHighRdy();
 extern void OSCtxSw();
 
+
+#include <types.h>
+
+extern u32 core_id;
 extern u32 CPURegisterDNUM();
 
 typedef struct

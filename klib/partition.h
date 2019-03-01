@@ -45,6 +45,8 @@ typedef struct {
 
     u32 slice_ticks;
     u32 slice_ticks_left;
+
+    u8 target_core;
 } pcb_t;
 
 extern pcb_t pcb_list[];

@@ -32,7 +32,6 @@
 #define XMC_INDEX_PART      2
 
 #pragma SET_DATA_SECTION(".data:KERN_SHARE")
-
 static int xmc_indices[XMC_SEGMENT_NUM];
 
 static u32 xmc_values_l[XMC_SEGMENT_NUM];
@@ -74,22 +73,24 @@ void xmc_init() {
     u32 i;
     /* these settings are based on linker.cmd */
 
+    if (core_id == 0) {
+        for (i = 0; i < 0x40000; i += 4) {
+            u32 volatile *src = (u32 volatile *) (0x95100000 + i);
+            u32 volatile *dst = (u32 volatile *) (0x95140000 + i);
+            *dst = *src;
+        }
+        xmc_segment_remap(2, 0x95100000, 0x95140000, XMC_SEGMENT_SIZE_256K, XMC_SEGMENT_PERM_KERN_RWX_USER____);
+
+        for (i = 0; i < XMC_SEGMENT_NUM; i++) {
+            xmc_indices[i] = XMC_INDEX_FREE;
+        }
+    }
+
     // default map: kernel only
     xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_4G, XMC_SEGMENT_PERM_KERN_RWX_USER____);
     // partition share map
     xmc_segment_map(1, 0x95200000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER_R_X);
 
-    for (i = 0; i < 0x40000; i += 4) {
-        u32 volatile *src = (u32 volatile *) (0x95100000 + i);
-        u32 volatile *dst = (u32 volatile *) (0x95140000 + i);
-        *dst = *src;
-    }
-
-    xmc_segment_remap(2, 0x95100000, 0x95140000, XMC_SEGMENT_SIZE_256K, XMC_SEGMENT_PERM_KERN_RWX_USER____);
-
-    for (i = 0; i < XMC_SEGMENT_NUM; i++) {
-        xmc_indices[i] = XMC_INDEX_FREE;
-    }
 }
 
 static inline u32 xmc_size2segment_size(u32 size) {

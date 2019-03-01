@@ -81,5 +81,6 @@ partition_conf_t p1_conf = {
         },
         .task_num = 4,
         .task_conf_list = p1_tasks,
-        .slice_ticks = 10 // 10 partition timer intervals
+        .slice_ticks = 10, // 10 partition timer intervals
+        .target_core = 0
 };

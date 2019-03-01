@@ -27,6 +27,7 @@ void partition_add(partition_conf_t *conf) {
     pcb_list[part_num].task_num = conf->task_num;
     pcb_list[part_num].slice_ticks = conf->slice_ticks;
     pcb_list[part_num].slice_ticks_left = 0;
+    pcb_list[part_num].target_core = conf->target_core;
 
     partition_context_load(context);
 
@@ -152,10 +153,24 @@ void partition_context_load(partition_context_t *context) {
     OSTaskIdleStk  = context->OSTaskIdleStk;
 }
 
+static inline pcb_t *_core_first_partition() {
+    int i;
+    for (i = 0; i < part_num; i++) {
+        if (pcb_list[i].target_core == core_id) {
+            return &(pcb_list[i]);
+        }
+    }
+    return NULL;
+}
 
-static pcb_t *_partition_next() {
-    u32 idx = partition_current->index;
-    return pcb_list + ((idx + 1) % part_num);
+static inline pcb_t *_core_next_partition() {
+    int i;
+    for (i = partition_current->index + 1; i < part_num; i++) {
+        if (pcb_list[i].target_core == core_id) {
+            return &(pcb_list[i]);
+        }
+    }
+    return _core_first_partition();
 }
 
 void partition_schedule() {
@@ -165,7 +180,7 @@ void partition_schedule() {
     if (partition_current->slice_ticks_left == 0) {
         printf("%s: part %d slice reduced to zero\n", __FUNCTION__, partition_current->index);
         /* Need to switch to next partition */
-        pcb_t *partition_next = _partition_next();
+        pcb_t *partition_next = _core_next_partition();
         if (partition_next == partition_current) {
             printf("%s: next part is current one\n", __FUNCTION__);
             /* Refill slice */
@@ -200,12 +215,6 @@ void partition_switch() {
         }
         OSIntCtxSw();
     } else {
-        /*timer_irq_clear(GP_TASK_TIMER_BASE);
-        timer_irq_clear(GP_PART_TIMER_BASE);
-        intc_event_clear(INTC_EVENT_TASK_TIMER);
-        intc_event_clear(INTC_EVENT_PART_TIMER);
-        timer_init();
-        printf("%s: timer_init done\n", __FUNCTION__);*/
         INT8U y;
         y = OSUnMapTbl[OSRdyGrp];
         OSPrioHighRdy = (INT8U) ((y << 3u) + OSUnMapTbl[OSRdyTbl[y]]);
@@ -219,16 +228,21 @@ void partition_switch() {
     }
 }
 
+
 void partition_start() {
-    partition_current = &(pcb_list[0]);
+    partition_current = _core_first_partition();
+    if (partition_current == NULL) {
+        panic("CORE HAS NO PARTITION ALLOCATED");
+    }
     printf("%s: starting part %d\n", __FUNCTION__, partition_current->index);
     partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
     partition_context_load(&(partition_current->partition_context));
     printf("%s: ucos_context_load done\n", __FUNCTION__);
     xmc_segment_activate(partition_current->xmc_id);
     //xmc_mem_map_dump();
-
-    timer_init();
+    if (core_id == 1) {
+        timer_init();
+    }
     printf("%s: timer_init done\n", __FUNCTION__);
     printf("%s: ready to OSStart\n", __FUNCTION__);
 

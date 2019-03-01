@@ -21,6 +21,7 @@ typedef struct {
     u8 task_num;
     task_conf_t *task_conf_list;
     u32 slice_ticks;
+    u8 target_core;
 } partition_conf_t;
 
 #endif //UCOS2_C66X_PART_CONF_H

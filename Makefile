@@ -20,6 +20,8 @@ PLATFORM_OBJS := platform/csp/timer.obj \
 # Task Objects
 TASK_OBJS := task/part_0.obj \
              task/part_1.obj \
+             task/part_2.obj \
+             task/part_3.obj \
              task/syscall.obj \
              task/syscall_s.obj
 

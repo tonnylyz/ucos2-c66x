@@ -85,5 +85,6 @@ partition_conf_t p0_conf = {
         },
         .task_num = 5,
         .task_conf_list = p0_tasks,
-        .slice_ticks = 5 // 5 partition timer intervals
+        .slice_ticks = 5, // 5 partition timer intervals
+        .target_core = 0
 };
