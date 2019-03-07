@@ -10,6 +10,7 @@
 
 
 #define XMC_XPFCMD (0x08000300)
+#define XMC_XPFACS (0x08000304)
 
 
 #define XMC_SEGMENT_SIZE_256K   0b10001
@@ -38,7 +39,9 @@ static u32 xmc_values_l[XMC_SEGMENT_NUM];
 static u32 xmc_values_h[XMC_SEGMENT_NUM];
 
 void xmc_invalidate_buffer() {
-    *(u32 volatile *)XMC_XPFCMD = 0b1001;
+    barrier();
+    *(u32 volatile *)XMC_XPFCMD = 0b11111;
+    mmio_read(XMC_XPFACS);
     barrier();
 }
 

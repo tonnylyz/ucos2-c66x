@@ -14,6 +14,7 @@ PLATFORM_OBJS := platform/csp/timer.obj \
                  platform/csp/uart.obj \
                  platform/csp/intc.obj \
                  platform/csp/xmc.obj \
+                 platform/csp/spinlock.obj \
                  platform/c66x/os_cpu_a.obj \
                  platform/c66x/os_cpu_c.obj
 

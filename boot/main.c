@@ -4,6 +4,7 @@
 #include <intc.h>
 #include <partition.h>
 #include <os_cpu.h>
+#include <spinlock.h>
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
@@ -27,11 +28,17 @@ void dsp2_start_core() {
 
 u32 core_id;
 
+#pragma DATA_SECTION(counter, ".data:KERN_SHARE")
+volatile static u32 counter = 0;
+
 int main() {
     core_id = CPURegisterDNUM();
+    mmio_write(0x01840040, 0); // disable l1d cache
+    mmio_write(0x01845044, 1); // l1d cache write back invalid
     //xmc_mem_remap();
     if (core_id == 0) {
         printf("DSP_1 OS Build: %s %s\n", __DATE__, __TIME__);
+
 
         intc_init();
         printf("intc_init done\n");
@@ -59,11 +66,51 @@ int main() {
 
         dsp2_start_core();
 
+        spinlock_init();
+
+        spinlock_lock(4);
+        printf("counter init: %x\n", counter);
+        spinlock_unlock(4);
+
+        int i;
+        for (i = 0; i < 0x1000000; i++) {
+            spinlock_lock(4);
+            counter++;
+            xmc_invalidate_buffer();
+            spinlock_unlock(4);
+        }
+
+        spinlock_lock(4);
+        printf("counter end: %x\n", counter);
+        spinlock_unlock(4);
+
         partition_start();
 
 
     } else {
         printf("DSP_2 OS Build: %s %s\n", __DATE__, __TIME__);
+
+        spinlock_init();
+
+        spinlock_lock(4);
+        printf("counter init: %x\n", counter);
+        spinlock_unlock(4);
+
+        int i;
+        for (i = 0; i < 0x1000000; i++) {
+            spinlock_lock(4);
+            counter++;
+            xmc_invalidate_buffer();
+            spinlock_unlock(4);
+        }
+
+        spinlock_lock(4);
+        printf("counter end: %x\n", counter);
+        spinlock_unlock(4);
+
+        while (1) {
+            __asm ("\tNOP");
+        }
 
         intc_init();
         printf("intc_init done\n");
