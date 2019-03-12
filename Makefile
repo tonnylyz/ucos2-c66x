@@ -1,4 +1,4 @@
-CG_TOOL_ROOT := /home/tonny/ti/ti-cgt-c6000_8.3.1
+CG_TOOL_ROOT := /home/tonny/ti/ti-cgt-c6000_8.3.3
 
 LINKER_CMD := linker.cmd
 
