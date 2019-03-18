@@ -16,18 +16,20 @@ static u8 part_num;
 
 void partition_add(partition_conf_t *conf) {
     u32 i, r;
+    pcb_t *pcb;
     if (part_num >= PARTITION_MAX_NUM) {
         panic("partition_add: No available partition");
     }
     printf("%s: adding part %d\n", __FUNCTION__, part_num);
-    partition_context_t *context = &(pcb_list[part_num].partition_context);
+    pcb = &pcb_list[part_num];
+    partition_context_t *context = &(pcb->partition_context);
     partition_context_init(context);
 
-    pcb_list[part_num].index = part_num;
-    pcb_list[part_num].task_num = conf->task_num;
-    pcb_list[part_num].slice_ticks = conf->slice_ticks;
-    pcb_list[part_num].slice_ticks_left = 0;
-    pcb_list[part_num].target_core = conf->target_core;
+    pcb->identifier = part_num;
+    pcb->task_num = conf->task_num;
+    pcb->slice_ticks = conf->slice_ticks;
+    pcb->slice_ticks_left = 0;
+    pcb->target_core = conf->target_core;
 
     partition_context_load(context);
 
@@ -45,7 +47,7 @@ void partition_add(partition_conf_t *conf) {
     }
 
     partition_context_save(context);
-    pcb_list[part_num].xmc_id = xmc_segment_allocate(&conf->memory_conf);
+    pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);
     part_num++;
 }
 
@@ -165,7 +167,7 @@ static inline pcb_t *_core_first_partition() {
 
 static inline pcb_t *_core_next_partition() {
     int i;
-    for (i = partition_current->index + 1; i < part_num; i++) {
+    for (i = partition_current->identifier + 1; i < part_num; i++) {
         if (pcb_list[i].target_core == core_id) {
             return &(pcb_list[i]);
         }
@@ -178,7 +180,7 @@ void partition_schedule() {
         panic("partition_schedule: current_partition == NULL");
     }
     if (partition_current->slice_ticks_left == 0) {
-        printf("%s: part %d slice reduced to zero\n", __FUNCTION__, partition_current->index);
+        printf("%s: part %d slice reduced to zero\n", __FUNCTION__, partition_current->identifier);
         /* Need to switch to next partition */
         pcb_t *partition_next = _core_next_partition();
         if (partition_next == partition_current) {
@@ -188,7 +190,7 @@ void partition_schedule() {
             /* Next partition is current, continue */
             return;
         }
-        printf("%s: next part is %d\n", __FUNCTION__, partition_next->index);
+        printf("%s: next part is %d\n", __FUNCTION__, partition_next->identifier);
         OSTCBCur->context_frame = task_context_saved;
         partition_context_save(&(partition_current->partition_context));
         partition_current = partition_next;
@@ -196,7 +198,7 @@ void partition_schedule() {
         partition_switch();
         return;
     } else {
-        printf("%s: part %d slice from %d -> %d\n", __FUNCTION__, partition_current->index,
+        printf("%s: part %d slice from %d -> %d\n", __FUNCTION__, partition_current->identifier,
                 partition_current->slice_ticks_left, partition_current->slice_ticks_left - 1);
         partition_current->slice_ticks_left--;
         return;
@@ -204,7 +206,7 @@ void partition_schedule() {
 }
 
 void partition_switch() {
-    printf("partition_switch: switching to part %d\n", partition_current->index);
+    printf("partition_switch: switching to part %d\n", partition_current->identifier);
     partition_context_load(&(partition_current->partition_context));
     xmc_segment_activate(partition_current->xmc_id);
     //xmc_mem_map_dump();
@@ -234,7 +236,7 @@ void partition_start() {
     if (partition_current == NULL) {
         panic("CORE HAS NO PARTITION ALLOCATED");
     }
-    printf("%s: starting part %d\n", __FUNCTION__, partition_current->index);
+    printf("%s: starting part %d\n", __FUNCTION__, partition_current->identifier);
     partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
     partition_context_load(&(partition_current->partition_context));
     printf("%s: ucos_context_load done\n", __FUNCTION__);

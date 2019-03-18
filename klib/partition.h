@@ -1,6 +1,7 @@
 #ifndef UCOS2_C66X_PARTITION_H
 #define UCOS2_C66X_PARTITION_H
 
+#include <def.h>
 #include <types.h>
 #include <ucos_ii.h>
 #include "partition_conf.h"
@@ -37,7 +38,7 @@ typedef struct _partition_context_t {
 } partition_context_t;
 
 typedef struct {
-    u8 index;
+    u8 identifier;
     u8 xmc_id;
     u8 task_num;
 
@@ -47,6 +48,20 @@ typedef struct {
     u32 slice_ticks_left;
 
     u8 target_core;
+
+    /* APEX COMPLIANCE */
+    operating_mode_e operating_mode;
+    start_condition_e start_condition;
+    u8 lock_level;
+
+    u8 period;  /* defines the activation period of the partition, and is used to determine the partition’s
+    runtime placement within the core module’s overall time frame. */
+    u8 duration; /* the amount of processor time given to the partition every period of the partition. */
+
+    u8 critical_level;
+
+    u32 entry_point; /* partition elaboration restart address */
+    u8 is_system_partition;
 } pcb_t;
 
 extern pcb_t pcb_list[];

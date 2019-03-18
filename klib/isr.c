@@ -70,7 +70,7 @@ void OSPartitionTimerISR() {
 }
 
 void OSXMCExceptionISR() {
-    printf("current part: %d\n", partition_current->index);
+    printf("current part: %d\n", partition_current->identifier);
     printf("current task: %d (pri %d)\n", OSTCBCur->OSTCBId, OSTCBCur->OSTCBPrio);
     printf("xmc fault address: [%08x]\n", *((u32 volatile *)XMC_XMPFAR));
     printf("xmc fault status:  [%08x]\n", *((u32 volatile *)XMC_XMPFSR));

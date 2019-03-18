@@ -5,6 +5,7 @@
 #include <partition.h>
 #include <os_cpu.h>
 #include <spinlock.h>
+#include <mutex.h>
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
@@ -26,7 +27,7 @@ void dsp2_start_core() {
     while (((mmio_read(DSP2_PRM_BASE + 0x14) & 0x3) != 0x3));
 }
 
-u32 core_id;
+u8 core_id;
 
 #pragma DATA_SECTION(counter, ".data:KERN_SHARE")
 volatile static u32 counter = 0;

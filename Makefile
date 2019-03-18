@@ -29,7 +29,9 @@ TASK_OBJS := task/part_0.obj \
 # Kernel Library Objects
 KLIB_OBJS := klib/printf.obj \
              klib/isr.obj \
-             klib/partition.obj
+             klib/partition.obj \
+             klib/apex.obj \
+             klib/mutex.obj
 
 OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(TASK_OBJS) $(UCOSII_OBJS) $(KLIB_OBJS)
 

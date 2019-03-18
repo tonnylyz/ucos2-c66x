@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#define SPINLOCK_NUMBER 256
+
 void spinlock_lock(u8 id);
 void spinlock_unlock(u8 id);
 
