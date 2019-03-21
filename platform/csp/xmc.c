@@ -49,7 +49,7 @@ void xmc_mem_map_dump() {
     int i;
     u32 addr;
     for (i = 0; i < XMC_SEGMENT_NUM; i++) {
-        addr = XMC_MPAXL0 + i * 8;
+        addr = XMC_MPAXL0 + i * 8u;
         printf("MPAX segment %d XMPAXL%d [%08x]->[%08x]\n", i, i, addr, *((u32 volatile *) addr));
         printf("MPAX segment %d XMPAXH%d [%08x]->[%08x]\n", i, i, addr + 4, *((u32 volatile *) (addr + 4)));
     }
@@ -58,8 +58,8 @@ void xmc_mem_map_dump() {
 static inline void xmc_segment_write(u8 index, u32 lval, u32 hval) {
     u32 volatile *l;
     u32 volatile *h;
-    l = (u32 volatile *) (XMC_MPAXL0 + index * 8);
-    h = (u32 volatile *) (XMC_MPAXH0 + index * 8);
+    l = (u32 volatile *) (XMC_MPAXL0 + index * 8u);
+    h = (u32 volatile *) (XMC_MPAXH0 + index * 8u);
     *l = lval;
     *h = hval;
 }
