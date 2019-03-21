@@ -12,7 +12,7 @@ return_code_e apex_set_partition_mode(operating_mode_e ps) {
     if (ps == opm_normal && partition_current->operating_mode == opm_normal) {
         return r_no_action;
     }
-    if (ps == opm_normal == opm_warm_start && partition_current->operating_mode == opm_cold_start) {
+    if (ps == opm_warm_start && partition_current->operating_mode == opm_cold_start) {
         return r_invalid_mode;
     }
     partition_current->operating_mode = ps;
