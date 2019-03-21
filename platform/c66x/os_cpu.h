@@ -41,8 +41,8 @@ extern void OSCtxSw();
 
 #include <types.h>
 
-extern u32 core_id;
-extern u32 CPURegisterDNUM();
+extern u8 core_id;
+extern u8 CPURegisterDNUM();
 
 typedef struct
 {
