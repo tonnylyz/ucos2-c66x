@@ -75,10 +75,23 @@ task_conf_t p1_tasks[5] = {
 };
 
 partition_conf_t p1_conf = {
+        .identifier = 1,
         .memory_conf = {
                 .address = 0x95400000,
                 .size = 0x100000,
         },
+        .period = 0,
+        .duration = 0,
+        .critical_level = 0,
+        .communication_conf = {
+                .dest_num = 0,
+                .dest_list = NULL,
+                .src_num = 0,
+                .src_list = NULL,
+        },
+        .entry_point = 0,
+        .type = pt_normal,
+
         .task_num = 4,
         .task_conf_list = p1_tasks,
         .slice_ticks = 10, // 10 partition timer intervals

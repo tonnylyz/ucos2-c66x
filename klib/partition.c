@@ -11,28 +11,40 @@ pcb_t *partition_current;
 #pragma DATA_SECTION(pcb_list, ".data:KERN_SHARE")
 pcb_t pcb_list[PARTITION_MAX_NUM];
 
-#pragma DATA_SECTION(part_num, ".data:KERN_SHARE")
-static u8 part_num;
-
 void partition_add(partition_conf_t *conf) {
     u32 i, r;
     pcb_t *pcb;
-    if (part_num >= PARTITION_MAX_NUM) {
-        panic("partition_add: No available partition");
+    if (conf->identifier >= PARTITION_MAX_NUM) {
+        panic("partition_add: unable to allocate index from identifier");
     }
-    printf("%s: adding part %d\n", __FUNCTION__, part_num);
-    pcb = &pcb_list[part_num];
+    printf("%s: adding part %d\n", __FUNCTION__, conf->identifier);
+
+    pcb = &pcb_list[conf->identifier];
+    pcb->conf = conf;
     partition_context_t *context = &(pcb->partition_context);
     partition_context_init(context);
 
-    pcb->identifier = part_num;
+    pcb->identifier = conf->identifier;
+    pcb->target_core = conf->target_core;
     pcb->task_num = conf->task_num;
     pcb->slice_ticks = conf->slice_ticks;
     pcb->slice_ticks_left = 0;
-    pcb->target_core = conf->target_core;
+
+    partition_warm_start(conf->identifier);
+
+    pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);
+}
+
+
+void partition_warm_start(u8 id) {
+    int i, r;
+    pcb_t *pcb;
+    partition_conf_t *conf;
+    pcb = &pcb_list[id];
+    conf = pcb->conf;
+    partition_context_t *context = &(pcb->partition_context);
 
     partition_context_load(context);
-
     for (i = 0; i < conf->task_num; i++) {
         r = OSTaskCreate(
                 conf->task_conf_list[i].entry,
@@ -45,14 +57,15 @@ void partition_add(partition_conf_t *conf) {
         }
         OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = (INT16U) i;
     }
-
     partition_context_save(context);
-    pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);
-    part_num++;
+}
+
+void partition_cold_start(u8 id) {
+    panic("partition_cold_start not supported.");
 }
 
 void partition_init() {
-    part_num = 0;
+    int i;
     partition_current = NULL;
     OS_MemClr((INT8U *) pcb_list, sizeof(pcb_list));
 }

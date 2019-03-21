@@ -5,7 +5,7 @@
 #include "apex.h"
 #include <partition.h>
 
-return_code_e apex_set_partition_mode(operating_mode_e ps) {
+return_code_t apex_set_partition_mode(operating_mode_t ps) {
     if (ps != opm_cold_start && ps != opm_idle && ps != opm_normal && ps != opm_warm_start) {
         return r_invalid_param;
     }
@@ -31,7 +31,7 @@ return_code_e apex_set_partition_mode(operating_mode_e ps) {
     return r_no_error;
 }
 
-return_code_e apex_get_partition_mode(operating_mode_e *pps) {
+return_code_t apex_get_partition_mode(operating_mode_t *pps) {
     *pps = partition_current->operating_mode;
     return r_no_error;
 }

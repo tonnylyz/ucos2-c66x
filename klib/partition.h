@@ -50,18 +50,11 @@ typedef struct {
     u8 target_core;
 
     /* APEX COMPLIANCE */
-    operating_mode_e operating_mode;
-    start_condition_e start_condition;
+    operating_mode_t operating_mode;
+    start_condition_t start_condition;
     u8 lock_level;
+    partition_conf_t *conf;
 
-    u8 period;  /* defines the activation period of the partition, and is used to determine the partition’s
-    runtime placement within the core module’s overall time frame. */
-    u8 duration; /* the amount of processor time given to the partition every period of the partition. */
-
-    u8 critical_level;
-
-    u32 entry_point; /* partition elaboration restart address */
-    u8 is_system_partition;
 } pcb_t;
 
 extern pcb_t pcb_list[];
@@ -69,6 +62,10 @@ extern pcb_t pcb_list[];
 extern pcb_t *partition_current;
 
 void partition_init();
+
+void partition_warm_start(u8 id);
+
+void partition_cold_start(u8 id);
 
 void partition_add(partition_conf_t *conf);
 
