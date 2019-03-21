@@ -42,6 +42,33 @@ static u32 _handle_syscall(u32 no, u32* arg) {
         case 6: {
             OSTimeSet(arg[0]);
         } break;
+        case 7: {
+            return OSTaskChangePrio((INT8U) arg[0], (INT8U) arg[1]);
+        } break;
+        case 8: {
+            return OSTaskDel((INT8U) arg[0]);
+        } break;
+        case 9: {
+            return OSTaskDelReq((INT8U) arg[0]);
+        } break;
+        case 10: {
+            return OSTaskResume((INT8U) arg[0]);
+        } break;
+        case 11: {
+            return OSTaskStkChk((INT8U) arg[0], (OS_STK_DATA *) arg[1]);
+        } break;
+        case 12: {
+            return OSTaskSuspend((INT8U) arg[0]);
+        } break;
+        case 13: {
+            return OSTaskQuery((INT8U) arg[0], (OS_TCB *) arg[1]);
+        } break;
+        case 14: {
+            return OSTaskRegGet((INT8U) arg[0], (INT8U) arg[1], (INT8U *) arg[2]);
+        } break;
+        case 15: {
+            OSTaskRegSet((INT8U) arg[0], (INT8U) arg[1], arg[2], (INT8U *) arg[3]);
+        } break;
         default: {
             printf("Unknown System Call %d\n", no);
             panic("\n");

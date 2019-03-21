@@ -23,10 +23,10 @@ char p3t4_arg[] = "p3t4";
 void p3t0_entry(void *arg) {
     char *task_name = (char *) arg;
     while (1) {
-        task_puts("Name: ");
-        task_puts(task_name);
-        task_putc('\n');
-        task_time_delay(5);
+        puts("Name: ");
+        puts(task_name);
+        putc('\n');
+        time_delay(5);
     }
 }
 

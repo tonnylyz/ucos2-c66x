@@ -27,10 +27,10 @@ void p1t0_entry(void *arg) {
     //make_xmc_error();
     char *task_name = (char *) arg;
     while (1) {
-        task_puts("Name: ");
-        task_puts(task_name);
-        task_putc('\n');
-        task_time_delay(4);
+        puts("Name: ");
+        puts(task_name);
+        putc('\n');
+        time_delay(4);
     }
 }
 

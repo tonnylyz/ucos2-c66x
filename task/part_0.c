@@ -24,10 +24,10 @@ void p0t0_entry(void *arg) {
     char *task_name = (char *) arg;
     //main_dummy = 123;
     while (1) {
-        task_puts("Name: ");
-        task_puts(task_name);
-        task_putc('\n');
-        task_time_delay(5);
+        puts("Name: ");
+        puts(task_name);
+        putc('\n');
+        time_delay(5);
     }
 }
 
