@@ -17,3 +17,20 @@ void task_puts(char *str) {
 void task_time_delay(u32 ticks) {
     task_syscall(ticks, 0, 0, 0, 0, 0, 0, 0, 2);
 }
+
+int task_time_delay_hmsm(u8 h, u8 m, u8 s, u16 ms) {
+    return (int) task_syscall(h, m, s, ms, 0, 0, 0, 0, 3);
+}
+
+int task_time_delay_resume(u8 priority) {
+    return (int) task_syscall(priority, 0, 0, 0, 0, 0, 0, 0, 4);
+}
+
+u32 task_time_get() {
+    return task_syscall(0, 0, 0, 0, 0, 0, 0, 0, 5);
+}
+
+void task_time_set(u32 ticks) {
+    task_syscall(ticks, 0, 0, 0, 0, 0, 0, 0, 6);
+}
+

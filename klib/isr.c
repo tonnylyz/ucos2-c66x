@@ -19,6 +19,37 @@ void OSTaskTimerISR() {
     OSIntExit();
 }
 
+static u32 _handle_syscall(u32 no, u32* arg) {
+    switch (no) {
+        case 0: {
+            uart_putc((char) arg[0]);
+        } break;
+        case 1: {
+            uart_puts((char *)arg[0]);
+        } break;
+        case 2: {
+            OSTimeDly(arg[0]);
+        } break;
+        case 3: {
+            return OSTimeDlyHMSM((INT8U) arg[0], (INT8U) arg[1], (INT8U) arg[2], (INT16U) arg[3]);
+        } break;
+        case 4: {
+            return OSTimeDlyResume((INT8U) arg[0]);
+        } break;
+        case 5: {
+            return OSTimeGet();
+        } break;
+        case 6: {
+            OSTimeSet(arg[0]);
+        } break;
+        default: {
+            printf("Unknown System Call %d\n", no);
+            panic("\n");
+        }
+    }
+    return 0;
+}
+
 void OSExceptionISR(u32 efr, u32 ierr) {
     if (efr & (1u << 1)) { /* IXF Internal Exception */
         printf("IXF: ierr [%02x]\n", ierr);
@@ -39,16 +70,7 @@ void OSExceptionISR(u32 efr, u32 ierr) {
         arg[6] = task_context_saved.A10;
         arg[7] = task_context_saved.B10;
         no = task_context_saved.A12;
-        if (no == 0) {
-            uart_putc((char) arg[0]);
-        } else if (no == 1) {
-            uart_puts((char *)arg[0]);
-        } else if (no == 2) {
-            OSTimeDly(arg[0]);
-        } else {
-            printf("Unknown System Call %d\n", no);
-            panic("\n");
-        }
+        task_context_saved.A4 = _handle_syscall(no, arg);
         return;
     }
     if (task_context_saved.TSR & (1u << 16)) {
