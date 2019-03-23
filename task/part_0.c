@@ -22,7 +22,6 @@ char p0t4_arg[] = "p0t4";
 
 void p0t0_entry(void *arg) {
     char *task_name = (char *) arg;
-    //main_dummy = 123;
     while (1) {
         puts("Name: ");
         puts(task_name);
@@ -30,6 +29,21 @@ void p0t0_entry(void *arg) {
         time_delay(5);
     }
 }
+
+void p0t1_entry(void *arg) {
+    u8 buf[] = "hELLO wORLD!";
+    while (task_ipc_send_foreign(2, 16, 6, (u32) buf, 13) != 0) {
+        puts("p0t1_entry Retry\n");
+        time_delay(1);
+    }
+    puts("p0t1_entry send Ok!\n");
+    while (1) {
+        puts("Name: p0t1\n");
+        time_delay(5);
+    }
+}
+
+/*  Inter-partition Comm Same Core
 
 void p0t1_entry(void *arg) {
     u8 buf[20];
@@ -45,7 +59,7 @@ void p0t1_entry(void *arg) {
         puts("Name: p0t1\n");
         time_delay(5);
     }
-}
+}*/
 
 /*   Intra-partition Comm
 

@@ -5,6 +5,7 @@
 #include <ucos_ii.h>
 #include <printf.h>
 #include <partition.h>
+#include <spinlock.h>
 #include "ipc.h"
 
 static bool _check_addr(u8 pid, u32 addr, u32 len) {
@@ -22,87 +23,109 @@ static bool _check_addr(u8 pid, u32 addr, u32 len) {
     return true;
 }
 
+static inline void _lock(u8 pid, u8 prio) {
+    u8 n;
+    n = (pid << 6) + prio;
+    spinlock_lock(n);
+}
+
+static inline void _unlock(u8 pid, u8 prio) {
+    u8 n;
+    n = (pid << 6) + prio;
+    spinlock_unlock(n);
+}
+
 void ipc_receive() {
+    _lock(partition_current->identifier, OSPrioCur);
     OSTCBCur->ipc.is_receiving = true;
     OSTCBCur->ipc.foreign_accessed = false;
     OSTCBCur->ipc.expect_pid = partition_current->identifier;
+    _unlock(partition_current->identifier, OSPrioCur);
     OSTaskSuspend(OSPrioCur);
 }
 
 void ipc_receive_foreign(u8 pid, u32 addr, u32 max_len) {
+    _lock(partition_current->identifier, OSPrioCur);
     OSTCBCur->ipc.is_receiving = true;
     OSTCBCur->ipc.foreign_accessed = false;
     OSTCBCur->ipc.expect_pid = pid;
     OSTCBCur->ipc.addr = addr;
     OSTCBCur->ipc.max_len = max_len;
+    _unlock(partition_current->identifier, OSPrioCur);
     OSTaskSuspend(OSPrioCur);
 }
 
 int ipc_send(u8 prio, u32 value) {
     OS_TCB* tcb;
+    _lock(partition_current->identifier, prio);
     tcb = partition_current->partition_context.OSTCBPrioTbl[prio];
+
     if (tcb == NULL) {
-        /* prio not exists */
-        printf("ipc: prio not exists\n");
-        return -1;
+        _unlock(partition_current->identifier, prio);
+        return IPC_ERROR_DEST_TASK_NOT_EXISTS;
     }
-    printf("tcb prio %d\n", tcb->OSTCBPrio);
     if (tcb->ipc.is_receiving == false) {
-        /* Task not receiving */
-        printf("ipc: Task not receiving\n");
-        return -2;
+        _unlock(partition_current->identifier, prio);
+        return IPC_ERROR_DEST_TASK_NOT_RECEIVING;
     }
     if (tcb->ipc.expect_pid != partition_current->identifier) {
-        /* Expect pid mismatch */
-        printf("ipc: Expect pid mismatch\n");
-        return -3;
+        _unlock(partition_current->identifier, prio);
+        return IPC_ERROR_EXPECT_PID_MISMATCH;
     }
     tcb->ipc.value = value;
     tcb->ipc.is_receiving = false;
     tcb->context_frame.A4 = value;
+
+    _unlock(partition_current->identifier, prio);
+    task_context_saved.A4 = 0;
     OSTaskResume(tcb->OSTCBPrio);
     return 0;
 }
 
 int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
     OS_TCB* tcb;
-    if (len > IPC_INTER_PARTITION_MAX_LENGTH) {
-        return -1;
+    if (addr != 0 && len > IPC_INTER_PARTITION_MAX_LENGTH) {
+        return IPC_ERROR_MESSAGE_TOO_LARGE;
     }
-    if (pid >= PARTITION_MAX_NUM) {
-        return -2;
+    if (pid >= PARTITION_MAX_NUM || pcb_list[pid].identifier != pid) {
+        return IPC_ERROR_DEST_PART_NOT_EXISTS;
     }
     if (prio > OS_LOWEST_PRIO) {
-        return -3;
+        return IPC_ERROR_DEST_TASK_NOT_EXISTS;
     }
     if (addr != 0 && _check_addr(partition_current->identifier, addr, len) == false) {
-        return -4;
+        return IPC_ERROR_ADDRESS_BOUNDARY;
     }
-    if (pcb_list[pid].target_core == core_id) {
-        tcb = pcb_list[pid].partition_context.OSTCBPrioTbl[prio];
-        if (tcb == NULL) {
-            return -5;
-        }
-        if (tcb->ipc.is_receiving == false) {
-            return -6;
-        }
-        if (tcb->ipc.max_len < len) {
-            return -7;
-        }
-        if (tcb->ipc.expect_pid != partition_current->identifier) {
-            return -8;
-        }
-        if (addr != 0) {
-            OS_MemCopy(tcb->ipc.buf, (INT8U *) addr, (INT16U) len);
-        }
-        tcb->ipc.max_len = len;
-        tcb->ipc.value = value;
-        tcb->ipc.is_receiving = false;
-        tcb->context_frame.A4 = value;
-        tcb->ipc.foreign_accessed = true; /* task resume when this partition schedule */
-        return 0;
-    } else {
-        printf("need to notify another core.");
+    _lock(pid, prio);
+    tcb = pcb_list[pid].partition_context.OSTCBPrioTbl[prio];
+    if (tcb == NULL) {
+        _unlock(pid, prio);
+        return IPC_ERROR_DEST_TASK_NOT_EXISTS;
+    }
+    if (tcb->ipc.is_receiving == false) {
+        _unlock(pid, prio);
+        return IPC_ERROR_DEST_TASK_NOT_RECEIVING;
+    }
+    if (tcb->ipc.max_len < len) {
+        _unlock(pid, prio);
+        return IPC_ERROR_MESSAGE_TOO_LARGE;
+    }
+    if (tcb->ipc.expect_pid != partition_current->identifier) {
+        _unlock(pid, prio);
+        return IPC_ERROR_EXPECT_PID_MISMATCH;
+    }
+    if (addr != 0) {
+        OS_MemCopy(tcb->ipc.buf, (INT8U *) addr, (INT16U) len);
+    }
+    tcb->ipc.max_len = len;
+    tcb->ipc.value = value;
+    tcb->ipc.is_receiving = false;
+    tcb->context_frame.A4 = value;
+    tcb->ipc.foreign_accessed = true; /* task resume when this partition schedule */
+
+    _unlock(pid, prio);
+    if (pcb_list[pid].target_core != core_id) {
+        // TODO: notify another core?
     }
     return 0;
 }
@@ -114,6 +137,7 @@ void ipc_scan_change() {
         if (tcb == NULL) {
             continue;
         }
+        _lock(partition_current->identifier, i);
         if (tcb->ipc.foreign_accessed == true) {
             tcb->ipc.foreign_accessed = false;
             if (_check_addr(partition_current->identifier, OSTCBPrioTbl[i]->ipc.addr, OSTCBPrioTbl[i]->ipc.max_len)) {
@@ -129,5 +153,6 @@ void ipc_scan_change() {
                 }
             }
         }
+        _unlock(partition_current->identifier, i);
     }
 }

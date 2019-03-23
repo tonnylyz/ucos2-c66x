@@ -7,6 +7,12 @@
 #ifndef UCOS2_C66X_IPC_H
 #define UCOS2_C66X_IPC_H
 
+#define IPC_ERROR_DEST_TASK_NOT_EXISTS      -1
+#define IPC_ERROR_DEST_TASK_NOT_RECEIVING   -2
+#define IPC_ERROR_EXPECT_PID_MISMATCH       -3
+#define IPC_ERROR_MESSAGE_TOO_LARGE         -4
+#define IPC_ERROR_DEST_PART_NOT_EXISTS      -5
+#define IPC_ERROR_ADDRESS_BOUNDARY          -6
 
 void ipc_receive();
 

@@ -28,6 +28,21 @@ void p2t0_entry(void *arg) {
     }
 }
 
+void p2t1_entry(void *arg) {
+    u32 r;
+    u8 buf[128];
+    r = task_ipc_receive_foreign(0, (u32) buf, 128);
+    puts("p2t1_entry: task_ipc_receive_foreign ");
+    putc((char) ('0' + r));
+    putc(':');
+    puts((char *) buf);
+    putc('\n');
+    while (1) {
+        puts("Name: p2t1\n");
+        time_delay(4);
+    }
+}
+
 void p2_idle_entry(void *arg) {
     while (1) {
         asm volatile ("\tNOP 5");
@@ -46,7 +61,7 @@ task_conf_t p2_tasks[5] = {
                 .priority = OS_TASK_IDLE_PRIO
         },
         {
-                .entry = p2t0_entry,
+                .entry = p2t1_entry,
                 .stack_ptr = &p2t1_stack[P2_TASK_STACK_SIZE - 1],
                 .stack_size = P2_TASK_STACK_SIZE,
                 .arg = p2t1_arg,
