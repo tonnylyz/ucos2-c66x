@@ -34,6 +34,23 @@ void p1t0_entry(void *arg) {
     }
 }
 
+void p1t1_entry(void *arg) {
+    int r;
+    u8 buf[] = "Hello World!";
+    r = task_ipc_send_foreign(0, 11, 5, (u32) buf, 13);
+    if (r < 0) {
+        puts("task_ipc_send_foreign failed ");
+        putc((char) ('0' - r));
+        putc('\n');
+    } else {
+        puts("task_ipc_send_foreign Ok\n");
+    }
+    while (1) {
+        puts("Name: p1t1\n");
+        time_delay(4);
+    }
+}
+
 void p1_idle_entry(void *arg) {
     while (1) {
         asm volatile ("\tNOP 5");
@@ -52,7 +69,7 @@ task_conf_t p1_tasks[5] = {
                 .priority = OS_TASK_IDLE_PRIO
         },
         {
-                .entry = p1t0_entry,
+                .entry = p1t1_entry,
                 .stack_ptr = &p1t1_stack[P1_TASK_STACK_SIZE - 1],
                 .stack_size = P1_TASK_STACK_SIZE,
                 .arg = p1t1_arg,

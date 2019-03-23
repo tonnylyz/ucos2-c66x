@@ -24,6 +24,8 @@
 #ifndef  OS_MASTER_FILE
 #define  OS_GLOBALS
 
+#include <printf.h>
+#include <partition.h>
 #include "ucos_ii.h"
 #endif
 
@@ -1589,8 +1591,8 @@ static  void  OS_InitTCBList (void)
 *********************************************************************************************************
 */
 
-void  OS_MemClr (INT8U  *pdest,
-                 INT16U  size)
+void  OS_MemClr(INT8U *pdest,
+                INT32U size)
 {
     while (size > 0u) {
         *pdest++ = (INT8U)0;
@@ -1672,10 +1674,10 @@ void  OS_Sched (void)
                 task_context_saved = OSTCBHighRdy->context_frame;
 #ifdef DEBUG_CTX_SWITCH
                 printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
-                       current_partition->index,
+                       partition_current->identifier,
                        OSTCBCur->OSTCBId,
                        OSTCBCur->OSTCBPrio,
-                       current_partition->index,
+                       partition_current->identifier,
                        OSTCBHighRdy->OSTCBId,
                        OSTCBHighRdy->OSTCBPrio
                 );

@@ -1,4 +1,5 @@
 #include "isr.h"
+#include "ipc.h"
 
 #include <partition.h>
 #include <timer.h>
@@ -32,43 +33,55 @@ static u32 _handle_syscall(u32 no, u32* arg) {
         } break;
         case 3: {
             return OSTimeDlyHMSM((INT8U) arg[0], (INT8U) arg[1], (INT8U) arg[2], (INT16U) arg[3]);
-        } break;
+        } //break;
         case 4: {
             return OSTimeDlyResume((INT8U) arg[0]);
-        } break;
+        } //break;
         case 5: {
             return OSTimeGet();
-        } break;
+        } //break;
         case 6: {
             OSTimeSet(arg[0]);
         } break;
         case 7: {
             return OSTaskChangePrio((INT8U) arg[0], (INT8U) arg[1]);
-        } break;
+        } //break;
         case 8: {
             return OSTaskDel((INT8U) arg[0]);
-        } break;
+        } //break;
         case 9: {
             return OSTaskDelReq((INT8U) arg[0]);
-        } break;
+        } //break;
         case 10: {
             return OSTaskResume((INT8U) arg[0]);
-        } break;
+        } //break;
         case 11: {
             return OSTaskStkChk((INT8U) arg[0], (OS_STK_DATA *) arg[1]);
-        } break;
+        } //break;
         case 12: {
             return OSTaskSuspend((INT8U) arg[0]);
-        } break;
+        } //break;
         case 13: {
             return OSTaskQuery((INT8U) arg[0], (OS_TCB *) arg[1]);
-        } break;
+        } //break;
         case 14: {
             return OSTaskRegGet((INT8U) arg[0], (INT8U) arg[1], (INT8U *) arg[2]);
-        } break;
+        } //break;
         case 15: {
             OSTaskRegSet((INT8U) arg[0], (INT8U) arg[1], arg[2], (INT8U *) arg[3]);
         } break;
+        case 16: {
+            ipc_receive();
+        } break;
+        case 17: {
+            return (u32) ipc_send((u8) arg[0], arg[1]);
+        } //break;
+        case 18: {
+            ipc_receive_foreign((u8) arg[0], arg[1], arg[2]);
+        }
+        case 19: {
+            return (u32) ipc_send_foreign((u8) arg[0], (u8) arg[1], arg[2], arg[3], arg[4]);
+        }
         default: {
             printf("Unknown System Call %d\n", no);
             panic("\n");
@@ -115,7 +128,7 @@ void OSPartitionTimerISR() {
     timer_irq_clear(GP_PART_TIMER_BASE);
     intc_event_clear(INTC_EVENT_PART_TIMER);
 
-    partition_schedule();
+    partition_tick();
 }
 
 void OSXMCExceptionISR() {

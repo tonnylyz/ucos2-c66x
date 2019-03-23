@@ -9,7 +9,7 @@
 #define PARTITION_MAX_NUM 8
 #define PARTITION_MAX_TASK_NUM (OS_MAX_TASKS + 1)
 
-typedef struct _partition_context_t {
+typedef struct {
     u32 OSCtxSwCtr;
     u8 OSIntNesting;
     u8 OSLockNesting;
@@ -48,6 +48,7 @@ typedef struct {
     u32 slice_ticks_left;
 
     u8 target_core;
+    bool ipc_need_resume;
 
     /* APEX COMPLIANCE */
     operating_mode_t operating_mode;
@@ -63,22 +64,20 @@ extern pcb_t *partition_current;
 
 void partition_init();
 
-void partition_warm_start(u8 id);
+void partition_register(partition_conf_t *conf);
 
-void partition_cold_start(u8 id);
-
-void partition_add(partition_conf_t *conf);
-
-void partition_schedule();
-
-void partition_switch();
+void partition_switch(pcb_t *prev, pcb_t *next);
 
 void partition_start();
 
+void partition_run(pcb_t *pcb);
+
 void partition_context_init(partition_context_t *context);
 
-void partition_context_save(partition_context_t *context);
+void partition_context_save_into(partition_context_t *context);
 
-void partition_context_load(partition_context_t *context);
+void partition_context_load_from(partition_context_t *context);
+
+void partition_tick();
 
 #endif //UCOS2_C66X_PARTITION_H

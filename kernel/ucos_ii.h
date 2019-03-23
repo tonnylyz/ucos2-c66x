@@ -531,6 +531,19 @@ typedef struct os_stk_data {
 *********************************************************************************************************
 */
 
+#define IPC_INTER_PARTITION_MAX_LENGTH 1024
+
+typedef struct {
+    bool is_receiving;
+    u8 expect_pid;
+    u32 value;
+    bool foreign_accessed;
+    u8 buf[IPC_INTER_PARTITION_MAX_LENGTH];
+    u32 addr;
+    u32 max_len;
+} ipc_t;
+
+
 typedef struct os_tcb {
     OS_STK          *OSTCBStkPtr;           /* Pointer to current top of stack                         */
 
@@ -593,7 +606,7 @@ typedef struct os_tcb {
 #if OS_TASK_REG_TBL_SIZE > 0u
     INT32U           OSTCBRegTbl[OS_TASK_REG_TBL_SIZE];
 #endif
-
+    ipc_t ipc;
     /* Context Saved in TCB*/
     task_context_t context_frame;
 
@@ -1245,8 +1258,8 @@ void          OS_FlagInit             (void);
 void          OS_FlagUnlink           (OS_FLAG_NODE    *pnode);
 #endif
 
-void          OS_MemClr               (INT8U           *pdest,
-                                       INT16U           size);
+void          OS_MemClr(INT8U *pdest,
+                        INT32U size);
 
 void          OS_MemCopy              (INT8U           *pdest,
                                        INT8U           *psrc,

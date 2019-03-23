@@ -31,6 +31,50 @@ void p0t0_entry(void *arg) {
     }
 }
 
+void p0t1_entry(void *arg) {
+    u8 buf[20];
+    u32 r;
+    r = task_ipc_receive_foreign(1, (u32) buf, 20);
+    puts("Task 1 received ");
+    putc((char) ('0' + r));
+    puts(": ");
+    puts((char *) buf);
+    putc('\n');
+
+    while (1) {
+        puts("Name: p0t1\n");
+        time_delay(5);
+    }
+}
+
+/*   Intra-partition Comm
+
+void p0t1_entry(void *arg) {
+    u32 r;
+    puts("Task 1 is to receive\n");
+    r = task_ipc_receive();
+    puts("Task 1 received\n");
+    putc((char) ('0' + r));
+    putc('\n');
+    while (1) {
+        time_delay(5);
+    }
+}
+
+void p0t2_entry(void *arg) {
+    int r;
+    r = task_ipc_send(P0_TASK_1_PRIO, 4);
+    if (r < 0) {
+        puts("Task 2 send failed\n");
+    } else {
+        puts("Task 2 send ok\n");
+    }
+    while (1) {
+        time_delay(5);
+    }
+}
+*/
+
 void p0_idle_entry(void *arg) {
     while (1) {
         asm volatile ("\tNOP 5");
@@ -49,7 +93,7 @@ task_conf_t p0_tasks[5] = {
                 .priority = OS_TASK_IDLE_PRIO
         },
         {
-                .entry = p0t0_entry,
+                .entry = p0t1_entry,
                 .stack_ptr = &p0t1_stack[P0_TASK_STACK_SIZE - 1],
                 .stack_size = P0_TASK_STACK_SIZE,
                 .arg = p0t1_arg,

@@ -69,3 +69,19 @@ u32 task_reg_get(u8 prio, u8 id, void *perr) {
 void task_reg_set(u8 prio, u8 id, u32 value, void *perr) {
     task_syscall(prio, id, value, (u32) perr, 0, 0, 0, 0, 15);
 }
+
+u32 task_ipc_receive() {
+    return task_syscall(0, 0, 0, 0, 0, 0, 0, 0, 16);
+}
+
+int task_ipc_send(u8 prio, u32 value) {
+    return (int) task_syscall(prio, value, 0, 0, 0, 0, 0, 0, 17);
+}
+
+u32 task_ipc_receive_foreign(u8 pid, u32 addr, u32 max_len) {
+    return task_syscall(pid, addr, max_len, 0, 0, 0, 0, 0, 18);
+}
+
+int task_ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
+    return (int) task_syscall(pid, prio, value, addr, len, 0, 0, 0, 19);
+}

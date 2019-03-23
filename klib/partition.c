@@ -1,73 +1,52 @@
 #include "partition.h"
+#include "apex.h"
 
 #include <printf.h>
 #include <ucos_ii.h>
 #include <xmc.h>
 #include <timer.h>
 #include <intc.h>
+#include <ipc.h>
 
 pcb_t *partition_current;
 
 #pragma DATA_SECTION(pcb_list, ".data:KERN_SHARE")
 pcb_t pcb_list[PARTITION_MAX_NUM];
 
-void partition_add(partition_conf_t *conf) {
-    u32 i, r;
+void partition_register(partition_conf_t *conf) {
+    u32 i;
     pcb_t *pcb;
     if (conf->identifier >= PARTITION_MAX_NUM) {
-        panic("partition_add: unable to allocate index from identifier");
+        panic("partition_add: unable to register index from identifier");
     }
-    printf("%s: adding part %d\n", __FUNCTION__, conf->identifier);
-
     pcb = &pcb_list[conf->identifier];
     pcb->conf = conf;
-    partition_context_t *context = &(pcb->partition_context);
-    partition_context_init(context);
-
     pcb->identifier = conf->identifier;
     pcb->target_core = conf->target_core;
     pcb->task_num = conf->task_num;
     pcb->slice_ticks = conf->slice_ticks;
     pcb->slice_ticks_left = 0;
-
-    partition_warm_start(conf->identifier);
-
-    pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);
-}
-
-
-void partition_warm_start(u8 id) {
-    int i, r;
-    pcb_t *pcb;
-    partition_conf_t *conf;
-    pcb = &pcb_list[id];
-    conf = pcb->conf;
-    partition_context_t *context = &(pcb->partition_context);
-
-    partition_context_load(context);
+    partition_context_init(&(pcb->partition_context));
+    partition_context_load_from(&(pcb->partition_context));
     for (i = 0; i < conf->task_num; i++) {
-        r = OSTaskCreate(
+        OSTaskCreate(
                 conf->task_conf_list[i].entry,
                 conf->task_conf_list[i].arg,
                 conf->task_conf_list[i].stack_ptr,
                 conf->task_conf_list[i].priority);
-        if (r != 0) {
-            printf("OSTaskCreate return %d\n", r);
-            panic("Create task failed");
-        }
-        OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = (INT16U) i;
+        OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = (INT16U) (i + 1);
     }
-    partition_context_save(context);
-}
-
-void partition_cold_start(u8 id) {
-    panic("partition_cold_start not supported.");
+    partition_context_save_into(&(pcb->partition_context));
+    pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);
 }
 
 void partition_init() {
     int i;
     partition_current = NULL;
     OS_MemClr((INT8U *) pcb_list, sizeof(pcb_list));
+    for (i = 0; i < PARTITION_MAX_NUM; i++) {
+        pcb_list[i].target_core = 255u;
+    }
 }
 
 void partition_context_init(partition_context_t *context) {
@@ -112,7 +91,7 @@ void partition_context_init(partition_context_t *context) {
     OS_MemClr((INT8U *) &context->OSTaskIdleStk[0], sizeof(context->OSTaskIdleStk));
 }
 
-void partition_context_save(partition_context_t *context) {
+void partition_context_save_into(partition_context_t *context) {
     context->OSTime         = OSTime;
 
     context->OSIntNesting   = OSIntNesting;
@@ -140,7 +119,7 @@ void partition_context_save(partition_context_t *context) {
     OSTaskIdleStk  = NULL;
 }
 
-void partition_context_load(partition_context_t *context) {
+void partition_context_load_from(partition_context_t *context) {
     OSTime         = context->OSTime;
 
     OSIntNesting   = context->OSIntNesting;
@@ -168,9 +147,9 @@ void partition_context_load(partition_context_t *context) {
     OSTaskIdleStk  = context->OSTaskIdleStk;
 }
 
-static inline pcb_t *_core_first_partition() {
+static pcb_t *_core_first_partition() {
     int i;
-    for (i = 0; i < part_num; i++) {
+    for (i = 0; i < PARTITION_MAX_NUM; i++) {
         if (pcb_list[i].target_core == core_id) {
             return &(pcb_list[i]);
         }
@@ -178,9 +157,9 @@ static inline pcb_t *_core_first_partition() {
     return NULL;
 }
 
-static inline pcb_t *_core_next_partition() {
+static pcb_t *_core_next_partition() {
     int i;
-    for (i = partition_current->identifier + 1; i < part_num; i++) {
+    for (i = partition_current->identifier + 1; i < PARTITION_MAX_NUM; i++) {
         if (pcb_list[i].target_core == core_id) {
             return &(pcb_list[i]);
         }
@@ -188,46 +167,40 @@ static inline pcb_t *_core_next_partition() {
     return _core_first_partition();
 }
 
-void partition_schedule() {
-    if (partition_current == NULL) {
-        panic("partition_schedule: current_partition == NULL");
+void partition_start() {
+    pcb_t *part;
+    part = _core_first_partition();
+    if (part == NULL) {
+        panic("No partition runs at this core.\n");
     }
+    part->slice_ticks_left = part->slice_ticks - 1;
+    if (core_id == 1) {
+        timer_init();
+    }
+    partition_current = part;
+    xmc_segment_activate(part->xmc_id);
+    partition_context_load_from(&(part->partition_context));
+    OSStart();
+}
+
+void partition_tick() {
     if (partition_current->slice_ticks_left == 0) {
-        printf("%s: part %d slice reduced to zero\n", __FUNCTION__, partition_current->identifier);
-        /* Need to switch to next partition */
         pcb_t *partition_next = _core_next_partition();
-        if (partition_next == partition_current) {
-            printf("%s: next part is current one\n", __FUNCTION__);
-            /* Refill slice */
-            partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
-            /* Next partition is current, continue */
-            return;
-        }
-        printf("%s: next part is %d\n", __FUNCTION__, partition_next->identifier);
-        OSTCBCur->context_frame = task_context_saved;
-        partition_context_save(&(partition_current->partition_context));
-        partition_current = partition_next;
-        partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
-        partition_switch();
+        partition_switch(partition_current, partition_next);
         return;
     } else {
-        printf("%s: part %d slice from %d -> %d\n", __FUNCTION__, partition_current->identifier,
-                partition_current->slice_ticks_left, partition_current->slice_ticks_left - 1);
         partition_current->slice_ticks_left--;
         return;
     }
 }
 
-void partition_switch() {
-    printf("partition_switch: switching to part %d\n", partition_current->identifier);
-    partition_context_load(&(partition_current->partition_context));
-    xmc_segment_activate(partition_current->xmc_id);
-    //xmc_mem_map_dump();
-    if (partition_current->partition_context.OSRunning) {
+void partition_run(pcb_t *pcb) {
+    partition_current = pcb;
+    xmc_segment_activate(pcb->xmc_id);
+    partition_context_load_from(&(pcb->partition_context));
+    if (OSRunning == OS_TRUE) {
+        ipc_scan_change();
         task_context_saved = OSTCBCur->context_frame;
-        if (OSTCBCur != OSTCBHighRdy || OSPrioCur != OSPrioHighRdy) {
-            panic("partition_switch: corrupted OSTCBCur");
-        }
         OSIntCtxSw();
     } else {
         INT8U y;
@@ -238,29 +211,18 @@ void partition_switch() {
         OSTCBCur = OSTCBHighRdy;
         OSRunning = OS_TRUE;
         task_context_saved = OSTCBCur->context_frame;
-        printf("%s: OS_SchedNew yield high ready t%d (pri%d)\n", __FUNCTION__, OSTCBHighRdy->OSTCBId, OSPrioHighRdy);
         OSIntCtxSw();
     }
 }
 
-
-void partition_start() {
-    partition_current = _core_first_partition();
-    if (partition_current == NULL) {
-        panic("CORE HAS NO PARTITION ALLOCATED");
+void partition_switch(pcb_t *prev, pcb_t *next) {
+    printf("partition_switch from %d to %d\n", prev->identifier, next->identifier);
+    if (prev == next) {
+        prev->slice_ticks_left = prev->slice_ticks - 1;
+        return;
     }
-    printf("%s: starting part %d\n", __FUNCTION__, partition_current->identifier);
-    partition_current->slice_ticks_left = partition_current->slice_ticks - 1;
-    partition_context_load(&(partition_current->partition_context));
-    printf("%s: ucos_context_load done\n", __FUNCTION__);
-    xmc_segment_activate(partition_current->xmc_id);
-    //xmc_mem_map_dump();
-    if (core_id == 1) {
-        timer_init();
-    }
-    printf("%s: timer_init done\n", __FUNCTION__);
-    printf("%s: ready to OSStart\n", __FUNCTION__);
-
-    OSStart();
+    OSTCBCur->context_frame = task_context_saved;
+    partition_context_save_into(&(prev->partition_context));
+    next->slice_ticks_left = next->slice_ticks - 1;
+    partition_run(next);
 }
-

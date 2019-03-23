@@ -39,4 +39,12 @@ u32 task_reg_get(u8 prio, u8 id, void *perr);
 
 void task_reg_set(u8 prio, u8 id, u32 value, void* perr);
 
+u32 task_ipc_receive();
+
+int task_ipc_send(u8 prio, u32 value);
+
+u32 task_ipc_receive_foreign(u8 pid, u32 addr, u32 max_len);
+
+int task_ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len);
+
 #endif //UCOS2_C66X_SYSCALL_H
