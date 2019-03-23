@@ -5,7 +5,6 @@
 #include <partition.h>
 #include <os_cpu.h>
 #include <spinlock.h>
-#include <mutex.h>
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
@@ -54,10 +53,10 @@ int main() {
         extern partition_conf_t p1_conf;
         extern partition_conf_t p2_conf;
         extern partition_conf_t p3_conf;
-        partition_add(&p0_conf);
-        partition_add(&p1_conf);
-        partition_add(&p2_conf);
-        partition_add(&p3_conf);
+        partition_register(&p0_conf);
+        partition_register(&p1_conf);
+        partition_register(&p2_conf);
+        partition_register(&p3_conf);
 
         dsp2_start_core();
 
