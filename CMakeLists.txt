@@ -49,4 +49,4 @@ add_executable(
         task/part_2.c
         task/part_2.h
 
-        platform/csp/intc.c platform/csp/intc.h task/syscall.c task/syscall.h platform/csp/xmc.c platform/csp/xmc.h klib/partition.c klib/partition.h klib/partition_conf.h klib/isr.c klib/isr.h platform/csp/spinlock.c platform/csp/spinlock.h klib/mutex.c klib/mutex.h klib/apex.c klib/apex.h klib/def.h)
+        platform/csp/intc.c platform/csp/intc.h task/syscall.c task/syscall.h platform/csp/xmc.c platform/csp/xmc.h klib/partition.c klib/partition.h klib/partition_conf.h klib/isr.c klib/isr.h platform/csp/spinlock.c platform/csp/spinlock.h klib/apex.c klib/apex.h klib/def.h klib/ipc.c klib/ipc.h)

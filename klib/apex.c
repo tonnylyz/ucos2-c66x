@@ -3,6 +3,7 @@
 //
 
 #include "apex.h"
+#include "printf.h"
 #include <partition.h>
 
 return_code_t apex_set_partition_mode(operating_mode_t ps) {
@@ -18,15 +19,9 @@ return_code_t apex_set_partition_mode(operating_mode_t ps) {
     partition_current->operating_mode = ps;
     if (ps == opm_idle) {
         // shutdown the partition
-    } else if (ps == opm_warm_start || ps == opm_cold_start) {
-        // inhibit process scheduling and switch back to initialization mode
-    } else /*if (ps == opm_normal)*/ {
-        /*set first release points of all previously started periodic processes
-        to their next partition period;
-        set first release points of all previously delay started periodic processes
-        to their next partition period, including their delay times;
-        calculate the DEADLINE_TIME of all non-dormant processes in the partition;
-        activate the process scheduling;*/
+        partition_current->target_core = 255u;
+    } else {
+        printf("Warning: setting partition_mode except for idle mode deal no change to the system");
     }
     return r_no_error;
 }
