@@ -8,6 +8,7 @@
     .global HandlerException
     .global HandlerPartitionTimer
     .global HandlerXMCException
+    .global HandlerMailbox
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           Macro                              ;;;
@@ -98,7 +99,19 @@ VEC_INT6:
     NOP 5
     NOP 5
 VEC_INT7:
-    RESV 8
+    B HandlerMailbox
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
+    NOP 5
 VEC_INT8:
     RESV 8
 VEC_INT9:

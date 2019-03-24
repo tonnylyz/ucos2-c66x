@@ -6,6 +6,7 @@
 #include <printf.h>
 #include <partition.h>
 #include <spinlock.h>
+#include <mailbox.h>
 #include "ipc.h"
 
 static bool _check_addr(u8 pid, u32 addr, u32 len) {
@@ -125,7 +126,7 @@ int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
 
     _unlock(pid, prio);
     if (pcb_list[pid].target_core != core_id) {
-        // TODO: notify another core?
+        mailbox_send(pid);
     }
     return 0;
 }

@@ -54,6 +54,7 @@ Ctx_TSR          .set 34
     .global OSPartitionTimerISR
     .global OSExceptionISR
     .global OSXMCExceptionISR
+    .global OSMailboxISR
     .ref OSTCBHighRdy
     .ref OSTCBCur
     .ref OSPrioCur
@@ -67,6 +68,7 @@ Ctx_TSR          .set 34
     .def HandlerException
     .def HandlerPartitionTimer
     .def HandlerXMCException
+    .def HandlerMailbox
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                           Macro                              ;;;
@@ -342,6 +344,28 @@ HandlerXMCException:
     MVKL	IntRestore,B3
     MVKH	IntRestore,B3
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                     Mailbox IRQ Handler                      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    .global HandlerMailbox
+HandlerMailbox:
+    ContextSave IRP,ITSR
+
+    MVKL    KERN_STACK,SP
+    MVKH    KERN_STACK,SP
+
+    MVKL    __TI_STATIC_BASE,DP
+    MVKH    __TI_STATIC_BASE,DP
+
+    CALL	OSMailboxISR
+    NOP		3
+    MVKL	IntRestore,B3
+    MVKH	IntRestore,B3
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                     Get CPU Core Id                          ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
     .global CPURegisterDNUM
 CPURegisterDNUM:

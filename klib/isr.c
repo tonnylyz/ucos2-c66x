@@ -9,6 +9,7 @@
 #include <os_cpu.h>
 #include <printf.h>
 #include <ucos_ii.h>
+#include <mailbox.h>
 
 
 void OSTaskTimerISR() {
@@ -137,4 +138,21 @@ void OSXMCExceptionISR() {
     printf("xmc fault address: [%08x]\n", *((u32 volatile *)XMC_XMPFAR));
     printf("xmc fault status:  [%08x]\n", *((u32 volatile *)XMC_XMPFSR));
     panic("OSXMCExceptionISR called");
+}
+
+void OSMailboxISR() {
+    mailbox_irq_clear();
+    intc_event_clear(INTC_EVENT_MAILBOX);
+    u8 pid = (u8) mailbox_receive();
+    if (pid >= PARTITION_MAX_NUM) {
+        return;
+    }
+    if (pcb_list[pid].target_core != core_id) {
+        return;
+    }
+    if (pid != partition_current->identifier) {
+        return;
+    }
+    printf("OSMailboxISR -> ipc_scan_change\n");
+    ipc_scan_change();
 }

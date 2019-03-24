@@ -84,4 +84,17 @@ void intc_init() {
 
     intc_event_map(INTC_EVENT_XMC, 6);
     intc_event_enable(INTC_EVENT_XMC);
+
+    if (core_id == 0) {
+        /* Core 0 is the Mailbox 2 User 0
+         * Core 1 is the Mailbox 1 User 0
+         *
+         * Core 0 remap  Mailbox_2_User_0 to IRQ 52 via crossbar
+         * Core 1 mapped Mailbox_1_User_0 to IRQ 52 by default
+         * */
+        mmio_writeb(0x4a002970, 0xed);
+    }
+
+    intc_event_map(INTC_EVENT_MAILBOX, 7);
+    intc_event_enable(INTC_EVENT_MAILBOX);
 }

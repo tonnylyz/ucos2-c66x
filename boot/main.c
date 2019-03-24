@@ -5,6 +5,7 @@
 #include <partition.h>
 #include <os_cpu.h>
 #include <spinlock.h>
+#include <mailbox.h>
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
@@ -38,14 +39,12 @@ int main() {
 
     if (core_id == 0) {
         printf("DSP_1 OS Build: %s %s\n", __DATE__, __TIME__);
-
-
         intc_init();
         printf("intc_init done\n");
-
         xmc_init();
         printf("xmc_init done\n");
-
+        mailbox_init();
+        printf("mailbox_init done\n");
         partition_init();
         printf("partition_init done\n");
 
@@ -59,25 +58,19 @@ int main() {
         partition_register(&p3_conf);
 
         dsp2_start_core();
-
         partition_start();
-
-
     } else {
         printf("DSP_2 OS Build: %s %s\n", __DATE__, __TIME__);
-
         intc_init();
         printf("intc_init done\n");
-
         xmc_init();
         printf("xmc_init done\n");
+        mailbox_init();
+        printf("mailbox_init done\n");
 
         partition_start();
     }
-
-
     while (1) {
         __asm ("\tNOP");
     }
-
 }

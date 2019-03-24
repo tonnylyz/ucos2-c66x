@@ -20,6 +20,8 @@
 #define INTC_EVENT_TASK_TIMER INTC_EVENT_TIMER_5
 #define INTC_EVENT_PART_TIMER INTC_EVENT_TIMER_6
 
+#define INTC_EVENT_MAILBOX 52
+
 void intc_init();
 
 void intc_event_clear(u32 eventId);
