@@ -21,7 +21,7 @@ void time_set(u32 ticks);
 
 /* syscall ~ os_task.c */
 
-int task_task_change_priority(u8 oldprio, u8 newprio);
+int task_change_priority(u8 oldprio, u8 newprio);
 
 int task_delete(u8 prio);
 

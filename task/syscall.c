@@ -34,7 +34,7 @@ void time_set(u32 ticks) {
     task_syscall(ticks, 0, 0, 0, 0, 0, 0, 0, 6);
 }
 
-int task_task_change_priority(u8 oldprio, u8 newprio) {
+int task_change_priority(u8 oldprio, u8 newprio) {
     return (int) task_syscall(oldprio, newprio, 0, 0, 0, 0, 0, 0, 7);
 }
 
