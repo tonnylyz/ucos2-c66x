@@ -1,6 +1,8 @@
 project(ucos2-c66x)
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_C_STANDARD 11)
+
 include_directories(
         boot
         kernel
@@ -32,13 +34,33 @@ add_executable(
         platform/c66x/os_cpu.h
         platform/c66x/os_cpu_c.c
 
-        platform/csp/types.h
-        platform/csp/timer.c platform/csp/timer.h
-        platform/csp/uart.c platform/csp/uart.h
         platform/csp/mmio.h
+        platform/csp/types.h
+        platform/csp/timer.c
+        platform/csp/timer.h
+        platform/csp/uart.c
+        platform/csp/uart.h
+        platform/csp/intc.c
+        platform/csp/intc.h
+        platform/csp/mailbox.c
+        platform/csp/mailbox.h
+        platform/csp/xmc.c
+        platform/csp/xmc.h
+        platform/csp/spinlock.c
+        platform/csp/spinlock.h
 
         klib/printf.c
         klib/printf.h
+        klib/partition.c
+        klib/partition.h
+        klib/partition_conf.h
+        klib/isr.c
+        klib/isr.h
+        klib/apex.c
+        klib/apex.h
+        klib/def.h
+        klib/ipc.c
+        klib/ipc.h
 
         task/part_0.c
         task/part_0.h
@@ -48,5 +70,6 @@ add_executable(
         task/part_3.h
         task/part_2.c
         task/part_2.h
-
-        platform/csp/intc.c platform/csp/intc.h task/syscall.c task/syscall.h platform/csp/xmc.c platform/csp/xmc.h klib/partition.c klib/partition.h klib/partition_conf.h klib/isr.c klib/isr.h platform/csp/spinlock.c platform/csp/spinlock.h klib/apex.c klib/apex.h klib/def.h klib/ipc.c klib/ipc.h platform/csp/mailbox.c platform/csp/mailbox.h)
+        task/syscall.c
+        task/syscall.h
+)
