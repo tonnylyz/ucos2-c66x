@@ -1947,13 +1947,8 @@ void  OS_TaskStatStkChk (void)
 *********************************************************************************************************
 */
 
-INT8U  OS_TCBInit (INT8U    prio,
-                   OS_STK  *ptos,
-                   OS_STK  *pbos,
-                   INT16U   id,
-                   INT32U   stk_size,
-                   void    *pext,
-                   INT16U   opt)
+INT8U OS_TCBInit(INT8U prio, OS_STK *ptos, OS_STK *pbos, INT16U id, INT32U stk_size, void *pext, INT16U opt,
+                 task_context_t *context)
 {
     OS_TCB    *ptcb;
 #if OS_CRITICAL_METHOD == 3u                               /* Allocate storage for CPU status register */
@@ -1991,7 +1986,7 @@ INT8U  OS_TCBInit (INT8U    prio,
 
         /* Load Context Frame */
         if (pext != 0) {
-            ptcb->context_frame = *((task_context_t *)pext);
+            ptcb->context_frame = *context;
         }
 
 

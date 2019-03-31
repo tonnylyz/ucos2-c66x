@@ -8,11 +8,8 @@ task_context_t task_context_saved __attribute__ ((aligned (1024)));
 
 extern u32 __TI_STATIC_BASE;
 
-OS_STK *OSTaskStkInit(void (*task)(void *pd), void *pdata, OS_STK *ptos, INT32U opt)
+OS_STK *OSTaskStkInit(void (*task)(void *), void *pdata, OS_STK *ptos, INT16U opt, task_context_t *frame)
 {
-    task_context_t *frame;
-    frame = (task_context_t *)opt;
-
     frame->A0 = 0x0A00;
     frame->A1 = 0x0A01;
     frame->A2 = 0x0A02;

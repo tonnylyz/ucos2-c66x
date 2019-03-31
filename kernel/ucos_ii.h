@@ -1297,13 +1297,8 @@ void          OS_TaskStkClr           (OS_STK          *pbos,
 void          OS_TaskStatStkChk       (void);
 #endif
 
-INT8U         OS_TCBInit              (INT8U            prio,
-                                       OS_STK          *ptos,
-                                       OS_STK          *pbos,
-                                       INT16U           id,
-                                       INT32U           stk_size,
-                                       void            *pext,
-                                       INT16U           opt);
+INT8U OS_TCBInit(INT8U prio, OS_STK *ptos, OS_STK *pbos, INT16U id, INT32U stk_size, void *pext, INT16U opt,
+                 task_context_t *context);
 
 #if OS_TMR_EN > 0u
 void          OSTmr_Init              (void);
@@ -1332,10 +1327,7 @@ void          OSTaskIdleHook          (void);
 void          OSTaskReturnHook        (OS_TCB          *ptcb);
 
 void          OSTaskStatHook          (void);
-OS_STK       *OSTaskStkInit           (void           (*task)(void *p_arg),
-                                       void            *p_arg,
-                                       OS_STK          *ptos,
-                                       INT32U           opt);
+OS_STK *OSTaskStkInit(void (*task)(void *), void *pdata, OS_STK *ptos, INT16U opt, task_context_t *frame);
 
 #if OS_TASK_SW_HOOK_EN > 0u
 void          OSTaskSwHook            (void);
