@@ -38,7 +38,36 @@ typedef enum {
 
 typedef u32 system_time_t;
 
-#define PORT_MAX_NUMBER 128
+typedef u16 process_id_t;
+
+typedef enum {
+    ddl_soft,
+    ddl_hard,
+} deadline_t;
+
+typedef enum {
+    ps_dormant,
+    ps_ready,
+    ps_running,
+    ps_waiting,
+} process_state_t;
+
+typedef struct {
+    char *name;
+    u32 entry_point;
+    u32 stack_size;
+    u8  base_priority;
+    system_time_t period;
+    system_time_t time_capacity;
+    deadline_t deadline;
+} process_attribute_t;
+
+typedef struct {
+    process_attribute_t attributes;
+    u8 current_priority;
+    system_time_t deadline_time;
+    process_state_t process_state;
+} process_status_t;
 
 typedef u32 message_addr_t;
 typedef u32 message_size_t;

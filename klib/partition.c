@@ -26,8 +26,8 @@ void partition_register(partition_conf_t *conf) {
     pcb->task_num = conf->task_num;
     pcb->slice_ticks = conf->slice_ticks;
     pcb->slice_ticks_left = 0;
-    partition_context_init(&(pcb->partition_context));
-    partition_context_load_from(&(pcb->partition_context));
+    partition_context_init(&(pcb->context));
+    partition_context_load_from(&(pcb->context));
     for (i = 0; i < conf->task_num; i++) {
         OSTaskCreate(
                 conf->task_conf_list[i].entry,
@@ -36,7 +36,7 @@ void partition_register(partition_conf_t *conf) {
                 conf->task_conf_list[i].priority);
         OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = (INT16U) (i + 1);
     }
-    partition_context_save_into(&(pcb->partition_context));
+    partition_context_save_into(&(pcb->context));
     pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);
 }
 
@@ -179,7 +179,7 @@ void partition_start() {
     }
     partition_current = part;
     xmc_segment_activate(part->xmc_id);
-    partition_context_load_from(&(part->partition_context));
+    partition_context_load_from(&(part->context));
     OSStart();
 }
 
@@ -197,7 +197,7 @@ void partition_tick() {
 void partition_run(pcb_t *pcb) {
     partition_current = pcb;
     xmc_segment_activate(pcb->xmc_id);
-    partition_context_load_from(&(pcb->partition_context));
+    partition_context_load_from(&(pcb->context));
     if (OSRunning == OS_TRUE) {
         ipc_scan_change();
         task_context_saved = OSTCBCur->context_frame;
@@ -222,7 +222,7 @@ void partition_switch(pcb_t *prev, pcb_t *next) {
         return;
     }
     OSTCBCur->context_frame = task_context_saved;
-    partition_context_save_into(&(prev->partition_context));
+    partition_context_save_into(&(prev->context));
     next->slice_ticks_left = next->slice_ticks - 1;
     partition_run(next);
 }

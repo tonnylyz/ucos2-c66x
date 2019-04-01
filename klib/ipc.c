@@ -59,7 +59,7 @@ void ipc_receive_foreign(u8 pid, u32 addr, u32 max_len) {
 int ipc_send(u8 prio, u32 value) {
     OS_TCB* tcb;
     _lock(partition_current->identifier, prio);
-    tcb = partition_current->partition_context.OSTCBPrioTbl[prio];
+    tcb = partition_current->context.OSTCBPrioTbl[prio];
 
     if (tcb == NULL) {
         _unlock(partition_current->identifier, prio);
@@ -98,7 +98,7 @@ int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
         return IPC_ERROR_ADDRESS_BOUNDARY;
     }
     _lock(pid, prio);
-    tcb = pcb_list[pid].partition_context.OSTCBPrioTbl[prio];
+    tcb = pcb_list[pid].context.OSTCBPrioTbl[prio];
     if (tcb == NULL) {
         _unlock(pid, prio);
         return IPC_ERROR_DEST_TASK_NOT_EXISTS;
@@ -134,7 +134,7 @@ int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
 void ipc_scan_change() {
     u8 i;
     for (i = 0; i <= OS_LOWEST_PRIO; i++) {
-        OS_TCB *tcb = partition_current->partition_context.OSTCBPrioTbl[i];
+        OS_TCB *tcb = partition_current->context.OSTCBPrioTbl[i];
         if (tcb == NULL) {
             continue;
         }

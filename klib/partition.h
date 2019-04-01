@@ -42,7 +42,7 @@ typedef struct {
     u8 xmc_id;
     u8 task_num;
 
-    partition_context_t partition_context;
+    partition_context_t context;
 
     u32 slice_ticks;
     u32 slice_ticks_left;
