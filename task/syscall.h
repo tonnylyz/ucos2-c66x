@@ -50,11 +50,18 @@ u32 task_ipc_receive_foreign(u8 pid, u32 addr, u32 max_len);
 
 int task_ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len);
 
+/* syscall ~ APEX partition management */
+
+void u_apex_set_partition_mode(operating_mode_t ps, return_code_t *r);
+
+void u_apex_get_partition_mode(operating_mode_t *pps, return_code_t *r);
+
 /* syscall ~ APEX process management */
 
 void u_apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r);
 
 void u_apex_get_process_status(process_id_t id, process_status_t *pps, return_code_t *r);
+
 
 
 #endif //UCOS2_C66X_SYSCALL_H

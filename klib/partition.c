@@ -19,6 +19,9 @@ void partition_register(partition_conf_t *conf) {
     if (conf->identifier >= PARTITION_MAX_NUM) {
         panic("partition_add: unable to register index from identifier");
     }
+    if (conf->task_num > PARTITION_MAX_PROCESS_NUM) {
+        panic("partition_add: task number exceeds limit");
+    }
     pcb = &pcb_list[conf->identifier];
     pcb->conf = conf;
     pcb->identifier = conf->identifier;
@@ -28,13 +31,30 @@ void partition_register(partition_conf_t *conf) {
     pcb->slice_ticks_left = 0;
     partition_context_init(&(pcb->context));
     partition_context_load_from(&(pcb->context));
+    u16 pid;
     for (i = 0; i < conf->task_num; i++) {
+        pid = i + 1;
         OSTaskCreate(
                 conf->task_conf_list[i].entry,
                 conf->task_conf_list[i].arg,
                 conf->task_conf_list[i].stack_ptr,
                 conf->task_conf_list[i].priority);
-        OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = (INT16U) (i + 1);
+        OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = pid;
+        pcb->process_list[i].pid = pid;
+        pcb->process_list[i].tcb = OSTCBPrioTbl[conf->task_conf_list[i].priority];
+        pcb->process_list[i].attributes = (process_attribute_t) {
+            .name = conf->task_conf_list[i].name,
+            .deadline = ddl_soft,
+            .base_priority = conf->task_conf_list[i].priority,
+            .entry_point = (u32) conf->task_conf_list[i].entry,
+            .period = 0,
+            .stack_size = conf->task_conf_list[i].stack_size,
+            .time_capacity = 0,
+        };
+        pcb->process_list[i].current_priority = conf->task_conf_list[i].priority;
+        pcb->process_list[i].deadline_time = 0;
+        pcb->process_list[i].process_state = ps_ready;
+
     }
     partition_context_save_into(&(pcb->context));
     pcb->xmc_id = xmc_segment_allocate(&conf->memory_conf);

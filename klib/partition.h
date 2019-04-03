@@ -7,6 +7,7 @@
 #include "partition_conf.h"
 
 #define PARTITION_MAX_NUM 8
+#define PARTITION_MAX_PROCESS_NUM 8
 #define PARTITION_MAX_TASK_NUM (OS_MAX_TASKS + 1)
 
 typedef struct {
@@ -41,6 +42,7 @@ typedef struct {
     u8 identifier;
     u8 xmc_id;
     u8 task_num;
+    process_status_t process_list[PARTITION_MAX_PROCESS_NUM];
 
     partition_context_t context;
 

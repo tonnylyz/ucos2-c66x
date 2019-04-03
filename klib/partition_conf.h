@@ -10,6 +10,7 @@ typedef struct {
 } memory_conf_t;
 
 typedef struct {
+    char name[16];
     void (*entry)(void *);
     void *stack_ptr;
     u32 stack_size;

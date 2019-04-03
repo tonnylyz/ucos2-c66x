@@ -29,9 +29,6 @@ void dsp2_start_core() {
 
 u8 core_id;
 
-#pragma DATA_SECTION(counter, ".data:KERN_SHARE")
-volatile static u32 counter = 0;
-
 int main() {
     core_id = CPURegisterDNUM();
     //mmio_write(0x01840040, 0); // disable l1d cache

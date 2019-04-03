@@ -6,6 +6,7 @@
 #define UCOS2_C66X_DEF_H
 
 #include <types.h>
+#include <ucos_ii.h>
 
 typedef enum {
     sc_normal_start,
@@ -67,6 +68,8 @@ typedef struct {
     u8 current_priority;
     system_time_t deadline_time;
     process_state_t process_state;
+    OS_TCB *tcb;
+    u16 pid;
 } process_status_t;
 
 typedef u32 message_addr_t;
