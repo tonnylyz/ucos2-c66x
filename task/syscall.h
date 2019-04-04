@@ -64,4 +64,6 @@ void u_apex_get_process_status(process_id_t id, process_status_t *pps, return_co
 
 void u_apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, return_code_t *r);
 
+void u_apex_set_priority(process_id_t pid, u8 priority, return_code_t *r);
+
 #endif //UCOS2_C66X_SYSCALL_H

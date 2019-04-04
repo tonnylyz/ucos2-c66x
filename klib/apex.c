@@ -107,7 +107,8 @@ void apex_get_process_status(process_id_t pid, process_status_t *pps, return_cod
         *r = r_invalid_config;
         return;
     }
-    *pps = partition_current->process_list[pid - 1];
+    *pps = partition_current->process_list[pid - 1];/* `pid` index from 1 */
+    pps->tcb = NULL;
     *r = r_no_error;
 }
 
@@ -176,4 +177,27 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
     partition_current->task_num ++;
     *ppid = i;
     *r = r_no_error;
+}
+
+void apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+    if (pid - 1 >= partition_current->task_num) {
+        *r = r_invalid_param;
+        return;
+    }
+    if (priority == 0 || priority > OS_LOWEST_PRIO) {
+        *r = r_invalid_param;
+        return;
+    }
+    if (partition_current->process_list[pid - 1].process_state == ps_dormant) {
+        *r = r_invalid_mode;
+        return;
+    }
+    if (partition_current->context.OSTCBPrioTbl[priority] != NULL) {
+        *r = r_invalid_param;
+        return;
+    }
+    OSTaskChangePrio(partition_current->process_list[pid- 1].tcb->OSTCBPrio, priority);
 }

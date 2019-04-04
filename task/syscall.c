@@ -4,7 +4,7 @@
 #pragma SET_DATA_SECTION(".data:PART_S")
 
 extern u32 task_syscall(u32 a0, u32 a1, u32 a2, u32 a3,
-                          u32 a4, u32 a5, u32 a6, u32 a7, u32 no);
+                        u32 a4, u32 a5, u32 a6, u32 a7, u32 no);
 
 void putc(char c) {
     task_syscall((u32) c, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -104,4 +104,8 @@ void u_apex_get_process_status(process_id_t id, process_status_t *pps, return_co
 
 void u_apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, return_code_t *r) {
     task_syscall((u32) ppa, (u32) ppid, (u32) r, 0, 0, 0, 0, 0, 24);
+}
+
+void u_apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
+    task_syscall(pid, priority, (u32) r, 0, 0, 0, 0, 0, 25);
 }
