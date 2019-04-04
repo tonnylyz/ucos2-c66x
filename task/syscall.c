@@ -109,3 +109,15 @@ void u_apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, r
 void u_apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
     task_syscall(pid, priority, (u32) r, 0, 0, 0, 0, 0, 25);
 }
+
+void u_apex_suspend_self(system_time_t time_out, return_code_t *r) {
+    task_syscall(time_out, (u32) r, 0, 0, 0, 0, 0, 0, 26);
+}
+
+void u_apex_stop_self(void) {
+    task_syscall(0, 0, 0, 0, 0, 0, 0, 0, 27);
+}
+
+void u_apex_get_my_id(process_id_t *ppid, return_code_t *r) {
+    task_syscall((u32) ppid, (u32) r, 0, 0, 0, 0, 0, 0, 28);
+}

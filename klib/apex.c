@@ -201,3 +201,51 @@ void apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
     }
     OSTaskChangePrio(partition_current->process_list[pid- 1].tcb->OSTCBPrio, priority);
 }
+
+void apex_suspend_self(system_time_t time_out, return_code_t *r) {
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+    /* preemption is always enabled
+     * there is no error handler process
+     * */
+    if (time_out > 0xffff) {
+        *r = r_invalid_param;
+        return;
+    }
+    u16 pid = OSTCBCur->OSTCBId;
+    if (partition_current->process_list[pid - 1].attributes.period != 0) {
+        *r = r_invalid_mode;
+        return;
+    }
+
+    if (time_out == 0) {
+        *r = r_no_error;
+        return;
+    }
+
+    partition_current->process_list[pid - 1].process_state = ps_waiting;
+    *r = r_no_error;
+    if (time_out != 0xffff) {
+        OSTimeDly(time_out);
+    } /* No support for finite time out */
+    /* expiration of time out logic not presented */
+}
+
+void apex_stop_self(void) {
+    OSTaskDel(OS_PRIO_SELF);
+}
+
+void apex_get_my_id(process_id_t *ppid, return_code_t *r) {
+    if (_is_malicious_pointer(ppid, sizeof(process_id_t))) {
+        return;
+    }
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+    *ppid = OSTCBCur->OSTCBId;
+    *r = r_no_error;
+}
+
+
+

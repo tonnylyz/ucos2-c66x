@@ -102,6 +102,15 @@ static u32 _handle_syscall(u32 no, u32* arg) {
         case 25: {
             apex_set_priority(arg[0], arg[1], (return_code_t *) arg[2]);
         } break;
+        case 26: {
+            apex_suspend_self(arg[0], (return_code_t *) arg[1]);
+        } break;
+        case 27: {
+            apex_stop_self();
+        } break;
+        case 28: {
+            apex_get_my_id((process_id_t *) arg[0], (return_code_t *) arg[1]);
+        } break;
         default: {
             printf("Unknown System Call %d\n", no);
             panic("\n");
