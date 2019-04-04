@@ -85,3 +85,23 @@ u32 task_ipc_receive_foreign(u8 pid, u32 addr, u32 max_len) {
 int task_ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
     return (int) task_syscall(pid, prio, value, addr, len, 0, 0, 0, 19);
 }
+
+void u_apex_set_partition_mode(operating_mode_t ps, return_code_t *r) {
+    task_syscall(ps, (u32) r, 0, 0, 0, 0, 0, 0, 20);
+}
+
+void u_apex_get_partition_mode(operating_mode_t *pps, return_code_t *r) {
+    task_syscall((u32) pps, (u32) r, 0, 0, 0, 0, 0, 0, 21);
+}
+
+void u_apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r) {
+    task_syscall((u32) name, (u32) ppid, (u32) r, 0, 0, 0, 0, 0, 22);
+}
+
+void u_apex_get_process_status(process_id_t id, process_status_t *pps, return_code_t *r) {
+    task_syscall(id, (u32) pps, (u32) r, 0, 0, 0, 0, 0, 23);
+}
+
+void u_apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, return_code_t *r) {
+    task_syscall((u32) ppa, (u32) ppid, (u32) r, 0, 0, 0, 0, 0, 24);
+}

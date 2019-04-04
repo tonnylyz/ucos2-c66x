@@ -13,6 +13,13 @@ pcb_t *partition_current;
 #pragma DATA_SECTION(pcb_list, ".data:KERN_SHARE")
 pcb_t pcb_list[PARTITION_MAX_NUM];
 
+static void _strncpy(char *dst, const char *src, u32 len) {
+    u32 i;
+    for (i = 0; i < len; i++) {
+        dst[i] = src[i];
+    }
+}
+
 void partition_register(partition_conf_t *conf) {
     u32 i;
     pcb_t *pcb;
@@ -43,7 +50,7 @@ void partition_register(partition_conf_t *conf) {
         pcb->process_list[i].pid = pid;
         pcb->process_list[i].tcb = OSTCBPrioTbl[conf->task_conf_list[i].priority];
         pcb->process_list[i].attributes = (process_attribute_t) {
-            .name = conf->task_conf_list[i].name,
+            /*.name = conf->task_conf_list[i].name,*/
             .deadline = ddl_soft,
             .base_priority = conf->task_conf_list[i].priority,
             .entry_point = (u32) conf->task_conf_list[i].entry,
@@ -51,6 +58,7 @@ void partition_register(partition_conf_t *conf) {
             .stack_size = conf->task_conf_list[i].stack_size,
             .time_capacity = 0,
         };
+        _strncpy(pcb->process_list[i].attributes.name, conf->task_conf_list[i].name, PROCESS_ATTR_NAME_MAX_LEN);
         pcb->process_list[i].current_priority = conf->task_conf_list[i].priority;
         pcb->process_list[i].deadline_time = 0;
         pcb->process_list[i].process_state = ps_ready;

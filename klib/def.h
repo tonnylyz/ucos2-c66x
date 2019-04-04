@@ -53,8 +53,10 @@ typedef enum {
     ps_waiting,
 } process_state_t;
 
+#define PROCESS_ATTR_NAME_MAX_LEN 16
+
 typedef struct {
-    char *name;
+    char name[PROCESS_ATTR_NAME_MAX_LEN];
     u32 entry_point;
     u32 stack_size;
     u8  base_priority;
@@ -98,34 +100,5 @@ typedef struct {
     sampling_port_id_t id;
     sampling_port_status_t status;
 } sampling_port_t;
-
-typedef u32 queuing_port_id_t;
-typedef char* queuing_port_name_t;
-
-typedef enum {
-    qd_fifo,
-    qd_priority,
-} queuing_discipline_t;
-
-typedef u32 message_range_t;
-typedef u32 waiting_range_t;
-
-typedef struct {
-    message_range_t nb_message;
-    message_range_t max_nb_message;
-    message_size_t max_message_size;
-    port_direction_t port_direction;
-    waiting_range_t waiting_processes;
-} queuing_port_status_t;
-
-
-
-return_code_t apex_create_sampling_port(
-        sampling_port_name_t sampling_port_name,
-        message_size_t max_message_size,
-        port_direction_t port_direction,
-        system_time_t refresh_period,
-        sampling_port_id_t *p_sampling_port_id);
-
 
 #endif //UCOS2_C66X_DEF_H

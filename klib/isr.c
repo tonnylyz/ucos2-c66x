@@ -85,16 +85,19 @@ static u32 _handle_syscall(u32 no, u32* arg) {
             return (u32) ipc_send_foreign((u8) arg[0], (u8) arg[1], arg[2], arg[3], arg[4]);
         }
         case 20: {
-            /* TODO: mitigate potential malicious pointer */
             apex_set_partition_mode((operating_mode_t) arg[0], (return_code_t *) arg[1]);
         } break;
         case 21: {
             apex_get_partition_mode((operating_mode_t *) arg[0], (return_code_t *) arg[1]);
         } break;
         case 22: {
+            apex_get_process_id((char *) arg[0], (process_id_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         case 23: {
-
+            apex_get_process_status(arg[0], (process_status_t *) arg[1], (return_code_t *) arg[2]);
+        } break;
+        case 24: {
+            apex_create_process((const process_attribute_t *) arg[0], (process_id_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         default: {
             printf("Unknown System Call %d\n", no);
