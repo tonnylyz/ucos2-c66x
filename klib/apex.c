@@ -56,23 +56,6 @@ void apex_get_partition_mode(operating_mode_t *pps, return_code_t *r) {
     *r = r_no_error;
 }
 
-static u32 _strlen(const char *str) {
-    u32 i;
-    for (i = 0; str[i] == '\0' && i < APEX_NAME_MAX_LEN; i++);
-    return i;
-}
-
-static bool _str_equal(const char *a, const char *b) {
-    u32 i;
-    u32 a_len, b_len;
-    a_len = _strlen(a);
-    b_len = _strlen(b);
-    if (a_len != b_len) return false;
-    for (i = 0; i < a_len; i++) {
-        if (a[i] != b[i]) return false;
-    }
-    return true;
-}
 
 void apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r) {
     if (_is_malicious_pointer(name, APEX_NAME_MAX_LEN)) {
@@ -249,7 +232,7 @@ void apex_get_my_id(process_id_t *ppid, return_code_t *r) {
 
 port_conf_t *_port_conf(const char *name) {
     u8 i;
-    for (i = 0; i < port_conf_num; i++) {
+    for (i = 0; i < PORT_CONF_NUM; i++) {
         if (_str_equal(name, port_conf_list[i].name)) {
             return &(port_conf_list[i]);
         }
@@ -273,18 +256,15 @@ void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_
     }
 
     sampling_port_t *port;
-    u8 i;
     port_conf_t *conf;
     conf = _port_conf(sampling_port_name);
     if (conf == NULL) {
         *r = r_invalid_config;
         return;
     }
-    for (i = 0; i < ports_index; i++) {
-        if (_str_equal(sampling_port_name, ports[i].conf->name)) {
-            *r = r_no_action;
-            return;
-        }
+    if (port_exist(sampling_port_name)) {
+        *r = r_no_action;
+        return;
     }
     if (max_message_size > IPC_INTER_PARTITION_MAX_LENGTH || max_message_size != conf->max_message_size) {
         *r = r_invalid_config;
@@ -335,19 +315,19 @@ void apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_
         return;
     }
 
-
-    if (sampling_port_id >= ports_index) {
+    sampling_port_t *port = port_get(sampling_port_id);
+    if (port == NULL) {
         *r = r_invalid_param;
         return;
     }
-    if (length > ports[sampling_port_id].conf->max_message_size) {
+    if (length > port->conf->max_message_size) {
         *r = r_invalid_config;
         return;
     }
-    if (ports[sampling_port_id].status.port_direction != pd_source) {
+    if (port->status.port_direction != pd_source) {
         *r = r_invalid_mode;
     }
-    _memcpy(ports[sampling_port_id].payload, (void *) message_addr, length);
+    _memcpy(port->payload, (void *) message_addr, length);
     *r = r_no_error;
 }
 
@@ -369,11 +349,11 @@ void apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t
     }
 
 
-    if (sampling_port_id >= ports_index) {
+    sampling_port_t *port = port_get(sampling_port_id);
+    if (port == NULL) {
         *r = r_invalid_param;
         return;
     }
-    sampling_port_t *port = &ports[sampling_port_id];
     if (port->status.port_direction != pd_destination) {
         *r = r_invalid_mode;
         return;
@@ -408,14 +388,13 @@ void apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling
     }
 
     u8 i;
-    for (i = 0; i < ports_index; i++) {
-        if (_str_equal(sampling_port_name, ports[i].conf->name)) {
-            *r = r_no_error;
-            *pid = ports[i].id;
-            return;
-        }
+    i = port_name2id(sampling_port_name);
+    if (i == 0xff) {
+        *r = r_invalid_config;
+        return;
     }
-    *r = r_invalid_config;
+    *r = r_no_error;
+    *pid = i;
 }
 
 void apex_get_sampling_port_status(sampling_port_id_t sampling_port_id, sampling_port_status_t *pstatus, return_code_t *r) {
@@ -427,11 +406,12 @@ void apex_get_sampling_port_status(sampling_port_id_t sampling_port_id, sampling
         return;
     }
 
-    if (sampling_port_id >= ports_index) {
+    sampling_port_t *port = port_get(sampling_port_id);
+    if (port == NULL) {
         *r = r_invalid_param;
         return;
     }
-    *pstatus = ports[sampling_port_id].status;
+    *pstatus = port->status;
     /*  -- The status should provide the LAST_MSG_VALIDITY that is the validity of
         -- the last read message in the port.*/
     *r = r_no_error;

@@ -74,4 +74,22 @@ typedef struct {
     u16 pid;
 } process_status_t;
 
+static inline u32 _strlen(const char *str) {
+    u32 i;
+    for (i = 0; str[i] == '\0' && i < APEX_NAME_MAX_LEN; i++);
+    return i;
+}
+
+static inline bool _str_equal(const char *a, const char *b) {
+    u32 i;
+    u32 a_len, b_len;
+    a_len = _strlen(a);
+    b_len = _strlen(b);
+    if (a_len != b_len) return false;
+    for (i = 0; i < a_len; i++) {
+        if (a[i] != b[i]) return false;
+    }
+    return true;
+}
+
 #endif //UCOS2_C66X_DEF_H

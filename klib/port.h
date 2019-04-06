@@ -46,14 +46,15 @@ typedef struct {
     u32 actual_length;
 } sampling_port_t;
 
-
-
-extern sampling_port_t ports[PORT_MAX_NUM];
-extern u8 ports_index;
-
 extern port_conf_t port_conf_list[];
-extern u8 port_conf_num;
+#define PORT_CONF_NUM 2
 
 sampling_port_t *port_alloc();
+
+sampling_port_t *port_get(u8 id);
+
+bool port_exist(const char *name);
+
+u8 port_name2id(const char *name);
 
 #endif //UCOS2_C66X_PORT_H
