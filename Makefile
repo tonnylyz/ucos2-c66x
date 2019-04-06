@@ -10,12 +10,12 @@ UCOSII_OBJS := kernel/os_core.obj  kernel/os_flag.obj kernel/os_mbox.obj kernel/
                kernel/os_mutex.obj kernel/os_q.obj    kernel/os_sem.obj  kernel/os_task.obj \
                kernel/os_time.obj  kernel/os_tmr.obj  kernel/os_dbg.obj
 # Platform Objects
-PLATFORM_OBJS := platform/csp/timer.obj \
-                 platform/csp/uart.obj \
-                 platform/csp/intc.obj \
-                 platform/csp/xmc.obj \
-                 platform/csp/mailbox.obj \
-                 platform/csp/spinlock.obj \
+PLATFORM_OBJS := platform/driver/timer.obj \
+                 platform/driver/uart.obj \
+                 platform/driver/intc.obj \
+                 platform/driver/xmc.obj \
+                 platform/driver/mailbox.obj \
+                 platform/driver/spinlock.obj \
                  platform/c66x/os_cpu_a.obj \
                  platform/c66x/os_cpu_c.obj
 
@@ -23,9 +23,11 @@ PLATFORM_OBJS := platform/csp/timer.obj \
 TASK_OBJS := task/part_0.obj \
              task/part_1.obj \
              task/part_2.obj \
-             task/part_3.obj \
-             task/syscall.obj \
-             task/syscall_s.obj
+             task/part_3.obj
+
+# User Library Objects
+ULIB_OBJS := ulib/syscall.obj \
+             ulib/syscall_s.obj
 
 # Kernel Library Objects
 KLIB_OBJS := klib/printf.obj \
@@ -35,14 +37,15 @@ KLIB_OBJS := klib/printf.obj \
              klib/port.obj \
              klib/ipc.obj
 
-OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(TASK_OBJS) $(UCOSII_OBJS) $(KLIB_OBJS)
+OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(TASK_OBJS) $(UCOSII_OBJS) $(ULIB_OBJS) $(KLIB_OBJS)
 
 INCLUDE_PATH := --include_path="$(CURDIR)" \
                 --include_path="$(CURDIR)/boot" \
-                --include_path="$(CURDIR)/platform/csp" \
+                --include_path="$(CURDIR)/platform/driver" \
                 --include_path="$(CURDIR)/platform/c66x" \
                 --include_path="$(CURDIR)/task" \
                 --include_path="$(CURDIR)/kernel" \
+                --include_path="$(CURDIR)/ulib" \
                 --include_path="$(CURDIR)/klib" \
                 --include_path="$(CG_TOOL_ROOT)/include"
 

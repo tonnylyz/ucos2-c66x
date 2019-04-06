@@ -8,8 +8,9 @@ include_directories(
         kernel
         klib
         platform/c66x
-        platform/csp
+        platform/driver
         task
+        ulib
 )
 
 add_executable(
@@ -34,20 +35,20 @@ add_executable(
         platform/c66x/os_cpu.h
         platform/c66x/os_cpu_c.c
 
-        platform/csp/mmio.h
-        platform/csp/types.h
-        platform/csp/timer.c
-        platform/csp/timer.h
-        platform/csp/uart.c
-        platform/csp/uart.h
-        platform/csp/intc.c
-        platform/csp/intc.h
-        platform/csp/mailbox.c
-        platform/csp/mailbox.h
-        platform/csp/xmc.c
-        platform/csp/xmc.h
-        platform/csp/spinlock.c
-        platform/csp/spinlock.h
+        platform/driver/mmio.h
+        platform/driver/types.h
+        platform/driver/timer.c
+        platform/driver/timer.h
+        platform/driver/uart.c
+        platform/driver/uart.h
+        platform/driver/intc.c
+        platform/driver/intc.h
+        platform/driver/mailbox.c
+        platform/driver/mailbox.h
+        platform/driver/xmc.c
+        platform/driver/xmc.h
+        platform/driver/spinlock.c
+        platform/driver/spinlock.h
 
         klib/printf.c
         klib/printf.h
@@ -65,13 +66,9 @@ add_executable(
         klib/port.h
 
         task/part_0.c
-        task/part_0.h
         task/part_1.c
-        task/part_1.h
         task/part_3.c
-        task/part_3.h
         task/part_2.c
-        task/part_2.h
-        task/syscall.c
-        task/syscall.h
-)
+        ulib/syscall.c
+        ulib/syscall.h
+        task/task_conf.h)
