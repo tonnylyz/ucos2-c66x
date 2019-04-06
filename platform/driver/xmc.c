@@ -45,11 +45,11 @@ static inline void xmc_segment_write(u8 index, u32 lval, u32 hval) {
 }
 
 static inline void xmc_segment_map(u8 index, u32 start_addr, u32 segment_size, u32 perm) {
-    xmc_segment_write(index, ((start_addr >> 4) & ~0xff) | perm, (start_addr & ~0xfff) | segment_size);
+    xmc_segment_write(index, ((start_addr >> 4u) & ~0xffu) | perm, (start_addr & ~0xfffu) | segment_size);
 }
 
 static inline void xmc_segment_remap(u8 index, u32 baddr, u32 raddr, u32 segment_size, u32 perm) {
-    xmc_segment_write(index, ((raddr >> 4) & ~0xff) | perm, (baddr & ~0xfff) | segment_size);
+    xmc_segment_write(index, ((raddr >> 4u) & ~0xffu) | perm, (baddr & ~0xfffu) | segment_size);
 }
 
 void xmc_init() {

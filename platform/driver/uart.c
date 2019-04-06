@@ -10,7 +10,7 @@
 #define UART_BASE_8 (0x48422000U)
 
 static void _uart_putc(u32 base, char c) {
-    while ((mmio_readb(UC_UART_LSR(base)) & 0x20) == 0);
+    while ((mmio_readb(UC_UART_LSR(base)) & 0x20u) == 0);
     mmio_writeb(UC_UART_THR(base), (u8)c);
 }
 

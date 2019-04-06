@@ -9,6 +9,6 @@ void spinlock_unlock(u8 id) {
 
 void spinlock_lock(u8 id) {
     do {
-        __asm ("\tNOP");
+        asm(" NOP");
     } while (mmio_read(SPINLOCK_LOCK_REG + 4 * id) != 0);
 }

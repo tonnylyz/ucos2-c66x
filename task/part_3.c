@@ -32,7 +32,7 @@ void p3t0_entry(void *arg) {
 
 void p3_idle_entry(void *arg) {
     while (1) {
-        asm volatile ("\tNOP 5");
+        asm(" NOP");
     }
 }
 

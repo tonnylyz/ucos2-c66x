@@ -45,7 +45,7 @@ void p2t1_entry(void *arg) {
 
 void p2_idle_entry(void *arg) {
     while (1) {
-        asm volatile ("\tNOP 5");
+        asm(" NOP");
     }
 }
 

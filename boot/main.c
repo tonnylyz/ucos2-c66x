@@ -9,7 +9,7 @@
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
-#define DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK	(0x3FFFFF << 0)
+#define DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK	(0x3FFFFFu << 0u)
 
 void dsp2_start_core() {
     u32 boot_reg;
@@ -18,13 +18,13 @@ void dsp2_start_core() {
     boot_reg = (boot_reg & (~DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK));
     boot_reg =
             (boot_reg |
-             ((0x95000000 >> 10) &
+             ((0x95000000u >> 10u) &
               DRA7XX_CTRL_CORE_DSP_RST_VECT_MASK));
 
     mmio_write(DSP2_BOOTADDR, boot_reg);
 
     mmio_write(DSP2_PRM_BASE + 0x10, 0x0);
-    while (((mmio_read(DSP2_PRM_BASE + 0x14) & 0x3) != 0x3));
+    while (((mmio_read(DSP2_PRM_BASE + 0x14u) & 0x3u) != 0x3u));
 }
 
 u8 core_id;
@@ -68,6 +68,6 @@ int main() {
         partition_start();
     }
     while (1) {
-        __asm ("\tNOP");
+        asm(" NOP");
     }
 }

@@ -26,8 +26,8 @@ typedef double         FP64;                     /* Double precision floating po
 
 typedef unsigned int   OS_STK;
 
-#define  OS_ENTER_CRITICAL() __asm ("\tNOP 5")
-#define  OS_EXIT_CRITICAL()  __asm ("\tNOP 5")
+#define  OS_ENTER_CRITICAL() asm(" NOP")
+#define  OS_EXIT_CRITICAL()  asm(" NOP")
 
 #define  OS_STK_GROWTH 1                              /* Stack grows from HIGH to LOW memory */
 

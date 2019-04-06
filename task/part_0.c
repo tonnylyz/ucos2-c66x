@@ -91,7 +91,7 @@ void p0t2_entry(void *arg) {
 
 void p0_idle_entry(void *arg) {
     while (1) {
-        asm volatile ("\tNOP 5");
+        asm(" NOP");
     }
 }
 

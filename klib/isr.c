@@ -137,15 +137,15 @@ static u32 _handle_syscall(u32 no, u32* arg) {
 }
 
 void OSExceptionISR(u32 efr, u32 ierr) {
-    if (efr & (1u << 1)) { /* IXF Internal Exception */
+    if (efr & (1u << 1u)) { /* IXF Internal Exception */
         printf("IXF: ierr [%02x]\n", ierr);
         printf("IXF: elr  [%08x]\n", task_context_saved.ELR);
         panic("IXF occurred.\n");
-    } else if (efr & (1u << 30)) { /* EXF Exception */
+    } else if (efr & (1u << 30u)) { /* EXF Exception */
         panic("EXF occurred.\n");
-    } else if (efr & (1u << 31)) { /* NXF NMI Exception */
+    } else if (efr & (1u << 31u)) { /* NXF NMI Exception */
         panic("NXF occurred.\n");
-    } else if (efr & (1u << 0)) { /* SXF aka System Call */
+    } else if (efr & (1u << 0u)) { /* SXF aka System Call */
         u32 no, arg[8];
         arg[0] = task_context_saved.A4;
         arg[1] = task_context_saved.B4;
@@ -159,7 +159,7 @@ void OSExceptionISR(u32 efr, u32 ierr) {
         task_context_saved.A4 = _handle_syscall(no, arg);
         return;
     }
-    if (task_context_saved.TSR & (1u << 16)) {
+    if (task_context_saved.TSR & (1u << 16u)) {
         printf("ELR [%08x]\n", task_context_saved.ELR);
         printf("TSR [%08x]\n", task_context_saved.TSR);
         printf("SP [%08x]\n", task_context_saved.B15);
