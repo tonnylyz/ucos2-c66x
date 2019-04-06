@@ -1,9 +1,4 @@
 #include "intc.h"
-#include <types.h>
-#include <printf.h>
-#include <os_cpu.h>
-#include <timer.h>
-#include <ucos_ii.h>
 #include <mmio.h>
 
 typedef struct  {
@@ -30,23 +25,20 @@ typedef struct  {
     volatile u32 INTDMASK;
 } intc_regs_t;
 
-
 #define INTC_REGS_BASE (0x1800000U)
-
-static intc_regs_t volatile *intc_instance = (intc_regs_t *)INTC_REGS_BASE;
 
 static inline void intc_event_map(u32 eventId, u32 vectId) {
     u32 bitLow;
     if (vectId < 8) {
         bitLow = (vectId - 4U) * 8U;
-        MMIO_FINSR(intc_instance->INTMUX1, bitLow + 6U, bitLow, eventId);
+        MMIO_FINSR(((intc_regs_t volatile *)INTC_REGS_BASE)->INTMUX1, bitLow + 6U, bitLow, eventId);
     } else {
         if (vectId < 12) {
             bitLow = (vectId - 8U) * 8U;
-            MMIO_FINSR(intc_instance->INTMUX2, bitLow + 6U, bitLow, eventId);
+            MMIO_FINSR(((intc_regs_t volatile *)INTC_REGS_BASE)->INTMUX2, bitLow + 6U, bitLow, eventId);
         } else {
             bitLow = (vectId - 12U) * 8U;
-            MMIO_FINSR(intc_instance->INTMUX3, bitLow + 6U, bitLow, eventId);
+            MMIO_FINSR(((intc_regs_t volatile *)INTC_REGS_BASE)->INTMUX3, bitLow + 6U, bitLow, eventId);
         }
     }
 }
@@ -59,10 +51,10 @@ static inline u32 intc_event_enable(u32 eventId) {
 
     y = eventId >> 5U;
     x = eventId & 0x1fU;
-    val = intc_instance->EVTMASK[y];
+    val = ((intc_regs_t volatile *)INTC_REGS_BASE)->EVTMASK[y];
     previous_state = MMIO_FEXTR(val, x, x);
     MMIO_FINSR(val, x, x, 0U);
-    intc_instance->EVTMASK[y] = val;
+    ((intc_regs_t volatile *)INTC_REGS_BASE)->EVTMASK[y] = val;
     return previous_state;
 }
 
@@ -71,9 +63,10 @@ void intc_event_clear(u32 eventId) {
     u32 y;
     y = (eventId) >> 5U;
     x = (eventId) & 0x1fU;
-    intc_instance->EVTCLR[y] = MMIO_FMKR(x, x, 1U);
+    ((intc_regs_t volatile *)INTC_REGS_BASE)->EVTCLR[y] = MMIO_FMKR(x, x, 1U);
 }
 
+extern u8 core_id;
 
 void intc_init() {
     intc_event_map(INTC_EVENT_TASK_TIMER, 4);

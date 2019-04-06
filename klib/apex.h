@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 3/18/2019.
-//
-
 #ifndef UCOS2_C66X_APEX_H
 #define UCOS2_C66X_APEX_H
 

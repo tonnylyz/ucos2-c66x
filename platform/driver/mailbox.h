@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 3/24/2019.
-//
-
 #ifndef UCOS2_C66X_MAILBOX_H
 #define UCOS2_C66X_MAILBOX_H
 

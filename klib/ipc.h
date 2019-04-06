@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 3/23/2019.
-//
-
 #include <types.h>
 
 #ifndef UCOS2_C66X_IPC_H

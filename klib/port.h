@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 4/6/2019.
-//
-
 #ifndef UCOS2_C66X_PORT_H
 #define UCOS2_C66X_PORT_H
 

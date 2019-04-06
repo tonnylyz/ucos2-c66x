@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 3/18/2019.
-//
-
 #include "apex.h"
 #include "printf.h"
 #include <partition.h>

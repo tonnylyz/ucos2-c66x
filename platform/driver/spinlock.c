@@ -1,6 +1,5 @@
-#include <printf.h>
 #include "spinlock.h"
-#include "mmio.h"
+#include <mmio.h>
 
 #define SPINLOCK_LOCK_REG 0x4A0F6800U
 

@@ -1,10 +1,7 @@
-//
-// Created by Tonny on 3/24/2019.
-//
-
-#include <os_cpu.h>
 #include "mailbox.h"
-#include "mmio.h"
+#include <mmio.h>
+
+extern u8 core_id;
 
 void mailbox_init() {
     if (core_id == 0) {

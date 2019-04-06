@@ -56,7 +56,6 @@ add_executable(
         klib/partition.h
         klib/partition_conf.h
         klib/isr.c
-        klib/isr.h
         klib/apex.c
         klib/apex.h
         klib/def.h

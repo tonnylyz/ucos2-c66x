@@ -3,7 +3,6 @@
 
 #include "types.h"
 
-
 #define GP_TIMER_1_BASE          (0x4AE18000)
 #define GP_TIMER_2_BASE          (0x48032000)
 #define GP_TIMER_3_BASE          (0x48034000)

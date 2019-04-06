@@ -3,8 +3,6 @@
 
 #include <types.h>
 
-#define KADDR(_) (_)
-
 static inline void barrier() {
     __asm ("\tMFENCE");
 }

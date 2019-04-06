@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 4/6/2019.
-//
-
 #include "port.h"
 
 #pragma DATA_SECTION(port_conf_list, ".data:KERN_SHARE")

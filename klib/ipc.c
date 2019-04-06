@@ -1,7 +1,3 @@
-//
-// Created by Tonny on 3/23/2019.
-//
-
 #include <ucos_ii.h>
 #include <printf.h>
 #include <partition.h>

@@ -1,6 +1,4 @@
 #include "timer.h"
-#include "uart.h"
-#include <types.h>
 #include <mmio.h>
 
 #define GP_TIMER_IRQSTATUS_RAW(base)        ((base) + 0x24u)

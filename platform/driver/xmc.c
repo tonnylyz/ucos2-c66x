@@ -1,13 +1,8 @@
-//
-// Created by Tonny on 12/26/2018.
-//
-
 #include <printf.h>
 #include <partition_conf.h>
 #include <os_cpu.h>
 #include "xmc.h"
 #include "mmio.h"
-
 
 #define XMC_XPFCMD (0x08000300)
 #define XMC_XPFACS (0x08000304)
@@ -22,37 +17,22 @@
 
 /*                                               K  U
  *                                              RWXRWX*/
-#define XMC_SEGMENT_PERM_KERN_RWX_USER____    0b111000
-#define XMC_SEGMENT_PERM_KERN_RWX_USER_RWX    0b111111
-#define XMC_SEGMENT_PERM_KERN_RWX_USER_R_X    0b111101
-#define XMC_SEGMENT_PERM_KERN_RWX_USER_R__    0b111100
-#define XMC_SEGMENT_PERM_KERN_RWX_USER_RW_    0b111110
-
-#define XMC_INDEX_RESERVED  1
-#define XMC_INDEX_FREE      0
-#define XMC_INDEX_PART      2
+#define XMC_SEGMENT_PERM_KERN_RWX_USER____    0b111000u
+#define XMC_SEGMENT_PERM_KERN_RWX_USER_RWX    0b111111u
+#define XMC_SEGMENT_PERM_KERN_RWX_USER_R_X    0b111101u
+#define XMC_SEGMENT_PERM_KERN_RWX_USER_R__    0b111100u
+#define XMC_SEGMENT_PERM_KERN_RWX_USER_RW_    0b111110u
 
 #pragma SET_DATA_SECTION(".data:KERN_SHARE")
-static int xmc_indices[XMC_SEGMENT_NUM];
-
-static u32 xmc_values_l[XMC_SEGMENT_NUM];
-static u32 xmc_values_h[XMC_SEGMENT_NUM];
+static bool xmc_free_id[XMC_INDEX_NUM];
+static u32 xmc_values_l[XMC_INDEX_NUM];
+static u32 xmc_values_h[XMC_INDEX_NUM];
 
 void xmc_invalidate_buffer() {
     barrier();
     *(u32 volatile *)XMC_XPFCMD = 0b11111;
     mmio_read(XMC_XPFACS);
     barrier();
-}
-
-void xmc_mem_map_dump() {
-    int i;
-    u32 addr;
-    for (i = 0; i < XMC_SEGMENT_NUM; i++) {
-        addr = XMC_MPAXL0 + i * 8u;
-        printf("MPAX segment %d XMPAXL%d [%08x]->[%08x]\n", i, i, addr, *((u32 volatile *) addr));
-        printf("MPAX segment %d XMPAXH%d [%08x]->[%08x]\n", i, i, addr + 4, *((u32 volatile *) (addr + 4)));
-    }
 }
 
 static inline void xmc_segment_write(u8 index, u32 lval, u32 hval) {
@@ -84,8 +64,8 @@ void xmc_init() {
         }
         xmc_segment_remap(2, 0x95100000, 0x95140000, XMC_SEGMENT_SIZE_256K, XMC_SEGMENT_PERM_KERN_RWX_USER____);
 
-        for (i = 0; i < XMC_SEGMENT_NUM; i++) {
-            xmc_indices[i] = XMC_INDEX_FREE;
+        for (i = 0; i < XMC_INDEX_NUM; i++) {
+            xmc_free_id[i] = true;
         }
     }
 
@@ -99,40 +79,41 @@ void xmc_init() {
 static inline u32 xmc_size2segment_size(u32 size) {
     if (size == 0x100000) {
         return XMC_SEGMENT_SIZE_1M;
-    } else {
-        printf("xmc_size2segment_size: size %x\n", size);
-        panic("Not supported segment size");
+    } else if (size == 0x80000) {
+        return XMC_SEGMENT_SIZE_512K;
+    } else if (size == 0x40000) {
+        return XMC_SEGMENT_SIZE_256K;
     }
+    /* Note:
+     *  If other granularity is needed, add here
+     * */
+    return 0;
 }
 
-static u8 xmc_segment_find_free() {
+static u8 _find_free_index() {
     u8 i;
-    for (i = 0; i < XMC_SEGMENT_NUM; i++) {
-        if (xmc_indices[i] == XMC_INDEX_FREE) {
+    for (i = 0; i < XMC_INDEX_NUM; i++) {
+        if (xmc_free_id[i]) {
             return i;
         }
     }
     return i;
 }
 
-u8 xmc_segment_allocate(memory_conf_t *layout) {
+u8 xmc_segment_allocate(u32 addr, u32 size) {
     u8 index;
-    index = xmc_segment_find_free();
-    if (index == XMC_SEGMENT_NUM) {
-        panic("Cannot Allocate XMC segment");
-    }
-    xmc_indices[index] = XMC_INDEX_PART;
-
-    xmc_values_l[index] = ((layout->address >> 4) & ~0xff) | XMC_SEGMENT_PERM_KERN_RWX_USER_RWX;
-    xmc_values_h[index] = (layout->address & ~0xfff) | xmc_size2segment_size(layout->size);
-
+    /* Note:
+     *  Core mutex is NOT needed here.
+     *  Only core_0 will invoke this function
+     * */
+    index = _find_free_index();
+    xmc_free_id[index] = false;
+    xmc_values_l[index] = ((addr >> 4u) & ~0xffu) | XMC_SEGMENT_PERM_KERN_RWX_USER_RWX;
+    xmc_values_h[index] = (addr & ~0xfffu) | xmc_size2segment_size(size);
     return index;
 }
 
 void xmc_segment_activate(u8 index) {
-    if (index >= XMC_SEGMENT_NUM || xmc_indices[index] != XMC_INDEX_PART) {
-        panic("xmc_segment_activate: Illegal xmc index\n");
-    }
     xmc_segment_write(3, xmc_values_l[index], xmc_values_h[index]);
     xmc_invalidate_buffer();
 }

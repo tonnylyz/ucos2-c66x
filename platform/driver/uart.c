@@ -1,6 +1,5 @@
 #include "uart.h"
 #include <mmio.h>
-#include <os_cpu.h>
 
 #define UC_UART_THR(base)  (base + 0x00)
 #define UC_UART_LSR(base)  (base + 0x14)
@@ -15,6 +14,7 @@ static void _uart_putc(u32 base, char c) {
     mmio_writeb(UC_UART_THR(base), (u8)c);
 }
 
+extern u8 core_id;
 void uart_putc(char c) {
     if (core_id == 0) {
         if (c == '\n') {
