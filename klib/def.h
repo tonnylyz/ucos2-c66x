@@ -53,10 +53,10 @@ typedef enum {
     ps_waiting,
 } process_state_t;
 
-#define PROCESS_ATTR_NAME_MAX_LEN 16
+#define APEX_NAME_MAX_LEN 16
 
 typedef struct {
-    char name[PROCESS_ATTR_NAME_MAX_LEN];
+    char name[APEX_NAME_MAX_LEN];
     u32 entry_point;
     u32 stack_size;
     u8  base_priority;
@@ -73,32 +73,5 @@ typedef struct {
     OS_TCB *tcb;
     u16 pid;
 } process_status_t;
-
-typedef u32 message_addr_t;
-typedef u32 message_size_t;
-
-typedef enum {
-    pd_source,
-    pd_destination,
-} port_direction_t;
-
-typedef u32 sampling_port_id_t;
-typedef char* sampling_port_name_t;
-typedef enum {
-    v_invalid,
-    v_valid,
-} validity_t;
-
-typedef struct {
-    u32 max_message_size;
-    port_direction_t port_direction;
-    system_time_t refresh_period;
-    validity_t last_msg_validity;
-} sampling_port_status_t;
-
-typedef struct {
-    sampling_port_id_t id;
-    sampling_port_status_t status;
-} sampling_port_t;
 
 #endif //UCOS2_C66X_DEF_H

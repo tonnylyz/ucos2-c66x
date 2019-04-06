@@ -61,6 +61,8 @@ add_executable(
         klib/def.h
         klib/ipc.c
         klib/ipc.h
+        klib/port.c
+        klib/port.h
 
         task/part_0.c
         task/part_0.h

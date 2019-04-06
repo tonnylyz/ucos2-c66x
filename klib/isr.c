@@ -94,13 +94,13 @@ static u32 _handle_syscall(u32 no, u32* arg) {
             apex_get_process_id((char *) arg[0], (process_id_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         case 23: {
-            apex_get_process_status(arg[0], (process_status_t *) arg[1], (return_code_t *) arg[2]);
+            apex_get_process_status((process_id_t) arg[0], (process_status_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         case 24: {
             apex_create_process((const process_attribute_t *) arg[0], (process_id_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         case 25: {
-            apex_set_priority(arg[0], arg[1], (return_code_t *) arg[2]);
+            apex_set_priority((process_id_t) arg[0], (u8) arg[1], (return_code_t *) arg[2]);
         } break;
         case 26: {
             apex_suspend_self(arg[0], (return_code_t *) arg[1]);
@@ -110,6 +110,24 @@ static u32 _handle_syscall(u32 no, u32* arg) {
         } break;
         case 28: {
             apex_get_my_id((process_id_t *) arg[0], (return_code_t *) arg[1]);
+        } break;
+        case 29: {
+            apex_create_sampling_port((sampling_port_name_t) arg[0], arg[1], (port_direction_t) arg[2], arg[3],
+                                      (sampling_port_id_t *) arg[4], (return_code_t *) arg[5]);
+        } break;
+        case 30: {
+            apex_write_sampling_port(arg[0], arg[1], arg[2], (return_code_t *) arg[3]);
+        } break;
+        case 31: {
+            apex_read_sampling_port(arg[0], arg[1], (message_size_t *) arg[2], (validity_t *) arg[3],
+                                    (return_code_t *) arg[4]);
+        } break;
+        case 32: {
+            apex_get_sampling_port_id((sampling_port_name_t) arg[0], (sampling_port_id_t *) arg[1],
+                                      (return_code_t *) arg[2]);
+        } break;
+        case 33: {
+            apex_get_sampling_port_status(arg[0], (sampling_port_status_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         default: {
             printf("Unknown System Call %d\n", no);

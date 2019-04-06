@@ -58,7 +58,7 @@ void partition_register(partition_conf_t *conf) {
             .stack_size = conf->task_conf_list[i].stack_size,
             .time_capacity = 0,
         };
-        _strncpy(pcb->process_list[i].attributes.name, conf->task_conf_list[i].name, PROCESS_ATTR_NAME_MAX_LEN);
+        _strncpy(pcb->process_list[i].attributes.name, conf->task_conf_list[i].name, APEX_NAME_MAX_LEN);
         pcb->process_list[i].current_priority = conf->task_conf_list[i].priority;
         pcb->process_list[i].deadline_time = 0;
         pcb->process_list[i].process_state = ps_ready;

@@ -10,7 +10,7 @@ typedef struct {
 } memory_conf_t;
 
 typedef struct {
-    char name[PROCESS_ATTR_NAME_MAX_LEN];
+    char name[APEX_NAME_MAX_LEN];
     void (*entry)(void *);
     void *stack_ptr;
     u32 stack_size;

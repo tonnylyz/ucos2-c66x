@@ -58,7 +58,7 @@ void apex_get_partition_mode(operating_mode_t *pps, return_code_t *r) {
 
 static u32 _strlen(const char *str) {
     u32 i;
-    for (i = 0; str[i] == '\0' && i < PROCESS_ATTR_NAME_MAX_LEN; i++);
+    for (i = 0; str[i] == '\0' && i < APEX_NAME_MAX_LEN; i++);
     return i;
 }
 
@@ -75,7 +75,7 @@ static bool _str_equal(const char *a, const char *b) {
 }
 
 void apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r) {
-    if (_is_malicious_pointer(name, PROCESS_ATTR_NAME_MAX_LEN)) {
+    if (_is_malicious_pointer(name, APEX_NAME_MAX_LEN)) {
         return;
     }
     if (_is_malicious_pointer(ppid, sizeof(process_id_t))) {
@@ -246,6 +246,197 @@ void apex_get_my_id(process_id_t *ppid, return_code_t *r) {
     *ppid = OSTCBCur->OSTCBId;
     *r = r_no_error;
 }
+
+port_conf_t *_port_conf(const char *name) {
+    u8 i;
+    for (i = 0; i < port_conf_num; i++) {
+        if (_str_equal(name, port_conf_list[i].name)) {
+            return &(port_conf_list[i]);
+        }
+    }
+    return NULL;
+}
+
+void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_size_t max_message_size,
+                               port_direction_t port_direction, system_time_t refresh_period,
+                               sampling_port_id_t *sampling_port_id, return_code_t *r) {
+
+
+    if (_is_malicious_pointer(sampling_port_name, APEX_NAME_MAX_LEN)) {
+        return;
+    }
+    if (_is_malicious_pointer(sampling_port_id, sizeof(sampling_port_id_t))) {
+        return;
+    }
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+
+    sampling_port_t *port;
+    u8 i;
+    port_conf_t *conf;
+    conf = _port_conf(sampling_port_name);
+    if (conf == NULL) {
+        *r = r_invalid_config;
+        return;
+    }
+    for (i = 0; i < ports_index; i++) {
+        if (_str_equal(sampling_port_name, ports[i].conf->name)) {
+            *r = r_no_action;
+            return;
+        }
+    }
+    if (max_message_size > IPC_INTER_PARTITION_MAX_LENGTH || max_message_size != conf->max_message_size) {
+        *r = r_invalid_config;
+        return;
+    }
+    if (port_direction != conf->direction) {
+        *r = r_invalid_config;
+        return;
+    }
+    if (refresh_period != conf->refresh_period) {
+        *r = r_invalid_config;
+        return;
+    }
+    if (partition_current->operating_mode == opm_normal) {
+        /* This function does NOT serve as a syscall currently.
+         * This function is invoked by kernel to initialize ports at present.
+         * */
+        *r = r_invalid_mode;
+        return;
+    }
+    port = port_alloc();
+    if (port == NULL) {
+        *r = r_invalid_config;
+        return;
+    }
+    *sampling_port_id = port->id;
+    port->status.port_direction = port_direction;
+    port->status.max_message_size = max_message_size;
+    port->status.refresh_period = refresh_period;
+    *r = r_no_error;
+}
+
+void _memcpy(void *dst, void *src, u32 len) {
+    u32 i;
+    for (i = 0; i < len; i++) {
+        ((u8 *)dst)[i] = ((u8 *)src)[i];
+    }
+}
+
+void apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t length,
+                              return_code_t *r) {
+
+
+    if (_is_malicious_pointer((const void *) message_addr, length)) {
+        return;
+    }
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+
+
+    if (sampling_port_id >= ports_index) {
+        *r = r_invalid_param;
+        return;
+    }
+    if (length > ports[sampling_port_id].conf->max_message_size) {
+        *r = r_invalid_config;
+        return;
+    }
+    if (ports[sampling_port_id].status.port_direction != pd_source) {
+        *r = r_invalid_mode;
+    }
+    _memcpy(ports[sampling_port_id].payload, (void *) message_addr, length);
+    *r = r_no_error;
+}
+
+void apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t *length,
+                             validity_t *validity, return_code_t *r) {
+
+
+    if (_is_malicious_pointer((const void *) message_addr, IPC_INTER_PARTITION_MAX_LENGTH)) {
+        return;
+    }
+    if (_is_malicious_pointer(length, sizeof(message_size_t))) {
+        return;
+    }
+    if (_is_malicious_pointer(validity, sizeof(validity_t))) {
+        return;
+    }
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+
+
+    if (sampling_port_id >= ports_index) {
+        *r = r_invalid_param;
+        return;
+    }
+    sampling_port_t *port = &ports[sampling_port_id];
+    if (port->status.port_direction != pd_destination) {
+        *r = r_invalid_mode;
+        return;
+    }
+    if (port->is_empty) {
+        *validity = v_invalid;
+        *r = r_no_action;
+        return;
+    }
+    _memcpy((void *) message_addr, port->payload, port->actual_length);
+    *length = port->actual_length;
+    if (true /* age of the copied message is consistent with the required REFRESH_PERIOD
+attribute of the port */) {
+        *validity = v_valid;
+    } else {
+        *validity = v_invalid;
+    }
+    *r = r_no_error;
+    /* update validity in status of the port; */
+}
+
+void apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling_port_id_t *pid, return_code_t *r) {
+
+    if (_is_malicious_pointer(sampling_port_name, APEX_NAME_MAX_LEN)) {
+        return;
+    }
+    if (_is_malicious_pointer(pid, sizeof(sampling_port_id_t))) {
+        return;
+    }
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+
+    u8 i;
+    for (i = 0; i < ports_index; i++) {
+        if (_str_equal(sampling_port_name, ports[i].conf->name)) {
+            *r = r_no_error;
+            *pid = ports[i].id;
+            return;
+        }
+    }
+    *r = r_invalid_config;
+}
+
+void apex_get_sampling_port_status(sampling_port_id_t sampling_port_id, sampling_port_status_t *pstatus, return_code_t *r) {
+
+    if (_is_malicious_pointer(pstatus, sizeof(sampling_port_status_t))) {
+        return;
+    }
+    if (_is_malicious_pointer(r, sizeof(return_code_t))) {
+        return;
+    }
+
+    if (sampling_port_id >= ports_index) {
+        *r = r_invalid_param;
+        return;
+    }
+    *pstatus = ports[sampling_port_id].status;
+    /*  -- The status should provide the LAST_MSG_VALIDITY that is the validity of
+        -- the last read message in the port.*/
+    *r = r_no_error;
+}
+
 
 
 

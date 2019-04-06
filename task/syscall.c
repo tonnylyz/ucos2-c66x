@@ -121,3 +121,29 @@ void u_apex_stop_self(void) {
 void u_apex_get_my_id(process_id_t *ppid, return_code_t *r) {
     task_syscall((u32) ppid, (u32) r, 0, 0, 0, 0, 0, 0, 28);
 }
+
+void u_apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_size_t max_message_size,
+                                 port_direction_t port_direction, system_time_t refresh_period,
+                                 sampling_port_id_t *sampling_port_id, return_code_t *r) {
+    task_syscall((u32) sampling_port_name, max_message_size, port_direction, refresh_period, (u32) sampling_port_id,
+                 (u32) r, 0, 0, 29);
+}
+
+void u_apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t length,
+                                return_code_t *r) {
+    task_syscall(sampling_port_id, message_addr, length, (u32) r, 0, 0, 0, 0, 30);
+}
+
+void u_apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t *length,
+                               validity_t *validity, return_code_t *r) {
+    task_syscall(sampling_port_id, message_addr, (u32) length, (u32) validity, (u32) r, 0, 0, 0, 31);
+}
+
+void u_apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling_port_id_t *pid, return_code_t *r) {
+    task_syscall((u32) sampling_port_name, (u32) pid, (u32) r, 0, 0, 0, 0, 0, 32);
+}
+
+void u_apex_get_sampling_port_status(sampling_port_id_t sampling_port_id, sampling_port_status_t *pstatus,
+                                     return_code_t *r) {
+    task_syscall(sampling_port_id, (u32) pstatus, (u32) r, 0, 0, 0, 0, 0, 33);
+}
