@@ -39,7 +39,7 @@ static void _timer_init(u32 base, u32 interval) {
     pend_write(GP_TIMER_IRQSTATUS_SET(base), 0, GP_TIMER_INT_OVERFLOW);
 }
 
-void timer_init() {
+void timer_init(void) {
     _timer_init(GP_TASK_TIMER_BASE, GP_TIMER_INTERVAL_10MS);
     _timer_init(GP_PART_TIMER_BASE, GP_TIMER_INTERVAL_100MS);
 }

@@ -32,7 +32,7 @@ static inline void _unlock(u8 pid, u8 prio) {
     spinlock_unlock(n);
 }
 
-void ipc_receive() {
+void ipc_receive(void) {
     _lock(partition_current->identifier, OSPrioCur);
     OSTCBCur->ipc.is_receiving = true;
     OSTCBCur->ipc.foreign_accessed = false;
@@ -127,7 +127,7 @@ int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
     return 0;
 }
 
-void ipc_scan_change() {
+void ipc_scan_change(void) {
     u8 i;
     for (i = 0; i <= OS_LOWEST_PRIO; i++) {
         OS_TCB *tcb = partition_current->context.OSTCBPrioTbl[i];

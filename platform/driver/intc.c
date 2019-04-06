@@ -68,7 +68,7 @@ void intc_event_clear(u32 eventId) {
 
 extern u8 core_id;
 
-void intc_init() {
+void intc_init(void) {
     intc_event_map(INTC_EVENT_TASK_TIMER, 4);
     intc_event_enable(INTC_EVENT_TASK_TIMER);
 

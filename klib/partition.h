@@ -64,13 +64,13 @@ extern pcb_t pcb_list[];
 
 extern pcb_t *partition_current;
 
-void partition_init();
+void partition_init(void);
 
 void partition_register(partition_conf_t *conf);
 
 void partition_switch(pcb_t *prev, pcb_t *next);
 
-void partition_start();
+void partition_start(void);
 
 void partition_run(pcb_t *pcb);
 
@@ -80,6 +80,6 @@ void partition_context_save_into(partition_context_t *context);
 
 void partition_context_load_from(partition_context_t *context);
 
-void partition_tick();
+void partition_tick(void);
 
 #endif //UCOS2_C66X_PARTITION_H

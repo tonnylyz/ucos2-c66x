@@ -28,7 +28,7 @@ static bool xmc_free_id[XMC_INDEX_NUM];
 static u32 xmc_values_l[XMC_INDEX_NUM];
 static u32 xmc_values_h[XMC_INDEX_NUM];
 
-void xmc_invalidate_buffer() {
+void xmc_invalidate_buffer(void) {
     barrier();
     *(u32 volatile *)XMC_XPFCMD = 0b11111;
     mmio_read(XMC_XPFACS);
@@ -52,7 +52,7 @@ static inline void xmc_segment_remap(u8 index, u32 baddr, u32 raddr, u32 segment
     xmc_segment_write(index, ((raddr >> 4u) & ~0xffu) | perm, (baddr & ~0xfffu) | segment_size);
 }
 
-void xmc_init() {
+void xmc_init(void) {
     u32 i;
     /* these settings are based on linker.cmd */
 

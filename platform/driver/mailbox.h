@@ -11,12 +11,12 @@
 #define MAILBOX_2_IRQSTATUS_CLR 0x4883A104
 #define MAILBOX_2_MESSAGE 0x4883A040
 
-void mailbox_init();
+void mailbox_init(void);
 
 void mailbox_send(u32 value);
 
-u32 mailbox_receive();
+u32 mailbox_receive(void);
 
-void mailbox_irq_clear();
+void mailbox_irq_clear(void);
 
 #endif //UCOS2_C66X_MAILBOX_H

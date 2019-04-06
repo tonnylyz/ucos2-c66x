@@ -22,7 +22,7 @@
 
 #define INTC_EVENT_MAILBOX 52
 
-void intc_init();
+void intc_init(void);
 
 void intc_event_clear(u32 eventId);
 

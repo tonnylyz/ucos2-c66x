@@ -24,7 +24,7 @@ static u8 ports_index = 0;
 #pragma DATA_SECTION(ports, ".data:KERN_SHARE")
 static sampling_port_t ports[PORT_MAX_NUM];
 
-sampling_port_t *port_alloc() {
+sampling_port_t *port_alloc(void) {
     if (ports_index >= PORT_MAX_NUM) {
         return NULL;
     }

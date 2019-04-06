@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-static inline void barrier() {
+static inline void barrier(void) {
     __asm ("\tMFENCE");
 }
 

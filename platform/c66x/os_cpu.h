@@ -34,15 +34,15 @@ typedef unsigned int   OS_STK;
 #define  OS_TASK_SW()  OSCtxSw()
 
 /* Prototypes for functions in os_cpu_s.asm */
-extern void OSIntCtxSw();
-extern void OSStartHighRdy();
-extern void OSCtxSw();
+extern void OSIntCtxSw(void);
+extern void OSStartHighRdy(void);
+extern void OSCtxSw(void);
 
 
 #include <types.h>
 
 extern u8 core_id;
-extern u8 CPURegisterDNUM();
+extern u8 CPURegisterDNUM(void);
 
 typedef struct
 {

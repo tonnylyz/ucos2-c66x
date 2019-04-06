@@ -18,7 +18,7 @@ char p1t1_arg[] = "p1t1";
 char p1t2_arg[] = "p1t2";
 char p1t3_arg[] = "p1t3";
 
-void make_xmc_error() {
+void make_xmc_error(void) {
     extern u8 p0t1_stack[];
     p0t1_stack[1] = 0;
 }

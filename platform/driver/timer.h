@@ -37,7 +37,7 @@
 #define GP_TASK_TIMER_BASE       GP_TIMER_5_BASE
 #define GP_PART_TIMER_BASE       GP_TIMER_6_BASE
 
-void timer_init();
+void timer_init(void);
 
 void timer_irq_clear(u32 base);
 

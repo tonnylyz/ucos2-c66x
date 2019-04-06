@@ -12,7 +12,7 @@
 #include <mailbox.h>
 
 
-void OSTaskTimerISR() {
+void OSTaskTimerISR(void) {
     timer_irq_clear(GP_TASK_TIMER_BASE);
     intc_event_clear(INTC_EVENT_TASK_TIMER);
 
@@ -170,14 +170,14 @@ void OSExceptionISR(u32 efr, u32 ierr) {
 }
 
 
-void OSPartitionTimerISR() {
+void OSPartitionTimerISR(void) {
     timer_irq_clear(GP_PART_TIMER_BASE);
     intc_event_clear(INTC_EVENT_PART_TIMER);
 
     partition_tick();
 }
 
-void OSXMCExceptionISR() {
+void OSXMCExceptionISR(void) {
     printf("current part: %d\n", partition_current->identifier);
     printf("current task: %d (pri %d)\n", OSTCBCur->OSTCBId, OSTCBCur->OSTCBPrio);
     printf("xmc fault address: [%08x]\n", *((u32 volatile *)XMC_XMPFAR));
@@ -185,7 +185,7 @@ void OSXMCExceptionISR() {
     panic("OSXMCExceptionISR called");
 }
 
-void OSMailboxISR() {
+void OSMailboxISR(void) {
     mailbox_irq_clear();
     intc_event_clear(INTC_EVENT_MAILBOX);
     u8 pid = (u8) mailbox_receive();

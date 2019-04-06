@@ -14,12 +14,12 @@
 #define XMC_XMPFSR (0x08000204)
 #define XMC_XMPFCR (0x08000208)
 
-void xmc_init();
+void xmc_init(void);
 
 u8 xmc_segment_allocate(u32 addr, u32 size);
 
 void xmc_segment_activate(u8 index);
 
-void xmc_invalidate_buffer();
+void xmc_invalidate_buffer(void);
 
 #endif //UCOS2_C66X_XMC_H

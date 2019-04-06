@@ -45,7 +45,7 @@ typedef struct {
 extern port_conf_t port_conf_list[];
 #define PORT_CONF_NUM 2
 
-sampling_port_t *port_alloc();
+sampling_port_t *port_alloc(void);
 
 sampling_port_t *port_get(u8 id);
 

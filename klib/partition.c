@@ -68,7 +68,7 @@ void partition_register(partition_conf_t *conf) {
     pcb->xmc_id = xmc_segment_allocate(0, 0);
 }
 
-void partition_init() {
+void partition_init(void) {
     int i;
     partition_current = NULL;
     OS_MemClr((INT8U *) pcb_list, sizeof(pcb_list));
@@ -195,7 +195,7 @@ static pcb_t *_core_next_partition() {
     return _core_first_partition();
 }
 
-void partition_start() {
+void partition_start(void) {
     pcb_t *part;
     part = _core_first_partition();
     if (part == NULL) {
@@ -211,7 +211,7 @@ void partition_start() {
     OSStart();
 }
 
-void partition_tick() {
+void partition_tick(void) {
     if (partition_current->slice_ticks_left == 0) {
         pcb_t *partition_next = _core_next_partition();
         partition_switch(partition_current, partition_next);
