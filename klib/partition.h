@@ -42,6 +42,7 @@ typedef struct {
     u8 identifier;
     u8 xmc_id;
     u8 task_num;
+    u32 stack_ptr;
     process_status_t process_list[PARTITION_MAX_PROCESS_NUM];
 
     partition_context_t context;

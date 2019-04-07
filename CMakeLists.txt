@@ -65,9 +65,6 @@ add_executable(
         klib/port.h
 
         task/part_0.c
-        task/part_1.c
-        task/part_3.c
-        task/part_2.c
         ulib/syscall.c
         ulib/syscall.h
-        task/task_conf.h)
+        task/root.c)

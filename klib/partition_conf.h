@@ -12,22 +12,20 @@ typedef struct {
 typedef struct {
     char name[APEX_NAME_MAX_LEN];
     void (*entry)(void *);
-    void *stack_ptr;
     u32 stack_size;
     void *arg;
     u8 priority;
 } task_conf_t;
 
 typedef struct {
-    u8 dest_num;
-    u8 *dest_list;
-    u8 src_num;
-    u8 *src_list;
+
 } communication_conf_t;
 
 typedef struct {
     u8 identifier;
     memory_conf_t memory_conf;
+    u32 stack_addr;
+    u32 stack_size;
 
     /* APEX compliance */
     u32 period;

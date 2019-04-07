@@ -49,12 +49,13 @@ typedef enum {
     ps_waiting,
 } process_state_t;
 
-#define APEX_NAME_MAX_LEN 16
+#define APEX_NAME_MAX_LEN 8
 
 typedef struct {
-    char name[APEX_NAME_MAX_LEN];
+    char *name;
     u32 entry_point;
     u32 stack_size;
+    void *arg;
     u8  base_priority;
     system_time_t period;
     system_time_t time_capacity;
@@ -72,7 +73,7 @@ typedef struct {
 
 static inline u32 _strlen(const char *str) {
     u32 i;
-    for (i = 0; str[i] == '\0' && i < APEX_NAME_MAX_LEN; i++);
+    for (i = 0; str[i] != '\0' && i < APEX_NAME_MAX_LEN; i++);
     return i;
 }
 

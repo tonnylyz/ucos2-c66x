@@ -1,118 +1,83 @@
-#include "task_conf.h"
-
-#include <syscall.h>
 #include <types.h>
-#include <os_cfg.h>
+#include <syscall.h>
 #include <partition_conf.h>
-#include <ucos_ii.h>
 
-#pragma SET_CODE_SECTION(".text:PART_1")
-#pragma SET_DATA_SECTION(".data:PART_1")
+#pragma CODE_SECTION(p1_task_entry, ".text:PART_1")
+#pragma DATA_SECTION(p1_stack, ".data:PART_1")
+#pragma DATA_SECTION(p1t1_arg, ".data:PART_1")
+#pragma DATA_SECTION(p1t2_arg, ".data:PART_1")
+#pragma DATA_SECTION(p1t3_arg, ".data:PART_1")
+#pragma DATA_SECTION(p1t4_arg, ".data:PART_1")
 
-u8 p1t1_stack[P1_TASK_STACK_SIZE];
-u8 p1t2_stack[P1_TASK_STACK_SIZE];
-u8 p1t3_stack[P1_TASK_STACK_SIZE];
-u8 p1_idle_stack[OS_TASK_IDLE_STK_SIZE];
+u8 p1_stack[16384]; // 16KB
 
 char p1t1_arg[] = "p1t1";
 char p1t2_arg[] = "p1t2";
 char p1t3_arg[] = "p1t3";
+char p1t4_arg[] = "p1t4";
 
-void make_xmc_error(void) {
-    extern u8 p0t1_stack[];
-    p0t1_stack[1] = 0;
-}
-
-void p1t0_entry(void *arg) {
-    //make_xmc_error();
+void p1_task_entry(void *arg) {
     char *task_name = (char *) arg;
     while (1) {
         puts("Name: ");
         puts(task_name);
         putc('\n');
-        time_delay(4);
+        time_delay(5);
     }
 }
 
-/*  Inter-partition Comm Same Core
-
- void p1t1_entry(void *arg) {
-    int r;
-    u8 buf[] = "Hello World!";
-    r = task_ipc_send_foreign(0, 11, 5, (u32) buf, 13);
-    if (r < 0) {
-        puts("task_ipc_send_foreign failed ");
-        putc((char) ('0' - r));
-        putc('\n');
-    } else {
-        puts("task_ipc_send_foreign Ok\n");
-    }
-    while (1) {
-        puts("Name: p1t1\n");
-        time_delay(4);
-    }
-}*/
-
-void p1_idle_entry(void *arg) {
-    while (1) {
-        asm(" NOP");
-    }
-}
-
-#pragma SET_DATA_SECTION(".data:KERN_SHARE")
-/* Partition 1 Configuration */
-
-task_conf_t p1_tasks[5] = {
+#define P1_TASK_NUM 4
+#pragma DATA_SECTION(p1_task_conf_list, ".data:PART_S")
+task_conf_t p1_task_conf_list[P1_TASK_NUM] = {
         {
-                .entry = p1_idle_entry,
-                .stack_ptr = &p1_idle_stack[OS_TASK_IDLE_STK_SIZE - 1],
-                .stack_size = OS_TASK_IDLE_STK_SIZE,
-                .arg = NULL,
-                .priority = OS_TASK_IDLE_PRIO
-        },
-        {
-                .entry = p1t0_entry,
-                .stack_ptr = &p1t1_stack[P1_TASK_STACK_SIZE - 1],
-                .stack_size = P1_TASK_STACK_SIZE,
+                .name = "p1t1",
+                .entry = p1_task_entry,
+                .stack_size = 2048,
                 .arg = p1t1_arg,
-                .priority = P1_TASK_1_PRIO
+                .priority = 11
         },
         {
-                .entry = p1t0_entry,
-                .stack_ptr = &p1t2_stack[P1_TASK_STACK_SIZE - 1],
-                .stack_size = P1_TASK_STACK_SIZE,
+                .name = "p1t2",
+                .entry = p1_task_entry,
+                .stack_size = 2048,
                 .arg = p1t2_arg,
-                .priority = P1_TASK_2_PRIO
+                .priority = 12
         },
         {
-                .entry = p1t0_entry,
-                .stack_ptr = &p1t3_stack[P1_TASK_STACK_SIZE - 1],
-                .stack_size = P1_TASK_STACK_SIZE,
+                .name = "p1t3",
+                .entry = p1_task_entry,
+                .stack_size = 2048,
                 .arg = p1t3_arg,
-                .priority = P1_TASK_3_PRIO
+                .priority = 13
+        },
+        {
+                .name = "p1t4",
+                .entry = p1_task_entry,
+                .stack_size = 2048,
+                .arg = p1t4_arg,
+                .priority = 14
         }
 };
 
+#pragma DATA_SECTION(p1_conf, ".data:PART_S")
 partition_conf_t p1_conf = {
         .identifier = 1,
         .memory_conf = {
                 .address = 0x95400000,
                 .size = 0x100000,
         },
+        .stack_addr = (u32) p1_stack,
+        .stack_size = 10240,
+
         .period = 0,
         .duration = 0,
         .critical_level = 0,
         .communication_conf = {
-                .dest_num = 0,
-                .dest_list = NULL,
-                .src_num = 0,
-                .src_list = NULL,
         },
         .entry_point = 0,
         .type = pt_normal,
-
-        .task_num = 4,
-        .task_conf_list = p1_tasks,
-        .slice_ticks = 10, // 10 partition timer intervals
-        .target_core = 0
+        .task_num = P1_TASK_NUM,
+        .task_conf_list = p1_task_conf_list,
+        .slice_ticks = 5,
+        .target_core = 1,
 };

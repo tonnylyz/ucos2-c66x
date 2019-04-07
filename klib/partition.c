@@ -13,57 +13,42 @@ pcb_t *partition_current;
 #pragma DATA_SECTION(pcb_list, ".data:KERN_SHARE")
 pcb_t pcb_list[PARTITION_MAX_NUM];
 
-static void _strncpy(char *dst, const char *src, u32 len) {
-    u32 i;
-    for (i = 0; i < len; i++) {
-        dst[i] = src[i];
-    }
-}
+extern void root_task(void *arg);
+
+#define ROOT_TASK_STACK_SIZE 4096
+#define ROOT_TASK_PRIORITY   3
 
 void partition_register(partition_conf_t *conf) {
-    u32 i;
     pcb_t *pcb;
     if (conf->identifier >= PARTITION_MAX_NUM) {
         panic("partition_add: unable to register index from identifier");
-    }
-    if (conf->task_num > PARTITION_MAX_PROCESS_NUM) {
-        panic("partition_add: task number exceeds limit");
     }
     pcb = &pcb_list[conf->identifier];
     pcb->conf = conf;
     pcb->identifier = conf->identifier;
     pcb->target_core = conf->target_core;
-    pcb->task_num = conf->task_num;
+    pcb->task_num = 0;
     pcb->slice_ticks = conf->slice_ticks;
     pcb->slice_ticks_left = 0;
     partition_context_init(&(pcb->context));
     partition_context_load_from(&(pcb->context));
-    u16 pid;
-    for (i = 0; i < conf->task_num; i++) {
-        pid = i + 1;
-        OSTaskCreate(
-                conf->task_conf_list[i].entry,
-                conf->task_conf_list[i].arg,
-                conf->task_conf_list[i].stack_ptr,
-                conf->task_conf_list[i].priority);
-        OSTCBPrioTbl[conf->task_conf_list[i].priority]->OSTCBId = pid;
-        pcb->process_list[i].pid = pid;
-        pcb->process_list[i].tcb = OSTCBPrioTbl[conf->task_conf_list[i].priority];
-        pcb->process_list[i].attributes = (process_attribute_t) {
-            /*.name = conf->task_conf_list[i].name,*/
-            .deadline = ddl_soft,
-            .base_priority = conf->task_conf_list[i].priority,
-            .entry_point = (u32) conf->task_conf_list[i].entry,
-            .period = 0,
-            .stack_size = conf->task_conf_list[i].stack_size,
-            .time_capacity = 0,
-        };
-        _strncpy(pcb->process_list[i].attributes.name, conf->task_conf_list[i].name, APEX_NAME_MAX_LEN);
-        pcb->process_list[i].current_priority = conf->task_conf_list[i].priority;
-        pcb->process_list[i].deadline_time = 0;
-        pcb->process_list[i].process_state = ps_ready;
 
+    pcb->stack_ptr = conf->stack_addr;
+
+    pcb->stack_ptr += ROOT_TASK_STACK_SIZE;
+    if (pcb->stack_ptr - conf->stack_addr > conf->stack_size) {
+        panic("Unable to allocate root task stack");
     }
+    printf("root_task create stack -> [%08x]\n", pcb->stack_ptr);
+    OSTaskCreate(
+            root_task,
+            conf,
+            (OS_STK *) pcb->stack_ptr,
+            ROOT_TASK_PRIORITY
+            );
+    OSTCBPrioTbl[ROOT_TASK_PRIORITY]->OSTCBId = 0xffff;
+
+    pcb->operating_mode = opm_warm_start;
     partition_context_save_into(&(pcb->context));
     pcb->xmc_id = xmc_segment_allocate(conf->memory_conf.address, conf->memory_conf.size);
 }

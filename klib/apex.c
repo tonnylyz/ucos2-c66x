@@ -35,8 +35,6 @@ void apex_set_partition_mode(operating_mode_t ps, return_code_t *r) {
     if (ps == opm_idle) {
         // shutdown the partition
         partition_current->target_core = 255u;
-    } else {
-        printf("Warning: setting partition_mode except for idle mode deal no change to the system");
     }
     *r = r_no_error;
 }
@@ -110,25 +108,20 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
     u32 i;
     for (i = 0; i < partition_current->task_num; i++) {
         if (_str_equal(partition_current->process_list[i].attributes.name, ppa->name)) {
+            printf("%s == %s \n", partition_current->process_list[i].attributes.name, ppa->name);
             *r = r_no_action;
             return;
         }
-    }
-    if (ppa->stack_size > partition_current->conf->memory_conf.size /* A CONFIGURATION TIME STACK SIZE LIMIT */) {
-        *r = r_invalid_param;
-        return;
     }
     if (ppa->base_priority == 0 || ppa->base_priority > OS_LOWEST_PRIO) {
         *r = r_invalid_param;
         return;
     }
-    if (ppa->period > 0xffff /* A CONFIGURATION TIME PERIOD LIMIT */) {
-        /* DUMMY */
+    if (ppa->period != 0) {
         *r = r_invalid_param;
         return;
     }
-    if (ppa->time_capacity > 0xffff /* A CONFIGURATION TIME CAPACITY LIMIT */) {
-        /* DUMMY */
+    if (ppa->time_capacity != 0) {
         *r = r_invalid_param;
         return;
     }
@@ -136,10 +129,17 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
         *r = r_invalid_mode;
         return;
     }
+
+    partition_current->stack_ptr += ppa->stack_size;
+    if (partition_current->stack_ptr - partition_current->conf->stack_addr > partition_current->conf->stack_size) {
+        partition_current->stack_ptr -= ppa->stack_size;
+        *r = r_invalid_config;
+        return;
+    }
     u8 e = OSTaskCreate(
             (void (*)(void *)) ppa->entry_point,
-            NULL/* ARG */,
-            NULL/* STK PTR (NEED ALLOCATED BY KERNEL) */,
+            ppa->arg,
+            (OS_STK *) partition_current->stack_ptr,
             ppa->base_priority
             );
     if (e != OS_ERR_NONE) {
@@ -152,7 +152,8 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
     partition_current->process_list[i].deadline_time = 0;
     partition_current->process_list[i].process_state = ps_ready;
     partition_current->process_list[i].pid = i + 1;
-    partition_current->process_list[i].tcb = partition_current->context.OSTCBPrioTbl[ppa->base_priority];
+    partition_current->process_list[i].tcb = OSTCBPrioTbl[ppa->base_priority];
+    partition_current->process_list[i].tcb->OSTCBId = i + 1;
     partition_current->task_num ++;
     *ppid = i;
     *r = r_no_error;

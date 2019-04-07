@@ -47,12 +47,8 @@ int main() {
 
         extern partition_conf_t p0_conf;
         extern partition_conf_t p1_conf;
-        extern partition_conf_t p2_conf;
-        extern partition_conf_t p3_conf;
         partition_register(&p0_conf);
         partition_register(&p1_conf);
-        partition_register(&p2_conf);
-        partition_register(&p3_conf);
 
         dsp2_start_core();
         partition_start();

@@ -22,8 +22,7 @@ PLATFORM_OBJS := platform/driver/timer.obj \
 # Task Objects
 TASK_OBJS := task/part_0.obj \
              task/part_1.obj \
-             task/part_2.obj \
-             task/part_3.obj
+             task/root.obj
 
 # User Library Objects
 ULIB_OBJS := ulib/syscall.obj \

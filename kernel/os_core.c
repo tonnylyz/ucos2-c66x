@@ -850,8 +850,6 @@ void  OSStart (void)
         OSTCBCur      = OSTCBHighRdy;
         /* Copy context frame from TCB*/
         task_context_saved = OSTCBCur->context_frame;
-        printf("OSTCBCUR PRIO %d\n", OSTCBCur->OSTCBPrio);
-        printf("%08x OSSTART\n", task_context_saved.ELR);
         OSStartHighRdy();                            /* Execute target specific code to start task     */
     }
 }
