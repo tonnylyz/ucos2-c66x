@@ -65,7 +65,7 @@ void partition_register(partition_conf_t *conf) {
 
     }
     partition_context_save_into(&(pcb->context));
-    pcb->xmc_id = xmc_segment_allocate(0, 0);
+    pcb->xmc_id = xmc_segment_allocate(conf->memory_conf.address, conf->memory_conf.size);
 }
 
 void partition_init(void) {

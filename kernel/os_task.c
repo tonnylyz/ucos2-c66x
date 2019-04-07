@@ -245,7 +245,7 @@ INT8U  OSTaskCreate (void   (*task)(void *p_arg),
 
         task_context_t context_frame;
         /* Pass context frame to OSTaskStkInit */
-        psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame, NULL);
+        psp = OSTaskStkInit(task, p_arg, ptos, 0, &context_frame);
         err = OS_TCBInit(prio, psp, (OS_STK *) 0, 0u, 0u, NULL, 0u, &context_frame);
         if (err == OS_ERR_NONE) {
             if (OSRunning == OS_TRUE) {      /* Find highest priority task if multitasking has started */

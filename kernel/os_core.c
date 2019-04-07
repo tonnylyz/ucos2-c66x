@@ -850,6 +850,8 @@ void  OSStart (void)
         OSTCBCur      = OSTCBHighRdy;
         /* Copy context frame from TCB*/
         task_context_saved = OSTCBCur->context_frame;
+        printf("OSTCBCUR PRIO %d\n", OSTCBCur->OSTCBPrio);
+        printf("%08x OSSTART\n", task_context_saved.ELR);
         OSStartHighRdy();                            /* Execute target specific code to start task     */
     }
 }
@@ -1985,9 +1987,7 @@ INT8U OS_TCBInit(INT8U prio, OS_STK *ptos, OS_STK *pbos, INT16U id, INT32U stk_s
 #endif
 
         /* Load Context Frame */
-        if (pext != 0) {
-            ptcb->context_frame = *context;
-        }
+        ptcb->context_frame = *context;
 
 
 #if OS_TASK_DEL_EN > 0u
