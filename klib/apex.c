@@ -2,10 +2,11 @@
 #include "printf.h"
 #include <partition.h>
 
+#ifdef APEX_POINTER_CHECK
 static bool _is_malicious_pointer(const void *ptr, u32 size) {
     u32 hi, lo;
-    lo = partition_current->conf->memory_conf.address;
-    hi = lo + partition_current->conf->memory_conf.size;
+    lo = partition_current->conf->memory_addr;
+    hi = lo + partition_current->conf->memory_size;
     if ((u32)ptr < lo) {
         return true;
     }
@@ -17,11 +18,14 @@ static bool _is_malicious_pointer(const void *ptr, u32 size) {
     }
     return false;
 }
+#endif
 
 void apex_set_partition_mode(operating_mode_t ps, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
+#endif
     if (ps != opm_cold_start && ps != opm_idle && ps != opm_normal && ps != opm_warm_start) {
         *r = r_invalid_param;
     }
@@ -34,24 +38,26 @@ void apex_set_partition_mode(operating_mode_t ps, return_code_t *r) {
     partition_current->operating_mode = ps;
     if (ps == opm_idle) {
         // shutdown the partition
-        partition_current->target_core = 255u;
     }
     *r = r_no_error;
 }
 
 void apex_get_partition_mode(operating_mode_t *pps, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(pps, sizeof(operating_mode_t))) {
         return;
     }
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
+#endif
     *pps = partition_current->operating_mode;
     *r = r_no_error;
 }
 
 
 void apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(name, APEX_NAME_MAX_LEN)) {
         return;
     }
@@ -61,10 +67,11 @@ void apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r) {
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
+#endif
     int i;
-    for (i = 0; i < partition_current->task_num; i++) {
+    for (i = 0; i < partition_current->task_index; i++) {
         process_status_t *x = &partition_current->process_list[i];
-        if (_str_equal(x->attributes.name, name)) {
+        if (strcmp(x->attributes->name, name) == 0) {
             *ppid = x->pid;
             *r = r_no_error;
             return;
@@ -74,13 +81,15 @@ void apex_get_process_id(char *name, process_id_t *ppid, return_code_t *r) {
 }
 
 void apex_get_process_status(process_id_t pid, process_status_t *pps, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(pps, sizeof(operating_mode_t))) {
         return;
     }
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-    if (pid > partition_current->task_num) {
+#endif
+    if (pid > partition_current->task_index) {
         *r = r_invalid_config;
         return;
     }
@@ -89,7 +98,8 @@ void apex_get_process_status(process_id_t pid, process_status_t *pps, return_cod
     *r = r_no_error;
 }
 
-void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, return_code_t *r) {
+void apex_create_process(process_attribute_t *ppa, process_id_t *ppid, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(ppa, sizeof(process_attribute_t))) {
         return;
     }
@@ -99,16 +109,10 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-    /* WARNING:
-     *  This function is not used at runtime. You must NOT invoke this syscall at runtime.
-     *  This function is designed to provide an alternative to initialize a task in partition.
-     *  If you want to use this APEX service, you need to remove the task adding procedure in `partition_add`,
-     *  also this function is not ready for this use.
-     * */
+#endif
     u32 i;
-    for (i = 0; i < partition_current->task_num; i++) {
-        if (_str_equal(partition_current->process_list[i].attributes.name, ppa->name)) {
-            printf("%s == %s \n", partition_current->process_list[i].attributes.name, ppa->name);
+    for (i = 0; i < partition_current->task_index; i++) {
+        if (strcmp(partition_current->process_list[i].attributes->name, ppa->name) == 0) {
             *r = r_no_action;
             return;
         }
@@ -129,7 +133,6 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
         *r = r_invalid_mode;
         return;
     }
-
     partition_current->stack_ptr += ppa->stack_size;
     if (partition_current->stack_ptr - partition_current->conf->stack_addr > partition_current->conf->stack_size) {
         partition_current->stack_ptr -= ppa->stack_size;
@@ -146,20 +149,20 @@ void apex_create_process(const process_attribute_t *ppa, process_id_t *ppid, ret
         *r = r_invalid_config;
         return;
     }
-    i = partition_current->task_num;
-    partition_current->process_list[i].attributes = *ppa;
+    i = partition_current->task_index;
+    partition_current->process_list[i].attributes = ppa;
     partition_current->process_list[i].current_priority = ppa->base_priority;
-    partition_current->process_list[i].deadline_time = 0;
     partition_current->process_list[i].process_state = ps_ready;
     partition_current->process_list[i].pid = i + 1;
     partition_current->process_list[i].tcb = OSTCBPrioTbl[ppa->base_priority];
     partition_current->process_list[i].tcb->OSTCBId = i + 1;
-    partition_current->task_num ++;
+    partition_current->task_index ++;
     *ppid = i;
     *r = r_no_error;
 }
 
 void apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
@@ -167,6 +170,7 @@ void apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
         *r = r_invalid_param;
         return;
     }
+#endif
     if (priority == 0 || priority > OS_LOWEST_PRIO) {
         *r = r_invalid_param;
         return;
@@ -183,33 +187,23 @@ void apex_set_priority(process_id_t pid, u8 priority, return_code_t *r) {
 }
 
 void apex_suspend_self(system_time_t time_out, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-    /* preemption is always enabled
-     * there is no error handler process
-     * */
+#endif
     if (time_out > 0xffff) {
         *r = r_invalid_param;
         return;
     }
     u16 pid = OSTCBCur->OSTCBId;
-    if (partition_current->process_list[pid - 1].attributes.period != 0) {
-        *r = r_invalid_mode;
-        return;
-    }
-
     if (time_out == 0) {
         *r = r_no_error;
         return;
     }
-
     partition_current->process_list[pid - 1].process_state = ps_waiting;
     *r = r_no_error;
-    if (time_out != 0xffff) {
-        OSTimeDly(time_out);
-    } /* No support for finite time out */
-    /* expiration of time out logic not presented */
+    OSTimeDly(time_out);
 }
 
 void apex_stop_self(void) {
@@ -217,12 +211,14 @@ void apex_stop_self(void) {
 }
 
 void apex_get_my_id(process_id_t *ppid, return_code_t *r) {
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(ppid, sizeof(process_id_t))) {
         return;
     }
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
+#endif
     *ppid = OSTCBCur->OSTCBId;
     *r = r_no_error;
 }
@@ -230,7 +226,7 @@ void apex_get_my_id(process_id_t *ppid, return_code_t *r) {
 port_conf_t *_port_conf(const char *name) {
     u8 i;
     for (i = 0; i < PORT_CONF_NUM; i++) {
-        if (_str_equal(name, port_conf_list[i].name)) {
+        if (strcmp(name, port_conf_list[i].name) == 0) {
             return &(port_conf_list[i]);
         }
     }
@@ -240,8 +236,7 @@ port_conf_t *_port_conf(const char *name) {
 void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_size_t max_message_size,
                                port_direction_t port_direction, system_time_t refresh_period,
                                sampling_port_id_t *sampling_port_id, return_code_t *r) {
-
-
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(sampling_port_name, APEX_NAME_MAX_LEN)) {
         return;
     }
@@ -251,7 +246,7 @@ void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-
+#endif
     sampling_port_t *port;
     port_conf_t *conf;
     conf = _port_conf(sampling_port_name);
@@ -303,15 +298,14 @@ void _memcpy(void *dst, void *src, u32 len) {
 
 void apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t length,
                               return_code_t *r) {
-
-
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer((const void *) message_addr, length)) {
         return;
     }
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-
+#endif
     sampling_port_t *port = port_get(sampling_port_id);
     if (port == NULL) {
         *r = r_invalid_param;
@@ -330,8 +324,7 @@ void apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_
 
 void apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t *length,
                              validity_t *validity, return_code_t *r) {
-
-
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer((const void *) message_addr, IPC_INTER_PARTITION_MAX_LENGTH)) {
         return;
     }
@@ -344,8 +337,7 @@ void apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-
-
+#endif
     sampling_port_t *port = port_get(sampling_port_id);
     if (port == NULL) {
         *r = r_invalid_param;
@@ -373,7 +365,7 @@ attribute of the port */) {
 }
 
 void apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling_port_id_t *pid, return_code_t *r) {
-
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(sampling_port_name, APEX_NAME_MAX_LEN)) {
         return;
     }
@@ -383,7 +375,7 @@ void apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-
+#endif
     u8 i;
     i = port_name2id(sampling_port_name);
     if (i == 0xff) {
@@ -395,14 +387,14 @@ void apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling
 }
 
 void apex_get_sampling_port_status(sampling_port_id_t sampling_port_id, sampling_port_status_t *pstatus, return_code_t *r) {
-
+#ifdef APEX_POINTER_CHECK
     if (_is_malicious_pointer(pstatus, sizeof(sampling_port_status_t))) {
         return;
     }
     if (_is_malicious_pointer(r, sizeof(return_code_t))) {
         return;
     }
-
+#endif
     sampling_port_t *port = port_get(sampling_port_id);
     if (port == NULL) {
         *r = r_invalid_param;

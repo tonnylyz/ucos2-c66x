@@ -7,10 +7,8 @@
 
 static bool _check_addr(u8 pid, u32 addr, u32 len) {
     u32 high, low;
-    memory_conf_t *conf;
-    conf = &(pcb_list[pid].conf->memory_conf);
-    high = conf->address + conf->size;
-    low = conf->address;
+    high = pcb_list[pid].conf->memory_addr + pcb_list[pid].conf->memory_size;
+    low = pcb_list[pid].conf->memory_addr;
     if (addr < low || addr >= high) {
         return false;
     }
@@ -121,7 +119,7 @@ int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
     tcb->ipc.foreign_accessed = true; /* task resume when this partition schedule */
 
     _unlock(pid, prio);
-    if (pcb_list[pid].target_core != core_id) {
+    if (pcb_list[pid].conf->target_core != core_id) {
         mailbox_send(pid);
     }
     return 0;

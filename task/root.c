@@ -16,19 +16,9 @@ void root_task(void *arg) {
         puts("adding ");
         puts(conf->task_conf_list[i].name);
         putc('\n');
-        process_attribute_t attribute = (process_attribute_t) {
-                .name = conf->task_conf_list[i].name,
-                .deadline = ddl_soft,
-                .base_priority = conf->task_conf_list[i].priority,
-                .entry_point = (u32) conf->task_conf_list[i].entry,
-                .period = 0,
-                .stack_size = conf->task_conf_list[i].stack_size,
-                .time_capacity = 0,
-                .arg = conf->task_conf_list[i].arg,
-        };
         u16 pid;
         u_apex_create_process(
-            &attribute,
+            &(conf->task_conf_list[i]),
             &pid,
             &r
         );

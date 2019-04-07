@@ -6,9 +6,8 @@
 #include <ucos_ii.h>
 #include "partition_conf.h"
 
-#define PARTITION_MAX_NUM 8
-#define PARTITION_MAX_PROCESS_NUM 8
-#define PARTITION_MAX_TASK_NUM (OS_MAX_TASKS + 1)
+#define PARTITION_MAX_NUM 4
+#define PARTITION_MAX_PROCESS_NUM OS_MAX_TASKS
 
 typedef struct {
     u32 OSCtxSwCtr;
@@ -40,25 +39,23 @@ typedef struct {
 
 typedef struct {
     u8 identifier;
+    partition_conf_t *conf;
     u8 xmc_id;
-    u8 task_num;
+    u8 task_index;
     u32 stack_ptr;
     process_status_t process_list[PARTITION_MAX_PROCESS_NUM];
 
     partition_context_t context;
 
-    u32 slice_ticks;
-    u32 slice_ticks_left;
+    u32 slice_left;
 
-    u8 target_core;
     bool ipc_need_resume;
 
-    /* APEX COMPLIANCE */
     operating_mode_t operating_mode;
+
+    /* APEX */
     start_condition_t start_condition;
     u8 lock_level;
-    partition_conf_t *conf;
-
 } pcb_t;
 
 extern pcb_t pcb_list[];

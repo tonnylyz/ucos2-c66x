@@ -96,7 +96,7 @@ static u32 _handle_syscall(u32 no, u32* arg) {
             apex_get_process_status((process_id_t) arg[0], (process_status_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         case 24: {
-            apex_create_process((const process_attribute_t *) arg[0], (process_id_t *) arg[1], (return_code_t *) arg[2]);
+            apex_create_process((process_attribute_t *) arg[0], (process_id_t *) arg[1], (return_code_t *) arg[2]);
         } break;
         case 25: {
             apex_set_priority((process_id_t) arg[0], (u8) arg[1], (return_code_t *) arg[2]);
@@ -192,7 +192,7 @@ void OSMailboxISR(void) {
     if (pid >= PARTITION_MAX_NUM) {
         return;
     }
-    if (pcb_list[pid].target_core != core_id) {
+    if (pcb_list[pid].conf->target_core != core_id) {
         return;
     }
     if (pid != partition_current->identifier) {

@@ -44,7 +44,7 @@ sampling_port_t *port_get(u8 id) {
 bool port_exist(const char *name) {
     u8 i;
     for (i = 0; i < ports_index; i++) {
-        if (_str_equal(name, ports[i].conf->name)) {
+        if (strcmp(name, ports[i].conf->name) == 0) {
             return true;
         }
     }
@@ -54,7 +54,7 @@ bool port_exist(const char *name) {
 u8 port_name2id(const char *name) {
     u8 i;
     for (i = 0; i < ports_index; i++) {
-        if (_str_equal(name, ports[i].conf->name)) {
+        if (strcmp(name, ports[i].conf->name) == 0) {
             return i;
         }
     }

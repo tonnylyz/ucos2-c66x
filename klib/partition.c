@@ -26,15 +26,11 @@ void partition_register(partition_conf_t *conf) {
     pcb = &pcb_list[conf->identifier];
     pcb->conf = conf;
     pcb->identifier = conf->identifier;
-    pcb->target_core = conf->target_core;
-    pcb->task_num = 0;
-    pcb->slice_ticks = conf->slice_ticks;
-    pcb->slice_ticks_left = 0;
+    pcb->task_index = 0;
+    pcb->slice_left = 0;
     partition_context_init(&(pcb->context));
     partition_context_load_from(&(pcb->context));
-
     pcb->stack_ptr = conf->stack_addr;
-
     pcb->stack_ptr += ROOT_TASK_STACK_SIZE;
     if (pcb->stack_ptr - conf->stack_addr > conf->stack_size) {
         panic("Unable to allocate root task stack");
@@ -47,19 +43,14 @@ void partition_register(partition_conf_t *conf) {
             ROOT_TASK_PRIORITY
             );
     OSTCBPrioTbl[ROOT_TASK_PRIORITY]->OSTCBId = 0xffff;
-
     pcb->operating_mode = opm_warm_start;
     partition_context_save_into(&(pcb->context));
-    pcb->xmc_id = xmc_segment_allocate(conf->memory_conf.address, conf->memory_conf.size);
+    pcb->xmc_id = xmc_segment_allocate(conf->memory_addr, conf->memory_size);
 }
 
 void partition_init(void) {
-    int i;
     partition_current = NULL;
     OS_MemClr((INT8U *) pcb_list, sizeof(pcb_list));
-    for (i = 0; i < PARTITION_MAX_NUM; i++) {
-        pcb_list[i].target_core = 255u;
-    }
 }
 
 void partition_context_init(partition_context_t *context) {
@@ -163,7 +154,7 @@ void partition_context_load_from(partition_context_t *context) {
 static pcb_t *_core_first_partition() {
     int i;
     for (i = 0; i < PARTITION_MAX_NUM; i++) {
-        if (pcb_list[i].target_core == core_id) {
+        if (pcb_list[i].conf != NULL && pcb_list[i].conf->target_core == core_id) {
             return &(pcb_list[i]);
         }
     }
@@ -173,7 +164,7 @@ static pcb_t *_core_first_partition() {
 static pcb_t *_core_next_partition() {
     int i;
     for (i = partition_current->identifier + 1; i < PARTITION_MAX_NUM; i++) {
-        if (pcb_list[i].target_core == core_id) {
+        if (pcb_list[i].conf != NULL && pcb_list[i].conf->target_core == core_id) {
             return &(pcb_list[i]);
         }
     }
@@ -186,7 +177,7 @@ void partition_start(void) {
     if (part == NULL) {
         panic("No partition runs at this core.\n");
     }
-    part->slice_ticks_left = part->slice_ticks - 1;
+    part->slice_left = part->conf->slice_num - 1;
     if (core_id == 1) {
         timer_init();
     }
@@ -197,12 +188,12 @@ void partition_start(void) {
 }
 
 void partition_tick(void) {
-    if (partition_current->slice_ticks_left == 0) {
+    if (partition_current->slice_left == 0) {
         pcb_t *partition_next = _core_next_partition();
         partition_switch(partition_current, partition_next);
         return;
     } else {
-        partition_current->slice_ticks_left--;
+        partition_current->slice_left--;
         return;
     }
 }
@@ -231,11 +222,11 @@ void partition_run(pcb_t *pcb) {
 void partition_switch(pcb_t *prev, pcb_t *next) {
     printf("partition_switch from %d to %d\n", prev->identifier, next->identifier);
     if (prev == next) {
-        prev->slice_ticks_left = prev->slice_ticks - 1;
+        prev->slice_left = prev->conf->slice_num - 1;
         return;
     }
     OSTCBCur->context_frame = task_context_saved;
     partition_context_save_into(&(prev->context));
-    next->slice_ticks_left = next->slice_ticks - 1;
+    next->slice_left = next->conf->slice_num - 1;
     partition_run(next);
 }

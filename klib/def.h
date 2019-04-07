@@ -52,41 +52,32 @@ typedef enum {
 #define APEX_NAME_MAX_LEN 8
 
 typedef struct {
-    char *name;
+    char name[APEX_NAME_MAX_LEN];
     u32 entry_point;
     u32 stack_size;
     void *arg;
     u8  base_priority;
+
+    /* APEX */
     system_time_t period;
     system_time_t time_capacity;
     deadline_t deadline;
 } process_attribute_t;
 
 typedef struct {
-    process_attribute_t attributes;
-    u8 current_priority;
-    system_time_t deadline_time;
-    process_state_t process_state;
-    OS_TCB *tcb;
     u16 pid;
+    OS_TCB *tcb;
+    process_attribute_t *attributes;
+    process_state_t process_state;
+    u8 current_priority;
+
+    system_time_t deadline_time;
 } process_status_t;
 
-static inline u32 _strlen(const char *str) {
-    u32 i;
-    for (i = 0; str[i] != '\0' && i < APEX_NAME_MAX_LEN; i++);
-    return i;
-}
-
-static inline bool _str_equal(const char *a, const char *b) {
-    u32 i;
-    u32 a_len, b_len;
-    a_len = _strlen(a);
-    b_len = _strlen(b);
-    if (a_len != b_len) return false;
-    for (i = 0; i < a_len; i++) {
-        if (a[i] != b[i]) return false;
-    }
-    return true;
+static inline int strcmp(const char *s1, const char *s2) {
+    while (*s1 && (*s1 == *s2))
+        s1++, s2++;
+    return *(const unsigned char *) s1 - *(const unsigned char *) s2;
 }
 
 #endif //UCOS2_C66X_DEF_H
