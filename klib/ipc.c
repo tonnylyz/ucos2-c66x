@@ -51,7 +51,7 @@ void ipc_receive_foreign(u8 pid, u32 addr, u32 max_len) {
 }
 
 int ipc_send(u8 prio, u32 value) {
-    OS_TCB* tcb;
+    OS_TCB *tcb;
     _lock(partition_current->identifier, prio);
     tcb = partition_current->context.OSTCBPrioTbl[prio];
 
@@ -78,7 +78,7 @@ int ipc_send(u8 prio, u32 value) {
 }
 
 int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
-    OS_TCB* tcb;
+    OS_TCB *tcb;
     if (addr != 0 && len > IPC_INTER_PARTITION_MAX_LENGTH) {
         return IPC_ERROR_MESSAGE_TOO_LARGE;
     }
@@ -127,22 +127,19 @@ int ipc_send_foreign(u8 pid, u8 prio, u32 value, u32 addr, u32 len) {
 
 void ipc_scan_change(void) {
     u8 i;
-    for (i = 0; i <= OS_LOWEST_PRIO; i++) {
-        OS_TCB *tcb = partition_current->context.OSTCBPrioTbl[i];
-        if (tcb == NULL) {
-            continue;
-        }
+    for (i = 0; i < partition_current->task_index; i++) {
+        OS_TCB *tcb = partition_current->process_list[i].tcb;
         _lock(partition_current->identifier, i);
         if (tcb->ipc.foreign_accessed == true) {
             tcb->ipc.foreign_accessed = false;
-            if (_check_addr(partition_current->identifier, OSTCBPrioTbl[i]->ipc.addr, OSTCBPrioTbl[i]->ipc.max_len)) {
-                OS_MemCopy((INT8U *) OSTCBPrioTbl[i]->ipc.addr, OSTCBPrioTbl[i]->ipc.buf, (INT16U) OSTCBPrioTbl[i]->ipc.max_len);
+            if (_check_addr(partition_current->identifier, tcb->ipc.addr, tcb->ipc.max_len)) {
+                OS_MemCopy((INT8U *) tcb->ipc.addr, tcb->ipc.buf, (INT16U) tcb->ipc.max_len);
             }
-            if ((tcb->OSTCBStat & OS_STAT_SUSPEND) != OS_STAT_RDY) { /* Task must be suspended                */
-                tcb->OSTCBStat &= (INT8U)~(INT8U)OS_STAT_SUSPEND;    /* Remove suspension                     */
-                if (tcb->OSTCBStat == OS_STAT_RDY) {                 /* See if task is now ready              */
+            if ((tcb->OSTCBStat & OS_STAT_SUSPEND) != OS_STAT_RDY) {
+                tcb->OSTCBStat &= (INT8U) ~(INT8U) OS_STAT_SUSPEND;
+                if (tcb->OSTCBStat == OS_STAT_RDY) {
                     if (tcb->OSTCBDly == 0u) {
-                        OSRdyGrp              |= tcb->OSTCBBitY;    /* Yes, Make task ready to run           */
+                        OSRdyGrp |= tcb->OSTCBBitY;
                         OSRdyTbl[tcb->OSTCBY] |= tcb->OSTCBBitX;
                     }
                 }

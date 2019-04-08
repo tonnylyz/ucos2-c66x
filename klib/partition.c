@@ -195,25 +195,27 @@ void partition_tick(void) {
     }
 }
 
+static void _os_start(void) {
+    INT8U y;
+    y = OSUnMapTbl[OSRdyGrp];
+    OSPrioHighRdy = (INT8U) ((y << 3u) + OSUnMapTbl[OSRdyTbl[y]]);
+    OSPrioCur = OSPrioHighRdy;
+    OSTCBHighRdy = OSTCBPrioTbl[OSPrioHighRdy];
+    OSTCBCur = OSTCBHighRdy;
+    OSRunning = OS_TRUE;
+}
+
 void partition_run(pcb_t *pcb) {
     partition_current = pcb;
     xmc_segment_activate(pcb->xmc_id);
     partition_context_load_from(&(pcb->context));
     if (OSRunning == OS_TRUE) {
         ipc_scan_change();
-        task_context_saved = OSTCBCur->context_frame;
-        OSIntCtxSw();
     } else {
-        INT8U y;
-        y = OSUnMapTbl[OSRdyGrp];
-        OSPrioHighRdy = (INT8U) ((y << 3u) + OSUnMapTbl[OSRdyTbl[y]]);
-        OSPrioCur = OSPrioHighRdy;
-        OSTCBHighRdy = OSTCBPrioTbl[OSPrioHighRdy];
-        OSTCBCur = OSTCBHighRdy;
-        OSRunning = OS_TRUE;
-        task_context_saved = OSTCBCur->context_frame;
-        OSIntCtxSw();
+        _os_start();
     }
+    task_context_saved = OSTCBCur->context_frame;
+    OSIntCtxSw();
 }
 
 void partition_switch(pcb_t *prev, pcb_t *next) {
