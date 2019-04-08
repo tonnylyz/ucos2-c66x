@@ -15,9 +15,6 @@ pcb_t pcb_list[PARTITION_MAX_NUM];
 
 extern void root_task(void *arg);
 
-#define ROOT_TASK_STACK_SIZE 4096
-#define ROOT_TASK_PRIORITY   3
-
 void partition_register(partition_conf_t *conf) {
     pcb_t *pcb;
     if (conf->identifier >= PARTITION_MAX_NUM) {
@@ -42,7 +39,7 @@ void partition_register(partition_conf_t *conf) {
             (OS_STK *) pcb->stack_ptr,
             ROOT_TASK_PRIORITY
             );
-    OSTCBPrioTbl[ROOT_TASK_PRIORITY]->OSTCBId = 0xffff;
+    OSTCBPrioTbl[ROOT_TASK_PRIORITY]->OSTCBId = ROOT_TASK_PID;
     pcb->operating_mode = opm_warm_start;
     partition_context_save_into(&(pcb->context));
     pcb->xmc_id = xmc_segment_allocate(conf->memory_addr, conf->memory_size);

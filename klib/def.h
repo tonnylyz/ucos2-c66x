@@ -80,4 +80,9 @@ static inline int strcmp(const char *s1, const char *s2) {
     return *(const unsigned char *) s1 - *(const unsigned char *) s2;
 }
 
+#define ROOT_TASK_PID        0xffff
+#define ROOT_TASK_STACK_SIZE 4096
+#define ROOT_TASK_PRIORITY   3
+
+
 #endif //UCOS2_C66X_DEF_H

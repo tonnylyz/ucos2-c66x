@@ -39,6 +39,7 @@ SECTIONS
 
     .text:PART_S: load > PART_S
     .data:PART_S: load > PART_S
+    .const:.string: load > PART_S
 
     .text:PART_0: load > PART_0
     .data:PART_0: load > PART_0

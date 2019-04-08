@@ -9,6 +9,8 @@ void putc(char c);
 
 void puts(char *str);
 
+void putx(u32 x);
+
 /* syscall ~ os_time.c */
 
 void time_delay(u32 ticks);

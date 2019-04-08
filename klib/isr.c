@@ -27,7 +27,7 @@ static u32 _handle_syscall(u32 no, u32* arg) {
             uart_putc((char) arg[0]);
         } break;
         case 1: {
-            uart_puts((char *)arg[0]);
+            printf("%08x", arg[0]);
         } break;
         case 2: {
             OSTimeDly(arg[0]);

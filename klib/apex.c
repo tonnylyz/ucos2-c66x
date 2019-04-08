@@ -36,9 +36,6 @@ void apex_set_partition_mode(operating_mode_t ps, return_code_t *r) {
         *r = r_invalid_mode;
     }
     partition_current->operating_mode = ps;
-    if (ps == opm_idle) {
-        // shutdown the partition
-    }
     *r = r_no_error;
 }
 
@@ -192,16 +189,10 @@ void apex_suspend_self(system_time_t time_out, return_code_t *r) {
         return;
     }
 #endif
-    if (time_out > 0xffff) {
-        *r = r_invalid_param;
-        return;
-    }
-    u16 pid = OSTCBCur->OSTCBId;
     if (time_out == 0) {
         *r = r_no_error;
         return;
     }
-    partition_current->process_list[pid - 1].process_state = ps_waiting;
     *r = r_no_error;
     OSTimeDly(time_out);
 }

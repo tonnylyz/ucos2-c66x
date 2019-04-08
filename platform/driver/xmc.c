@@ -70,8 +70,7 @@ void xmc_init(void) {
     }
 
     // default map: kernel only
-    // TODO: change to USER____ cause XMC exception
-    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_4G, XMC_SEGMENT_PERM_KERN_RWX_USER_R_X);
+    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_4G, XMC_SEGMENT_PERM_KERN_RWX_USER____);
     // partition share map
     xmc_segment_map(1, 0x95200000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER_R_X);
 

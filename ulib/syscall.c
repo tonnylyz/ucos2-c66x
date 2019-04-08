@@ -11,7 +11,17 @@ void putc(char c) {
 }
 
 void puts(char *str) {
-    task_syscall((u32) str, 0, 0, 0, 0, 0, 0, 0, 1);
+    u32 i;
+    for (i = 0; i < 32; i++) {
+        if (str[i] == 0) {
+            break;
+        }
+        putc(str[i]);
+    }
+}
+
+void putx(u32 x) {
+    task_syscall(x, 0, 0, 0, 0, 0, 0, 0, 1);
 }
 
 void time_delay(u32 ticks) {
