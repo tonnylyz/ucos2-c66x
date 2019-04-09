@@ -44,13 +44,9 @@ typedef struct {
     u8 task_index;
     u32 stack_ptr;
     process_status_t process_list[PARTITION_MAX_PROCESS_NUM];
-
     partition_context_t context;
-
     u32 slice_left;
-
     bool ipc_need_resume;
-
     operating_mode_t operating_mode;
 
     /* APEX */

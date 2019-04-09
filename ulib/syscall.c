@@ -12,7 +12,7 @@ void putc(char c) {
 
 void puts(char *str) {
     u32 i;
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < 128; i++) {
         if (str[i] == 0) {
             break;
         }

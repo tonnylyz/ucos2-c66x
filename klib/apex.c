@@ -1,6 +1,7 @@
 #include "apex.h"
 #include "printf.h"
 #include <partition.h>
+#include <spinlock.h>
 
 #ifdef APEX_POINTER_CHECK
 static bool _is_malicious_pointer(const void *ptr, u32 size) {
@@ -214,15 +215,7 @@ void apex_get_my_id(process_id_t *ppid, return_code_t *r) {
     *r = r_no_error;
 }
 
-port_conf_t *_port_conf(const char *name) {
-    u8 i;
-    for (i = 0; i < PORT_CONF_NUM; i++) {
-        if (strcmp(name, port_conf_list[i].name) == 0) {
-            return &(port_conf_list[i]);
-        }
-    }
-    return NULL;
-}
+
 
 void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_size_t max_message_size,
                                port_direction_t port_direction, system_time_t refresh_period,
@@ -240,7 +233,7 @@ void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_
 #endif
     sampling_port_t *port;
     port_conf_t *conf;
-    conf = _port_conf(sampling_port_name);
+    conf = port_conf(partition_current->conf->port_conf_list, partition_current->conf->port_num, sampling_port_name);
     if (conf == NULL) {
         *r = r_invalid_config;
         return;
@@ -262,9 +255,6 @@ void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_
         return;
     }
     if (partition_current->operating_mode == opm_normal) {
-        /* This function does NOT serve as a syscall currently.
-         * This function is invoked by kernel to initialize ports at present.
-         * */
         *r = r_invalid_mode;
         return;
     }
@@ -277,14 +267,26 @@ void apex_create_sampling_port(sampling_port_name_t sampling_port_name, message_
     port->status.port_direction = port_direction;
     port->status.max_message_size = max_message_size;
     port->status.refresh_period = refresh_period;
+    port->conf = conf;
+    port->owner_partition = partition_current->identifier;
     *r = r_no_error;
 }
 
-void _memcpy(void *dst, void *src, u32 len) {
+static void _memcpy(void *dst, void *src, u32 len) {
     u32 i;
     for (i = 0; i < len; i++) {
         ((u8 *)dst)[i] = ((u8 *)src)[i];
     }
+}
+
+#define PORT_SPINLOCK_BASE 193
+
+static inline void _port_lock(u8 id) {
+    spinlock_lock(PORT_SPINLOCK_BASE + id);
+}
+
+static inline void _port_unlock(u8 id) {
+    spinlock_unlock(PORT_SPINLOCK_BASE + id);
 }
 
 void apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t length,
@@ -297,20 +299,38 @@ void apex_write_sampling_port(sampling_port_id_t sampling_port_id, message_addr_
         return;
     }
 #endif
-    sampling_port_t *port = port_get(sampling_port_id);
+    sampling_port_t *port;
+    port = port_get(sampling_port_id);
     if (port == NULL) {
         *r = r_invalid_param;
         return;
     }
-    if (length > port->conf->max_message_size) {
+    _port_lock(sampling_port_id);
+    if (port->status.port_direction != pd_source) {
+        *r = r_invalid_mode;
+        _port_unlock(sampling_port_id);
+        return;
+    }
+    sampling_port_name_t peer = port->conf->peer_port;
+    _port_unlock(sampling_port_id);
+    if (!port_exist(peer)) {
         *r = r_invalid_config;
         return;
     }
-    if (port->status.port_direction != pd_source) {
-        *r = r_invalid_mode;
+    sampling_port_id_t peer_id = port_name2id(peer);
+    _port_lock(peer_id);
+    sampling_port_t *peer_port = port_get(peer_id);
+    if (length > peer_port->conf->max_message_size) {
+        *r = r_invalid_config;
+        _port_unlock(peer_id);
+        return;
     }
-    _memcpy(port->payload, (void *) message_addr, length);
+    peer_port->is_empty = false;
+    peer_port->last_receive = OSTimeGet();
+    _memcpy(peer_port->payload, (void *) message_addr, length);
+    peer_port->actual_length = length;
     *r = r_no_error;
+    _port_unlock(peer_id);
 }
 
 void apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t message_addr, message_size_t *length,
@@ -334,25 +354,23 @@ void apex_read_sampling_port(sampling_port_id_t sampling_port_id, message_addr_t
         *r = r_invalid_param;
         return;
     }
+    _port_lock(sampling_port_id);
     if (port->status.port_direction != pd_destination) {
         *r = r_invalid_mode;
+        _port_unlock(sampling_port_id);
         return;
     }
     if (port->is_empty) {
         *validity = v_invalid;
         *r = r_no_action;
+        _port_unlock(sampling_port_id);
         return;
     }
     _memcpy((void *) message_addr, port->payload, port->actual_length);
     *length = port->actual_length;
-    if (true /* age of the copied message is consistent with the required REFRESH_PERIOD
-attribute of the port */) {
-        *validity = v_valid;
-    } else {
-        *validity = v_invalid;
-    }
+    *validity = v_valid;
     *r = r_no_error;
-    /* update validity in status of the port; */
+    _port_unlock(sampling_port_id);
 }
 
 void apex_get_sampling_port_id(sampling_port_name_t sampling_port_name, sampling_port_id_t *pid, return_code_t *r) {

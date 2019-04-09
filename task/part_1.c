@@ -3,6 +3,7 @@
 #include <partition_conf.h>
 
 #pragma CODE_SECTION(p1_task_entry, ".text:PART_1")
+#pragma CODE_SECTION(p1_apex_ipc_test, ".text:PART_1")
 #pragma DATA_SECTION(p1_stack, ".data:PART_1")
 #pragma DATA_SECTION(p1t1_arg, ".data:PART_1")
 #pragma DATA_SECTION(p1t2_arg, ".data:PART_1")
@@ -27,12 +28,46 @@ void p1_task_entry(void *arg) {
     }
 }
 
+void p1_apex_ipc_test(void *arg) {
+    char buf[20];
+    return_code_t r;
+    sampling_port_id_t pid;
+    puts("p1_apex_ipc_test started\n");
+    u_apex_get_sampling_port_id("port_2", &pid, &r);
+    if (r != r_no_error) {
+        puts("p1_apex_ipc_test u_apex_get_sampling_port_id failed\n");
+        time_delay(0xffffff);
+    }
+    u32 actually_length;
+    while (1) {
+        validity_t validity;
+        u_apex_read_sampling_port(pid, (message_addr_t) buf, &actually_length, &validity, &r);
+        if (r == r_no_error) {
+            break;
+        } else {
+            puts("p1_apex_ipc_test u_apex_read_sampling_port failed, retry\n");
+            int i = 0xffff;
+            while (i--) {
+                asm(" NOP");
+            }
+        }
+    }
+    puts("p1_apex_ipc_test received length\n");
+    putx(actually_length);
+    putc('\n');
+    puts(buf);
+    putc('\n');
+    while (1) {
+        asm(" NOP");
+    }
+}
+
 #define P1_TASK_NUM 4
 #pragma DATA_SECTION(p1_task_conf_list, ".data:PART_S")
 process_attribute_t p1_task_conf_list[P1_TASK_NUM] = {
         {
                 .name = "p1t1",
-                .entry_point = (u32) p1_task_entry,
+                .entry_point = (u32) p1_apex_ipc_test,
                 .stack_size = 2048,
                 .arg = p1t1_arg,
                 .base_priority = 11
@@ -60,6 +95,17 @@ process_attribute_t p1_task_conf_list[P1_TASK_NUM] = {
         }
 };
 
+#pragma DATA_SECTION(p1_port_conf_list, ".data:PART_S")
+port_conf_t p1_port_conf_list[1] = {
+        {
+                .name = "port_2",
+                .max_message_size = 1024,
+                .direction = pd_destination,
+                .refresh_period = 10,
+                .peer_port = "port_1",
+        },
+};
+
 #pragma DATA_SECTION(p1_conf, ".data:PART_S")
 partition_conf_t p1_conf = {
         .identifier = 1,
@@ -71,4 +117,6 @@ partition_conf_t p1_conf = {
         .task_conf_list = p1_task_conf_list,
         .slice_num = 5,
         .target_core = 1,
+        .port_num = 1,
+        .port_conf_list = p1_port_conf_list,
 };

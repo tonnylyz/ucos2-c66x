@@ -3,6 +3,7 @@
 
 #include <types.h>
 #include <def.h>
+#include <port.h>
 
 typedef struct {
     u8 identifier;
@@ -14,6 +15,8 @@ typedef struct {
     process_attribute_t *task_conf_list;
     u32 slice_num;
     u8 target_core;
+    u8 port_num;
+    port_conf_t *port_conf_list;
 
     /* APEX */
     u32 period;

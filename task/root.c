@@ -18,7 +18,27 @@ void root_task(void *arg) {
             &pid,
             &r
         );
+        if (r != r_no_error) {
+            puts("[ROOT_TASK] Adding partition failed\n");
+        }
     }
+    puts("[ROOT_TASK] Adding ports\n");
+    for (i = 0; i < conf->port_num; i++) {
+        sampling_port_id_t pid;
+        u_apex_create_sampling_port(
+                conf->port_conf_list[i].name,
+                conf->port_conf_list[i].max_message_size,
+                conf->port_conf_list[i].direction,
+                conf->port_conf_list[i].refresh_period,
+                &pid,
+                &r
+                );
+        if (r != r_no_error) {
+            puts("[ROOT_TASK] Adding port failed\n");
+        }
+    }
+
+    puts("[ROOT_TASK] Ready to yield\n");
     u_apex_set_partition_mode(opm_normal, &r);
     task_change_priority(OS_PRIO_SELF, OS_TASK_IDLE_PRIO);
     while (1) {
