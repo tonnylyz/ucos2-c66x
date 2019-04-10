@@ -41,4 +41,8 @@ void timer_init(void);
 
 void timer_irq_clear(u32 base);
 
+void timer_benchmark_restart();
+
+u32 timer_benchmark_stop();
+
 #endif //UCOS2_TIMER_H

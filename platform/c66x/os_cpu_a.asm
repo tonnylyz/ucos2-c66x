@@ -374,6 +374,30 @@ CPURegisterDNUM:
     MV      B0,A4
     BNOP    A0,5
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                 Get CPU Time Stamp Counter                   ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    .global InstructionCounterStart
+InstructionCounterStart:
+    MV      B3,A0
+    MVC     B3,TSCL
+    BNOP    A0,5
+
+    .global InstructionCounterTSCL
+InstructionCounterTSCL:
+    MV      B3,A0
+    MVC     TSCL,B0
+    MV      B0,A4
+    BNOP    A0,5
+
+    .global InstructionCounterTSCH
+InstructionCounterTSCH:
+    MV      B3,A0
+    MVC     TSCH,B0
+    MV      B0,A4
+    BNOP    A0,5
+
 
 .end
 

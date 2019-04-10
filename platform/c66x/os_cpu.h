@@ -44,6 +44,10 @@ extern void OSCtxSw(void);
 extern u8 core_id;
 extern u8 CPURegisterDNUM(void);
 
+extern void InstructionCounterStart();
+extern u32  InstructionCounterTSCL();
+extern u32  InstructionCounterTSCH();
+
 typedef struct
 {
     INT32U reserved;

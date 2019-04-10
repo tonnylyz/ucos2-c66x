@@ -28,6 +28,13 @@ static inline void pend_write(u32 reg, u32 pend, u32 value) {
     mmio_write(reg, value);
 }
 
+static inline u32 pend_read(u32 reg, u32 pend) {
+    while (mmio_read(GP_TIMER_TWPS(reg & (~0xffu))) & pend) {
+        barrier();
+    }
+    return mmio_read(reg);
+}
+
 static void _timer_init(u32 base, u32 interval) {
 
     unsigned int load_val = 0xffffffffU - interval;
@@ -50,4 +57,18 @@ static void _timer_irq_clear(u32 base) {
 
 void timer_irq_clear(u32 base) {
     _timer_irq_clear(base);
+}
+
+void timer_benchmark_restart() {
+    u32 base = GP_TIMER_8_BASE;
+    pend_write(GP_TIMER_TCLR(base), GP_TIMER_TCLR_PEND, 0); // stop the timer
+    pend_write(GP_TIMER_TLDR(base), GP_TIMER_TLDR_PEND, 0); // load = 0
+    pend_write(GP_TIMER_TCRR(base), GP_TIMER_TCRR_PEND, 0); // current = 0
+    pend_write(GP_TIMER_TCLR(base), GP_TIMER_TCLR_PEND, GP_TIMER_TCLR_VAL_ST); // start the timer
+}
+
+u32 timer_benchmark_stop() {
+    u32 base = GP_TIMER_8_BASE;
+    pend_write(GP_TIMER_TCLR(base), GP_TIMER_TCLR_PEND, 0); // stop the timer
+    return pend_read(GP_TIMER_TCRR(base), GP_TIMER_TCRR_PEND);
 }

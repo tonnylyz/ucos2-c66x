@@ -6,6 +6,7 @@
 #include <os_cpu.h>
 #include <spinlock.h>
 #include <mailbox.h>
+#include <timer.h>
 
 #define DSP2_PRM_BASE                (0x4AE07B00)
 #define DSP2_BOOTADDR                (0x4A002560)
@@ -49,6 +50,31 @@ int main() {
         extern partition_conf_t p1_conf;
         partition_register(&p0_conf);
         partition_register(&p1_conf);
+
+
+        /*InstructionCounterStart();
+        u32 l = InstructionCounterTSCL();
+        u32 h = InstructionCounterTSCH();
+        printf("InstructionCounterTSCL : %08x\n", l);
+        printf("InstructionCounterTSCH : %08x\n", h);
+        */
+        /* Note:
+         *  `l` = 0xd above
+         *  means that these function calls' overhead is about 13 clocks
+         * */
+
+        /*timer_benchmark_restart();
+        u32 j = 0x1000000;
+        while (j --) {
+            asm(" NOP");
+        }
+        u32 cost_time = timer_benchmark_stop();
+        printf("cost_time ~ ns: %d\n", cost_time * 50);*/
+        /* Note:
+         *  Timer clock is 20MHz ~ 50ns per increment
+         *  DSP clock is 600 MHz
+         *  Code above is about 0x8000000 instructions
+         * */
 
         dsp2_start_core();
         partition_start();
