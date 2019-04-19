@@ -86,9 +86,11 @@ dissemble: $(TARGET_NAME)
 	$(CG_TOOL_ROOT)/bin/dis6x dra7-dsp1-fw.xe66 > dis.out
 
 burn: dra7-dsp1-fw.xe66
-	cp dra7-dsp1-fw.xe66 /media/tonny/BOOT/dra7-dsp1-fw.xe66
+	sudo mkdir -p /run/media/tonny/BOOT
+	sudo mount /dev/sdc1 /run/media/tonny/BOOT
+	sudo cp dra7-dsp1-fw.xe66 /run/media/tonny/BOOT/dra7-dsp1-fw.xe66
 	sync
-	umount /dev/sdc1
+	sudo umount /dev/sdc1
 	udisksctl power-off -b /dev/sdc
 
 win:

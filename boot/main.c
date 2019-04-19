@@ -30,6 +30,8 @@ void dsp2_start_core() {
 
 u8 core_id;
 
+bool core_ready;
+
 int main() {
     core_id = CPURegisterDNUM();
     //mmio_write(0x01840040, 0); // disable l1d cache
@@ -55,8 +57,7 @@ int main() {
         extern partition_conf_t p6_conf;
         extern partition_conf_t p7_conf;
 
-        InstructionCounterStart();
-        /////////////////////////////
+
         partition_register(&p0_conf);
         partition_register(&p1_conf);
         partition_register(&p2_conf);
@@ -65,11 +66,6 @@ int main() {
         partition_register(&p5_conf);
         partition_register(&p6_conf);
         partition_register(&p7_conf);
-        /////////////////////////////
-        u32 l = InstructionCounterTSCL();
-        printf("InstructionCounterTSCL : %d\n", l);
-        panic("");
-
 
         /*InstructionCounterStart();
         u32 l = InstructionCounterTSCL();
@@ -95,7 +91,8 @@ int main() {
          *  Code above is about 0x8000000 instructions
          * */
 
-        dsp2_start_core();
+        //dsp2_start_core();
+        timer_init();
         partition_start();
     } else {
         printf("DSP_2 OS Build: %s %s\n", __DATE__, __TIME__);

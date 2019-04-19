@@ -65,7 +65,7 @@ port_conf_t p7_port_conf_list[0];
 
 #pragma DATA_SECTION(p7_conf, ".data:PART_S")
 partition_conf_t p7_conf = {
-        .identifier = 8,
+        .identifier = 7,
         .memory_addr = 0x95a00000,
         .memory_size = 0x100000,
         .stack_addr = (u32) p7_stack,

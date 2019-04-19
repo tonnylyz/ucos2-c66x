@@ -6,7 +6,7 @@
 #include <ucos_ii.h>
 #include "partition_conf.h"
 
-#define PARTITION_MAX_NUM 4
+#define PARTITION_MAX_NUM 8
 #define PARTITION_MAX_PROCESS_NUM OS_MAX_TASKS
 
 typedef struct {

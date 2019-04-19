@@ -32,7 +32,6 @@ void partition_register(partition_conf_t *conf) {
     if (pcb->stack_ptr - conf->stack_addr > conf->stack_size) {
         panic("Unable to allocate root task stack");
     }
-    printf("root_task create stack -> [%08x]\n", pcb->stack_ptr);
     OSTaskCreate(
             root_task,
             conf,
@@ -175,9 +174,6 @@ void partition_start(void) {
         panic("No partition runs at this core.\n");
     }
     part->slice_left = part->conf->slice_num - 1;
-    if (core_id == 1) {
-        timer_init();
-    }
     partition_current = part;
     xmc_segment_activate(part->xmc_id);
     partition_context_load_from(&(part->context));
@@ -219,7 +215,7 @@ void partition_run(pcb_t *pcb) {
 }
 
 void partition_switch(pcb_t *prev, pcb_t *next) {
-    //printf("partition_switch from %d to %d\n", prev->identifier, next->identifier);
+    printf("partition_switch from %d to %d\n", prev->identifier, next->identifier);
     if (prev == next) {
         prev->slice_left = prev->conf->slice_num - 1;
         return;
