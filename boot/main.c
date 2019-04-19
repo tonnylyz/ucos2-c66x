@@ -48,8 +48,27 @@ int main() {
 
         extern partition_conf_t p0_conf;
         extern partition_conf_t p1_conf;
+        extern partition_conf_t p2_conf;
+        extern partition_conf_t p3_conf;
+        extern partition_conf_t p4_conf;
+        extern partition_conf_t p5_conf;
+        extern partition_conf_t p6_conf;
+        extern partition_conf_t p7_conf;
+
+        InstructionCounterStart();
+        /////////////////////////////
         partition_register(&p0_conf);
         partition_register(&p1_conf);
+        partition_register(&p2_conf);
+        partition_register(&p3_conf);
+        partition_register(&p4_conf);
+        partition_register(&p5_conf);
+        partition_register(&p6_conf);
+        partition_register(&p7_conf);
+        /////////////////////////////
+        u32 l = InstructionCounterTSCL();
+        printf("InstructionCounterTSCL : %d\n", l);
+        panic("");
 
 
         /*InstructionCounterStart();

@@ -4,6 +4,8 @@
 #include "xmc.h"
 #include "mmio.h"
 
+//#define DISABLE_XMC_PROTECTION
+
 #define XMC_XPFCMD (0x08000300)
 #define XMC_XPFACS (0x08000304)
 
@@ -70,7 +72,11 @@ void xmc_init(void) {
     }
 
     // default map: kernel only
+#ifdef DISABLE_XMC_PROTECTION
+    xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_4G, XMC_SEGMENT_PERM_KERN_RWX_USER_RWX);
+#else
     xmc_segment_map(0, 0x00000000, XMC_SEGMENT_SIZE_4G, XMC_SEGMENT_PERM_KERN_RWX_USER____);
+#endif
     // partition share map
     xmc_segment_map(1, 0x95200000, XMC_SEGMENT_SIZE_1M, XMC_SEGMENT_PERM_KERN_RWX_USER_R_X);
 
@@ -114,6 +120,9 @@ u8 xmc_segment_allocate(u32 addr, u32 size) {
 }
 
 void xmc_segment_activate(u8 index) {
+#ifdef DISABLE_XMC_PROTECTION
+    return;
+#endif
     xmc_segment_write(3, xmc_values_l[index], xmc_values_h[index]);
     xmc_invalidate_buffer();
 }

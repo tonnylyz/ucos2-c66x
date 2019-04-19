@@ -66,6 +66,12 @@ add_executable(
 
         task/part_0.c
         task/part_1.c
+        task/part_2.c
+        task/part_3.c
+        task/part_4.c
+        task/part_5.c
+        task/part_6.c
+        task/part_7.c
         ulib/syscall.c
         ulib/syscall.h
         task/root.c)

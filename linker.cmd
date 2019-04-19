@@ -13,6 +13,10 @@ MEMORY
     PART_1 (RWX) : org = 0x95400000, len = 0x100000
     PART_2 (RWX) : org = 0x95500000, len = 0x100000
     PART_3 (RWX) : org = 0x95600000, len = 0x100000
+    PART_4 (RWX) : org = 0x95700000, len = 0x100000
+    PART_5 (RWX) : org = 0x95800000, len = 0x100000
+    PART_6 (RWX) : org = 0x95900000, len = 0x100000
+    PART_7 (RWX) : org = 0x95a00000, len = 0x100000
 }
 
 SECTIONS
@@ -49,6 +53,14 @@ SECTIONS
     .data:PART_2: load > PART_2
     .text:PART_3: load > PART_3
     .data:PART_3: load > PART_3
+    .text:PART_4: load > PART_4
+    .data:PART_4: load > PART_4
+    .text:PART_5: load > PART_5
+    .data:PART_5: load > PART_5
+    .text:PART_6: load > PART_6
+    .data:PART_6: load > PART_6
+    .text:PART_7: load > PART_7
+    .data:PART_7: load > PART_7
 }
 
 

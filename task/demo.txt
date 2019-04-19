@@ -92,3 +92,68 @@ void p2t1_entry(void *arg) {
         time_delay(4);
     }
 }
+
+
+void task_syscall_test(void *arg) {
+    puts("task_syscall_test\n");
+    puts("putc\n");
+    putc('c');
+    putc('\n');
+    puts("putx\n");
+    putx(0x12345678);
+    putc('\n');
+    puts("time_delay\n");
+    time_delay(1);
+    puts("woke up after one tick\n");
+    puts("time_delay_hmsm\n");
+    time_delay_hmsm(0, 0, 1, 0);
+    puts("woke up after one second\n");
+    time_delay_resume(12); // resume test 2
+    time_delay(1);
+    puts("time_get\n");
+    putx(time_get());
+    putc('\n');
+    puts("time_set\n");
+    time_set(0x1234);
+}
+
+void task_syscall_test_2(void *arg) {
+    puts("time_delay 0xffffff\n");
+    time_delay(0xffffff);
+    puts("woke up resumed by task 1\n");
+    while (1) {
+        asm(" NOP");
+    }
+}
+
+
+void p0_apex_ipc_test(void *arg) {
+    char buf[] = "Hello World!";
+    return_code_t r;
+    sampling_port_id_t pid;
+    puts("p0_apex_ipc_test started\n");
+    while (1) {
+        u_apex_get_sampling_port_id("port_2", &pid, &r);
+        if (r != r_no_error) {
+            puts("p0_apex_ipc_test u_apex_get_sampling_port_id port_2 failed retry\n");
+        } else {
+            break;
+        }
+    }
+    while (1) {
+        u_apex_get_sampling_port_id("port_1", &pid, &r);
+        if (r != r_no_error) {
+            puts("p0_apex_ipc_test u_apex_get_sampling_port_id port_1 failed retry\n");
+        } else {
+            break;
+        }
+    }
+    u_apex_write_sampling_port(pid, (message_addr_t) buf, 13, &r);
+    if (r != r_no_error) {
+        puts("p0_apex_ipc_test u_apex_write_sampling_port failed\n");
+        time_delay(0xffffff);
+    }
+    while (1) {
+        asm(" NOP");
+    }
+}

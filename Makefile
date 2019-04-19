@@ -22,6 +22,12 @@ PLATFORM_OBJS := platform/driver/timer.obj \
 # Task Objects
 TASK_OBJS := task/part_0.obj \
              task/part_1.obj \
+             task/part_2.obj \
+             task/part_3.obj \
+             task/part_4.obj \
+             task/part_5.obj \
+             task/part_6.obj \
+             task/part_7.obj \
              task/root.obj
 
 # User Library Objects
@@ -50,7 +56,7 @@ INCLUDE_PATH := --include_path="$(CURDIR)" \
 
 LIBRARY_PATH := -i $(CG_TOOL_ROOT)/lib
 
-CL6X_FLAGS := -mv6600 --opt_level=0 --define=SOC_AM572x --define=am5728 --diag_warning=225 --diag_wrap=off --display_error_number --call_assumptions=0
+CL6X_FLAGS := -mv6600 --opt_level=3 --define=SOC_AM572x --define=am5728 --diag_warning=225 --diag_wrap=off --display_error_number
 
 TARGET_NAME := dra7-dsp1-fw.xe66
 
