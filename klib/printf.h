@@ -26,6 +26,6 @@ u32 snprintf(char *str, u32 size, const char *format, ...);
 
 int printf(const char *fmt, ...);
 
-#define panic(_) do { printf(_); while (1) { __asm ("\tNOP"); }  } while(0)
+#define panic(_) do { printf(_); while (1) { asm(" NOP"); }  } while(0)
 
 #endif /* snprintf_h */

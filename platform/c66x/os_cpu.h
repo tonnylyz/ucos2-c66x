@@ -26,23 +26,27 @@ typedef double         FP64;                     /* Double precision floating po
 
 typedef unsigned int   OS_STK;
 
-#define  OS_ENTER_CRITICAL() __asm ("\tNOP 5")
-#define  OS_EXIT_CRITICAL()  __asm ("\tNOP 5")
+#define  OS_ENTER_CRITICAL() asm(" NOP")
+#define  OS_EXIT_CRITICAL()  asm(" NOP")
 
 #define  OS_STK_GROWTH 1                              /* Stack grows from HIGH to LOW memory */
 
 #define  OS_TASK_SW()  OSCtxSw()
 
 /* Prototypes for functions in os_cpu_s.asm */
-extern void OSIntCtxSw();
-extern void OSStartHighRdy();
-extern void OSCtxSw();
+extern void OSIntCtxSw(void);
+extern void OSStartHighRdy(void);
+extern void OSCtxSw(void);
 
 
 #include <types.h>
 
-extern u32 core_id;
-extern u32 CPURegisterDNUM();
+extern u8 core_id;
+extern u8 CPURegisterDNUM(void);
+
+extern void InstructionCounterStart();
+extern u32  InstructionCounterTSCL();
+extern u32  InstructionCounterTSCH();
 
 typedef struct
 {

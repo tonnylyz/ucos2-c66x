@@ -27,6 +27,8 @@
 #include "ucos_ii.h"
 #endif
 
+#include <printf.h>
+
 /*
 *********************************************************************************************************
 *                                      PRIORITY RESOLUTION TABLE
@@ -571,7 +573,6 @@ INT16U  OSEventPendMulti (OS_EVENT  **pevents_pend,
 *********************************************************************************************************
 */
 
-/* DO NOT INVOKE OSInit, use partition_context_init(ctx) instead */
 void  OSInit (void)
 {
     OSInitHookBegin();                                           /* Call port specific initialization code   */
@@ -691,16 +692,6 @@ void  OSIntExit (void)
                     /* Copy saved context */
                     OSTCBCur->context_frame = task_context_saved;
                     task_context_saved = OSTCBHighRdy->context_frame;
-#ifdef DEBUG_CTX_SWITCH
-                    printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
-                           current_partition->index,
-                           OSTCBCur->OSTCBId,
-                           OSTCBCur->OSTCBPrio,
-                           current_partition->index,
-                           OSTCBHighRdy->OSTCBId,
-                           OSTCBHighRdy->OSTCBPrio
-                            );
-#endif
                     OSIntCtxSw();                          /* Perform interrupt level ctx switch       */
                 }
             }
@@ -952,7 +943,6 @@ void  OSTimeTick (void)
             return;
         }
 #endif
-
         ptcb = OSTCBList;                                  /* Point at first TCB in TCB list               */
         while (ptcb->OSTCBPrio != OS_TASK_IDLE_PRIO) {     /* Go through all TCBs in TCB list              */
             OS_ENTER_CRITICAL();
@@ -1670,16 +1660,6 @@ void  OS_Sched (void)
 
                 OSTCBCur->context_frame = task_context_saved;
                 task_context_saved = OSTCBHighRdy->context_frame;
-#ifdef DEBUG_CTX_SWITCH
-                printf("switching from p%dt%d(pri%d) to p%dt%d(pri%d)\n",
-                       current_partition->index,
-                       OSTCBCur->OSTCBId,
-                       OSTCBCur->OSTCBPrio,
-                       current_partition->index,
-                       OSTCBHighRdy->OSTCBId,
-                       OSTCBHighRdy->OSTCBPrio
-                );
-#endif
                 OS_TASK_SW();                          /* Perform a context switch                     */
             }
         }
@@ -1789,10 +1769,24 @@ INT8U  OS_StrLen (INT8U *psrc)
 *********************************************************************************************************
 */
 
-void  OS_TaskIdle (void *p_arg) {
-    /* idle task has been embedded into partition */
-}
+#pragma CODE_SECTION(OS_TaskIdle, ".text:USER")
+#pragma DATA_SECTION(OSTaskIdleStk, ".data:USER")
+void  OS_TaskIdle (void *p_arg)
+{
+#if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
+    OS_CPU_SR  cpu_sr = 0u;
+#endif
 
+
+
+    p_arg = p_arg;                               /* Prevent compiler warning for not using 'p_arg'     */
+    for (;;) {
+        //OS_ENTER_CRITICAL();
+        //OSIdleCtr++;
+        //OS_EXIT_CRITICAL();
+        //OSTaskIdleHook();                        /* Call user definable HOOK                           */
+    }
+}
 /*$PAGE*/
 /*
 *********************************************************************************************************
@@ -1951,7 +1945,7 @@ INT8U  OS_TCBInit (INT8U    prio,
                    INT16U   id,
                    INT32U   stk_size,
                    void    *pext,
-                   INT16U   opt)
+                   INT16U   opt, task_context_t *context)
 {
     OS_TCB    *ptcb;
 #if OS_CRITICAL_METHOD == 3u                               /* Allocate storage for CPU status register */
@@ -1986,12 +1980,7 @@ INT8U  OS_TCBInit (INT8U    prio,
         opt                      = opt;
         id                       = id;
 #endif
-
-        /* Load Context Frame */
-        if (pext != 0) {
-            ptcb->context_frame = *((task_context_t *)pext);
-        }
-
+        ptcb->context_frame = *context;
 
 #if OS_TASK_DEL_EN > 0u
         ptcb->OSTCBDelReq        = OS_ERR_NONE;

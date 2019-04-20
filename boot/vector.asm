@@ -6,7 +6,6 @@
     .global _c_int00
     .global HandlerTaskTimer
     .global HandlerException
-    .global HandlerPartitionTimer
     .global HandlerXMCException
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -70,19 +69,7 @@ VEC_INT4:
     NOP 5
     NOP 5
 VEC_INT5:
-    B HandlerPartitionTimer
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
-    NOP 5
+    RESV 8
 VEC_INT6:
     B HandlerXMCException
     NOP 5

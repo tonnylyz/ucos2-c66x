@@ -5,8 +5,6 @@
 DP               .set B14
 SP               .set B15
 
-KERN_STACK       .set 0x95108000
-
 ; Ctx_* references platform/c66x/os_cpu.h : task_context_t
 Ctx_RESV         .set 0
 Ctx_A0           .set 1
@@ -51,7 +49,6 @@ Ctx_TSR          .set 34
 
     .global OSTaskSwHook
     .global OSTaskTimerISR
-    .global OSPartitionTimerISR
     .global OSExceptionISR
     .global OSXMCExceptionISR
     .ref OSTCBHighRdy
@@ -62,10 +59,10 @@ Ctx_TSR          .set 34
 
     .ref task_context_saved
     .ref __TI_STATIC_BASE
+    .ref __TI_STACK_END
 
     .def HandlerTaskTimer
     .def HandlerException
-    .def HandlerPartitionTimer
     .def HandlerXMCException
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -238,8 +235,8 @@ OSCtxSw_1:    ; return here from OSTaskSwHook
 HandlerException:
     ContextSave NRP,NTSR
 
-    MVKL    KERN_STACK,SP
-    MVKH    KERN_STACK,SP
+    MVKL    __TI_STACK_END,SP
+    MVKH    __TI_STACK_END,SP
 
     MVKL    __TI_STATIC_BASE,DP
     MVKH    __TI_STATIC_BASE,DP
@@ -268,8 +265,8 @@ ExcRestore:
 HandlerTaskTimer:
     ContextSave IRP,ITSR
 
-    MVKL    KERN_STACK,SP
-    MVKH    KERN_STACK,SP
+    MVKL    __TI_STACK_END,SP
+    MVKH    __TI_STACK_END,SP
 
     MVKL    __TI_STATIC_BASE,DP
     MVKH    __TI_STATIC_BASE,DP
@@ -307,32 +304,14 @@ IntRestore:
     ContextRestore IRP,ITSR
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;                   Partition Timer Handler                    ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    .global HandlerPartitionTimer
-HandlerPartitionTimer:
-    ContextSave IRP,ITSR
-
-    MVKL    KERN_STACK,SP
-    MVKH    KERN_STACK,SP
-
-    MVKL    __TI_STATIC_BASE,DP
-    MVKH    __TI_STATIC_BASE,DP
-
-    CALL	OSPartitionTimerISR
-    NOP		3
-    MVKL	IntRestore,B3
-    MVKH	IntRestore,B3
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;                     XMC Exception Handler                    ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     .global HandlerXMCException
 HandlerXMCException:
     ContextSave IRP,ITSR
 
-    MVKL    KERN_STACK,SP
-    MVKH    KERN_STACK,SP
+    MVKL    __TI_STACK_END,SP
+    MVKH    __TI_STACK_END,SP
 
     MVKL    __TI_STATIC_BASE,DP
     MVKH    __TI_STATIC_BASE,DP
@@ -341,15 +320,6 @@ HandlerXMCException:
     NOP		3
     MVKL	IntRestore,B3
     MVKH	IntRestore,B3
-
-
-    .global CPURegisterDNUM
-CPURegisterDNUM:
-    MV      B3,A0
-    MVC     DNUM,B0
-    MV      B0,A4
-    BNOP    A0,5
-
 
 .end
 

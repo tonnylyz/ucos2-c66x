@@ -3,10 +3,12 @@
 
 #include <types.h>
 
-void task_putc(char c);
+void putc(char c);
 
-void task_puts(char *str);
+void puts(char *str);
 
-void task_time_delay(u32 ticks);
+void putx(u32 x);
+
+void time_delay(u32 ticks);
 
 #endif //UCOS2_C66X_SYSCALL_H

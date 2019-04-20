@@ -27,7 +27,7 @@
 
 #include <printf.h>
 
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                      CHANGE PRIORITY OF A TASK
@@ -72,7 +72,7 @@ INT8U  OSTaskChangePrio (INT8U  oldprio,
 #endif
 
 
-/*$PAGE*/
+/*$PAGE*/
 #if OS_ARG_CHK_EN > 0u
     if (oldprio >= OS_LOWEST_PRIO) {
         if (oldprio != OS_PRIO_SELF) {
@@ -116,12 +116,12 @@ INT8U  OSTaskChangePrio (INT8U  oldprio,
     bity_old              =  ptcb->OSTCBBitY;
     bitx_old              =  ptcb->OSTCBBitX;
     if ((OSRdyTbl[y_old] &   bitx_old) != 0u) {             /* If task is ready make it not            */
-         OSRdyTbl[y_old] &= (OS_PRIO)~bitx_old;
-         if (OSRdyTbl[y_old] == 0u) {
-             OSRdyGrp &= (OS_PRIO)~bity_old;
-         }
-         OSRdyGrp        |= bity_new;                       /* Make new priority ready to run          */
-         OSRdyTbl[y_new] |= bitx_new;
+        OSRdyTbl[y_old] &= (OS_PRIO)~bitx_old;
+        if (OSRdyTbl[y_old] == 0u) {
+            OSRdyGrp &= (OS_PRIO)~bity_old;
+        }
+        OSRdyGrp        |= bity_new;                       /* Make new priority ready to run          */
+        OSRdyTbl[y_new] |= bitx_new;
     }
 
 #if (OS_EVENT_EN)
@@ -164,7 +164,7 @@ INT8U  OSTaskChangePrio (INT8U  oldprio,
     return (OS_ERR_NONE);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            CREATE A TASK
@@ -240,13 +240,13 @@ INT8U  OSTaskCreate (void   (*task)(void *p_arg),
     }
     if (OSTCBPrioTbl[prio] == (OS_TCB *)0) { /* Make sure task doesn't already exist at this priority  */
         OSTCBPrioTbl[prio] = OS_TCB_RESERVED;/* Reserve the priority to prevent others from doing ...  */
-                                             /* ... the same thing until task is created.              */
+        /* ... the same thing until task is created.              */
         OS_EXIT_CRITICAL();
 
         task_context_t context_frame;
         /* Pass context frame to OSTaskStkInit */
-        psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame);
-        err = OS_TCBInit(prio, psp, (OS_STK *)0, 0u, 0u, (void *)&context_frame, 0u);
+        psp = OSTaskStkInit(task, p_arg, ptos, 0, &context_frame);
+        err = OS_TCBInit(prio, psp, (OS_STK *) 0, 0u, 0u, NULL, 0u, &context_frame);
         if (err == OS_ERR_NONE) {
             if (OSRunning == OS_TRUE) {      /* Find highest priority task if multitasking has started */
                 OS_Sched();
@@ -262,7 +262,7 @@ INT8U  OSTaskCreate (void   (*task)(void *p_arg),
     return (OS_ERR_PRIO_EXIST);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                  CREATE A TASK (Extended Version)
@@ -334,7 +334,7 @@ INT8U  OSTaskCreate (void   (*task)(void *p_arg),
 *                                               operation started.
 *********************************************************************************************************
 */
-/*$PAGE*/
+/*$PAGE*/
 #if OS_TASK_CREATE_EXT_EN > 0u
 INT8U  OSTaskCreateExt (void   (*task)(void *p_arg),
                         void    *p_arg,
@@ -373,24 +373,17 @@ INT8U  OSTaskCreateExt (void   (*task)(void *p_arg),
     }
     if (OSTCBPrioTbl[prio] == (OS_TCB *)0) { /* Make sure task doesn't already exist at this priority  */
         OSTCBPrioTbl[prio] = OS_TCB_RESERVED;/* Reserve the priority to prevent others from doing ...  */
-                                             /* ... the same thing until task is created.              */
+        /* ... the same thing until task is created.              */
         OS_EXIT_CRITICAL();
 
 #if (OS_TASK_STAT_STK_CHK_EN > 0u)
         OS_TaskStkClr(pbos, stk_size, opt);                    /* Clear the task stack (if needed)     */
 #endif
 
-        if (opt != 0) {
-            printf("%s para opt [%08x] ignored\n", __FUNCTION__, opt);
-        }
-        if (pext != 0) {
-            printf("%s para pext [%08x] ignored\n", __FUNCTION__, pext);
-        }
-
         task_context_t context_frame;
         /* Pass context frame to OSTaskStkInit */
-        psp = OSTaskStkInit(task, p_arg, ptos, (INT32U) &context_frame);           /* Initialize the task's stack          */
-        err = OS_TCBInit(prio, psp, pbos, id, stk_size, (void *)&context_frame, opt);
+        psp = OSTaskStkInit(task, p_arg, ptos, opt, &context_frame);           /* Initialize the task's stack          */
+        err = OS_TCBInit(prio, psp, pbos, id, stk_size, NULL, opt, &context_frame);
         if (err == OS_ERR_NONE) {
             if (OSRunning == OS_TRUE) {                        /* Find HPT if multitasking has started */
                 OS_Sched();
@@ -406,7 +399,7 @@ INT8U  OSTaskCreateExt (void   (*task)(void *p_arg),
     return (OS_ERR_PRIO_EXIST);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            DELETE A TASK
@@ -463,14 +456,14 @@ INT8U  OSTaskDel (INT8U prio)
         return (OS_ERR_TASK_DEL_IDLE);
     }
 #if OS_ARG_CHK_EN > 0u
-    if (prio >= OS_LOWEST_PRIO) {                       /* Task priority valid ?                       */
+        if (prio >= OS_LOWEST_PRIO) {                       /* Task priority valid ?                       */
         if (prio != OS_PRIO_SELF) {
             return (OS_ERR_PRIO_INVALID);
         }
     }
 #endif
 
-/*$PAGE*/
+/*$PAGE*/
     OS_ENTER_CRITICAL();
     if (prio == OS_PRIO_SELF) {                         /* See if requesting to delete self            */
         prio = OSTCBCur->OSTCBPrio;                     /* Set priority to delete to current           */
@@ -542,7 +535,7 @@ INT8U  OSTaskDel (INT8U prio)
     return (OS_ERR_NONE);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                  REQUEST THAT A TASK DELETE ITSELF
@@ -588,7 +581,7 @@ INT8U  OSTaskDel (INT8U prio)
 *                                     deleted.
 *********************************************************************************************************
 */
-/*$PAGE*/
+/*$PAGE*/
 #if OS_TASK_DEL_EN > 0u
 INT8U  OSTaskDelReq (INT8U prio)
 {
@@ -631,7 +624,7 @@ INT8U  OSTaskDelReq (INT8U prio)
     return (OS_ERR_NONE);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                       GET THE NAME OF A TASK
@@ -715,7 +708,7 @@ INT8U  OSTaskNameGet (INT8U    prio,
 }
 #endif
 
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                       ASSIGN A NAME TO A TASK
@@ -794,7 +787,7 @@ void  OSTaskNameSet (INT8U   prio,
 }
 #endif
 
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                       RESUME A SUSPENDED TASK
@@ -860,7 +853,7 @@ INT8U  OSTaskResume (INT8U prio)
     return (OS_ERR_TASK_NOT_SUSPENDED);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                           STACK CHECKING
@@ -941,7 +934,7 @@ INT8U  OSTaskStkChk (INT8U         prio,
     return (OS_ERR_NONE);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                           SUSPEND A TASK
@@ -1018,7 +1011,7 @@ INT8U  OSTaskSuspend (INT8U prio)
     return (OS_ERR_NONE);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                            QUERY A TASK
@@ -1072,13 +1065,13 @@ INT8U  OSTaskQuery (INT8U    prio,
         OS_EXIT_CRITICAL();
         return (OS_ERR_TASK_NOT_EXIST);
     }
-                                                 /* Copy TCB into user storage area                    */
+    /* Copy TCB into user storage area                    */
     OS_MemCopy((INT8U *)p_task_data, (INT8U *)ptcb, sizeof(OS_TCB));
     OS_EXIT_CRITICAL();
     return (OS_ERR_NONE);
 }
 #endif
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                              GET THE CURRENT VALUE OF A TASK REGISTER
@@ -1150,7 +1143,7 @@ INT32U  OSTaskRegGet (INT8U   prio,
 }
 #endif
 
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                              SET THE CURRENT VALUE OF A TASK VARIABLE
@@ -1222,7 +1215,7 @@ void  OSTaskRegSet (INT8U    prio,
 }
 #endif
 
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                    CATCH ACCIDENTAL TASK RETURN
@@ -1251,7 +1244,7 @@ void  OS_TaskReturn (void)
 #endif
 }
 
-/*$PAGE*/
+/*$PAGE*/
 /*
 *********************************************************************************************************
 *                                          CLEAR TASK STACK
