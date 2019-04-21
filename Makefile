@@ -1,4 +1,5 @@
 CG_TOOL_ROOT := /home/tonny/ti/ti-cgt-c6000_8.3.3
+PDK_ROOT := /home/tonny/ti/pdk_am57xx_1_0_14
 
 LINKER_CMD := linker.cmd
 
@@ -14,34 +15,33 @@ PLATFORM_OBJS := platform/driver/timer.obj \
                  platform/driver/uart.obj \
                  platform/driver/intc.obj \
                  platform/driver/xmc.obj \
+                 platform/driver/mmc.obj \
                  platform/c66x/os_cpu_a.obj \
                  platform/c66x/os_cpu_c.obj
 
-# Task Objects
-TASK_OBJS := task/task.obj
-
-# User Library Objects
-ULIB_OBJS := ulib/syscall.obj \
-             ulib/syscall_s.obj
-
 # Kernel Library Objects
 KLIB_OBJS := klib/printf.obj \
-             klib/isr.obj
+             klib/isr.obj \
+             klib/mbr.obj \
+             klib/fat32.obj \
+             klib/elf.obj \
+             fatfs/diskio.obj \
+             fatfs/ff.obj
 
-OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(TASK_OBJS) $(UCOSII_OBJS) $(ULIB_OBJS) $(KLIB_OBJS)
+OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(UCOSII_OBJS) $(KLIB_OBJS)
 
 INCLUDE_PATH := --include_path="$(CURDIR)" \
                 --include_path="$(CURDIR)/boot" \
                 --include_path="$(CURDIR)/platform/driver" \
                 --include_path="$(CURDIR)/platform/c66x" \
                 --include_path="$(CURDIR)/kernel" \
-                --include_path="$(CURDIR)/ulib" \
                 --include_path="$(CURDIR)/klib" \
-                --include_path="/home/tonny/ti/pdk_am57xx_1_0_12/packages" \
+                --include_path="$(CURDIR)/fatfs" \
+                --include_path="$(PDK_ROOT)/packages" \
                 --include_path="$(CG_TOOL_ROOT)/include"
 
 LIBRARY_PATH := -i $(CG_TOOL_ROOT)/lib \
-                -i /home/tonny/ti/pdk_am57xx_1_0_12/packages/ti/csl/lib/am572x/c66/release
+                -i $(PDK_ROOT)/packages/ti/csl/lib/am572x/c66/release
 
 CL6X_FLAGS := -mv6600 --opt_level=0 --define=SOC_AM572x --define=am5728 --diag_warning=225 --diag_wrap=off --display_error_number --call_assumptions=0
 

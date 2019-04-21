@@ -3,14 +3,16 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS '-m32')
+add_compile_definitions(SOC_AM572x)
+
 include_directories(
-        boot
         kernel
         klib
         platform/c66x
         platform/driver
-        task
         ulib
+        fatfs
+        D:/Include
 )
 
 add_executable(
@@ -50,8 +52,20 @@ add_executable(
         klib/printf.h
         klib/isr.c
 
-        ulib/syscall.c
-        ulib/syscall.h
+        task/syscall.c
+        task/syscall.h
 
         task/task.c
-)
+        platform/driver/mmc.c
+        platform/driver/mmc.h
+        klib/mbr.c
+        klib/mbr.h
+        klib/fat32.c
+        klib/fat32.h
+
+        fatfs/ff.c
+        fatfs/ff.h
+        fatfs/ffconf.h
+        fatfs/diskio.c
+        fatfs/diskio.h
+        klib/elf.c klib/elf.h)

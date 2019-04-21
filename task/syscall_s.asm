@@ -1,4 +1,3 @@
-    .sect ".text:USER"
     .global task_syscall
 task_syscall:
     SWE
