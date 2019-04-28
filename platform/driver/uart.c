@@ -16,9 +16,9 @@ static void _uart_putc(u32 base, char c) {
 
 void uart_putc(char c) {
     if (c == '\n') {
-        _uart_putc(UART_BASE_3, '\r');
+        _uart_putc(UART_BASE_1, '\r');
     }
-    _uart_putc(UART_BASE_3, c);
+    _uart_putc(UART_BASE_1, c);
 }
 
 void uart_puts(char *str) {
