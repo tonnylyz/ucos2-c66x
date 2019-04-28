@@ -2,7 +2,6 @@ project(ucos2-c66x)
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_FLAGS '-m32')
 add_compile_definitions(SOC_AM572x)
 
 include_directories(
@@ -12,7 +11,7 @@ include_directories(
         platform/driver
         ulib
         fatfs
-        D:/Include
+        C:/ti/pdk_am57xx_1_0_14/packages
 )
 
 add_executable(

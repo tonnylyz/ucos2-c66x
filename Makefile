@@ -1,5 +1,5 @@
-CG_TOOL_ROOT := /home/tonny/ti/ti-cgt-c6000_8.3.3
-PDK_ROOT := /home/tonny/ti/pdk_am57xx_1_0_14
+CG_TOOL_ROOT := C:/ti/ti-cgt-c6000_8.3.3
+PDK_ROOT := C:/ti/pdk_am57xx_1_0_14
 
 LINKER_CMD := linker.cmd
 
@@ -10,6 +10,7 @@ BSP_OBJS := boot/vector.obj boot/main.obj
 UCOSII_OBJS := kernel/os_core.obj  kernel/os_flag.obj kernel/os_mbox.obj kernel/os_mem.obj \
                kernel/os_mutex.obj kernel/os_q.obj    kernel/os_sem.obj  kernel/os_task.obj \
                kernel/os_time.obj  kernel/os_tmr.obj  kernel/os_dbg.obj
+
 # Platform Objects
 PLATFORM_OBJS := platform/driver/timer.obj \
                  platform/driver/uart.obj \
@@ -63,30 +64,22 @@ $(TARGET_NAME): $(OBJS)
 	@$(CG_TOOL_ROOT)/bin/cl6x $(LIBRARY_PATH) $(CL6X_FLAGS) -z -m "linker.map" --reread_libs --warn_sections --ram_model -o $(TARGET_NAME) $(OBJS) $(LINKER_CMD)
 
 clean:
-	-rm -rf $(TARGET_NAME)
-	-rm -rf linker.map
-	-rm -rf *.obj
-	-rm -rf */*.obj
-	-rm -rf platform/*/*.obj
+	-rm $(TARGET_NAME)
+	-rm linker.map
+	-rm boot/*.obj
+	-rm fatfs/*.obj
+	-rm kernel/*.obj
+	-rm klib/*.obj
+	-rm task/*.obj
+	-rm platform/c66x/*.obj
+	-rm platform/driver/*.obj
 
-dissemble: $(TARGET_NAME)
+dis: $(TARGET_NAME)
 	$(CG_TOOL_ROOT)/bin/dis6x dra7-dsp1-fw.xe66 > dis.out
 
-burn: dra7-dsp1-fw.xe66
-	cp dra7-dsp1-fw.xe66 /media/tonny/BOOT/dra7-dsp1-fw.xe66
-	sync
-	umount /dev/sdc1
-	udisksctl power-off -b /dev/sdc
-
 win:
-	sudo mount -t drvfs e: /mnt/e
-	cp dra7-dsp1-fw.xe66 /mnt/e/dra7-dsp1-fw.xe66
-	sync
-	sleep 1
-	sudo umount /mnt/e
-	RemoveDrive.exe e: -L
+	cp dra7-dsp1-fw.xe66 E:/dra7-dsp1-fw.xe66
+	RemoveDrive.exe E: -L
 
-
-
-.PHONY: all clean dissemble burn win
+.PHONY: all clean dis win
 
