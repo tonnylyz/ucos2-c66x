@@ -8,6 +8,7 @@
 #include <mmc.h>
 #include <mbr.h>
 #include <fat32.h>
+#include "../ulib/syscall.h"
 
 /*
 #define DSP2_PRM_BASE                (0x4AE07B00)
@@ -35,8 +36,8 @@ u32 core_id;
 
 #pragma DATA_SECTION(t1_arg, ".data:USER")
 #pragma DATA_SECTION(t2_arg, ".data:USER")
-char t1_arg[] = "101010101";
-char t2_arg[] = "020202020";
+char t1_arg[] = "1";
+char t2_arg[] = "2";
 
 #define TASK_PROGRAM "task.elf"
 #define TASK_PROGRAM_MAX_SIZE 16384
@@ -64,19 +65,19 @@ int main() {
 
     size = fat32_file_size(TASK_PROGRAM);
     if (size == 0) {
-        panic("task file not exists\n");
+        panic("user file not exists\n");
     }
     if (size > TASK_PROGRAM_MAX_SIZE) {
         printf("size %d\n", size);
-        panic("task file size exceeds limit\n");
+        panic("user file size exceeds limit\n");
     }
     r = fat32_read_to_mem(TASK_PROGRAM, program, size);
     if (r != size) {
-        panic("task file corrupts\n");
+        panic("user file corrupts\n");
     }
     entry = elf_load_from((u32) program);
     if (entry == 0) {
-        panic("task elf load failed\n");
+        panic("user elf load failed\n");
     }
 
     OSInit();
@@ -85,17 +86,26 @@ int main() {
     if (!elf_find_symbol("t1_stack", &addr,  &size)) {
         panic("symbol t1_stack not found\n");
     } else {
+        printf("t1_stack @%08x size %08x\n", addr, size);
         OSTaskCreate((void (*)(void *)) entry, t1_arg, (OS_STK *) (addr + size - 8), 10);
     }
 
     if (!elf_find_symbol("t2_stack", &addr,  &size)) {
         panic("symbol t2_stack not found\n");
     } else {
+        printf("t2_stack @%08x size %08x\n", addr, size);
         OSTaskCreate((void (*)(void *)) entry, t2_arg, (OS_STK *) (addr + size - 8), 11);
     }
 
-    printf("OSTaskCreate done\n");
+    elf_find_symbol("stub_putc", &addr, &size);
+    printf("stub_putc @ %08x\n", addr);
+    mmio_write(addr, (u32) putc);
+    elf_find_symbol("stub_time_delay", &addr, &size);
+    printf("stub_time_delay @ %08x\n", addr);
+    mmio_write(addr, (u32) time_delay);
 
+    printf("OSTaskCreate done\n");
+    //panic("");
     timer_init();
     printf("timer_init done\n");
     OSStart();

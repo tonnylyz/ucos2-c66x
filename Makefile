@@ -29,7 +29,10 @@ KLIB_OBJS := klib/printf.obj \
              fatfs/diskio.obj \
              fatfs/ff.obj
 
-OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(UCOSII_OBJS) $(KLIB_OBJS)
+# User Library Objects
+ULIB_OBJS := ulib/syscall.obj ulib/syscall_s.obj
+
+OBJS += $(BSP_OBJS) $(PLATFORM_OBJS) $(UCOSII_OBJS) $(KLIB_OBJS) $(ULIB_OBJS)
 
 INCLUDE_PATH := --include_path="$(CURDIR)" \
                 --include_path="$(CURDIR)/boot" \
@@ -75,7 +78,7 @@ clean:
 	-rm platform/driver/*.obj
 
 dis: $(TARGET_NAME)
-	$(CG_TOOL_ROOT)/bin/dis6x dra7-dsp1-fw.xe66 > dis.out
+	$(CG_TOOL_ROOT)/bin/dis6x dra7-dsp1-fw.xe66 > kernel.dis
 
 win:
 	cp dra7-dsp1-fw.xe66 E:/dra7-dsp1-fw.xe66

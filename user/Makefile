@@ -1,8 +1,8 @@
-CG_TOOL_ROOT := /home/tonny/ti/ti-cgt-c6000_8.3.3
+CG_TOOL_ROOT := C:/ti/ti-cgt-c6000_8.3.3
 
 LINKER_CMD := task.cmd
 
-OBJS += task.obj syscall.obj syscall_s.obj
+OBJS += task.obj stub.obj
 
 INCLUDE_PATH := --include_path="$(CURDIR)"
 
@@ -14,12 +14,12 @@ TARGET_NAME := task.elf
 
 %.obj: %.c
 	@echo $<
-	@$(CG_TOOL_ROOT)/bin/cl6x $(INCLUDE_PATH) $(CL6X_FLAGS) --preproc_with_compile --output_file $@ $<
+	@$(CG_TOOL_ROOT)/bin/cl6x $(INCLUDE_PATH) $(CL6X_FLAGS) --mem_model:data=far --preproc_with_compile --output_file $@ $<
 
 
 %.obj: %.asm
 	@echo $<
-	@$(CG_TOOL_ROOT)/bin/cl6x $(INCLUDE_PATH) $(CL6X_FLAGS) --preproc_with_compile --output_file $@ $<
+	@$(CG_TOOL_ROOT)/bin/cl6x $(INCLUDE_PATH) $(CL6X_FLAGS) --mem_model:data=far --preproc_with_compile --output_file $@ $<
 
 
 all: $(TARGET_NAME)
@@ -32,7 +32,10 @@ clean:
 	-rm -rf task.map
 	-rm -rf *.obj
 
-dissemble: $(TARGET_NAME)
-	$(CG_TOOL_ROOT)/bin/dis6x $(TARGET_NAME) > task.dsm
+dis: $(TARGET_NAME)
+	$(CG_TOOL_ROOT)/bin/dis6x $(TARGET_NAME) > task.dis
+
+win: $(TARGET_NAME)
+	cp task.elf E:/
 
 .PHONY: all clean dissemble

@@ -51,10 +51,10 @@ add_executable(
         klib/printf.h
         klib/isr.c
 
-        task/syscall.c
-        task/syscall.h
+        ulib/syscall.c
+        ulib/syscall.h
 
-        task/task.c
+        user/task.c
         platform/driver/mmc.c
         platform/driver/mmc.h
         klib/mbr.c
@@ -67,4 +67,4 @@ add_executable(
         fatfs/ffconf.h
         fatfs/diskio.c
         fatfs/diskio.h
-        klib/elf.c klib/elf.h)
+        klib/elf.c klib/elf.h user/stub.c user/stub.h)

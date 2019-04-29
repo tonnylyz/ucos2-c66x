@@ -1,7 +1,7 @@
 #ifndef UCOS2_C66X_SYSCALL_H
 #define UCOS2_C66X_SYSCALL_H
 
-#include "task_types.h"
+#include <types.h>
 
 void putc(char c);
 
