@@ -2,7 +2,7 @@ project(ucos2-c66x)
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_FLAGS '-m32')
+
 include_directories(
         boot
         kernel

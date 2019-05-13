@@ -18,14 +18,14 @@ extern u8 core_id;
 void uart_putc(char c) {
     if (core_id == 0) {
         if (c == '\n') {
-            _uart_putc(UART_BASE_3, '\r');
-        }
-        _uart_putc(UART_BASE_3, c);
-    } else if (core_id == 1) {
-        if (c == '\n') {
             _uart_putc(UART_BASE_1, '\r');
         }
         _uart_putc(UART_BASE_1, c);
+    } else if (core_id == 1) {
+        if (c == '\n') {
+            _uart_putc(UART_BASE_3, '\r');
+        }
+        _uart_putc(UART_BASE_3, c);
     }
 
 }

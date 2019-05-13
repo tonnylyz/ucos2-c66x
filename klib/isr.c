@@ -14,7 +14,9 @@
 void OSTaskTimerISR(void) {
     timer_irq_clear(GP_TASK_TIMER_BASE);
     intc_event_clear(INTC_EVENT_TASK_TIMER);
-
+    if (partition_current->operating_mode != opm_normal) {
+        return;
+    }
     OSIntEnter();
     OSTimeTick();
     OSIntExit();
@@ -178,11 +180,13 @@ void OSPartitionTimerISR(void) {
 }
 
 void OSXMCExceptionISR(void) {
+    printf("=================================================================\n");
+    printf("OSXMCExceptionISR called\n");
     printf("current part: %d\n", partition_current->identifier);
     printf("current task: %d (pri %d)\n", OSTCBCur->OSTCBId, OSTCBCur->OSTCBPrio);
     printf("xmc fault address: [%08x]\n", *((u32 volatile *)XMC_XMPFAR));
     printf("xmc fault status:  [%08x]\n", *((u32 volatile *)XMC_XMPFSR));
-    panic("OSXMCExceptionISR called");
+    panic("");
 }
 
 void OSMailboxISR(void) {

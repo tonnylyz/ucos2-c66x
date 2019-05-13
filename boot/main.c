@@ -60,12 +60,12 @@ int main() {
 
         partition_register(&p0_conf);
         partition_register(&p1_conf);
-        partition_register(&p2_conf);
-        partition_register(&p3_conf);
-        partition_register(&p4_conf);
-        partition_register(&p5_conf);
-        partition_register(&p6_conf);
-        partition_register(&p7_conf);
+        //partition_register(&p2_conf);
+        //partition_register(&p3_conf);
+//        partition_register(&p4_conf);
+//        partition_register(&p5_conf);
+//        partition_register(&p6_conf);
+//        partition_register(&p7_conf);
 
         /*InstructionCounterStart();
         u32 l = InstructionCounterTSCL();
@@ -91,7 +91,7 @@ int main() {
          *  Code above is about 0x8000000 instructions
          * */
 
-        //dsp2_start_core();
+        dsp2_start_core();
         timer_init();
         partition_start();
     } else {
