@@ -59,7 +59,9 @@ int main() {
 
 
         partition_register(&p0_conf);
+
         partition_register(&p1_conf);
+
         //partition_register(&p2_conf);
         //partition_register(&p3_conf);
 //        partition_register(&p4_conf);

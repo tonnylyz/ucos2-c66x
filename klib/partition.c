@@ -32,6 +32,7 @@ void partition_register(partition_conf_t *conf) {
     if (pcb->stack_ptr - conf->stack_addr > conf->stack_size) {
         panic("Unable to allocate root task stack");
     }
+
     OSTaskCreate(
             root_task,
             conf,
@@ -215,7 +216,7 @@ void partition_run(pcb_t *pcb) {
 }
 
 void partition_switch(pcb_t *prev, pcb_t *next) {
-    printf("partition_switch from %d to %d\n", prev->identifier, next->identifier);
+    //printf("partition_switch from %d to %d\n", prev->identifier, next->identifier);
     if (prev == next) {
         prev->slice_left = prev->conf->slice_num - 1;
         return;

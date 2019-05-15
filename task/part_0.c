@@ -80,6 +80,7 @@ void task_sender_apex(void *arg) {
 
 
 void p0_task_entry(void *arg) {
+    task_delete(OS_PRIO_SELF);
     char *task_name = (char *) arg;
     while (1) {
         puts("Name: ");
@@ -94,7 +95,7 @@ void p0_task_entry(void *arg) {
 process_attribute_t p0_task_conf_list[P0_TASK_NUM] = {
         {
                 .name = "p0t1",
-                .entry_point = (u32) task_sender_apex,
+                .entry_point = (u32) p0_task_entry,
                 .stack_size = 2048,
                 .arg = p0t1_arg,
                 .base_priority = 11

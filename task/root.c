@@ -7,6 +7,12 @@ void root_task(void *arg) {
     return_code_t r;
     partition_conf_t *conf;
     conf = arg;
+    if (conf->identifier == 1) {
+        u32 l = InstructionCounterTSCL();
+        putx(l);
+        putc('\n');
+    }
+
     puts("[ROOT_TASK][I] Starting partition ");
     putx(conf->identifier);
     putc('\n');

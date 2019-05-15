@@ -31,6 +31,7 @@ void task_sender_foreign(void *arg) {
 }
 
 void p1_task_entry(void *arg) {
+    task_delete(OS_PRIO_SELF);
     char *task_name = (char *) arg;
     while (1) {
         puts("Name: ");
@@ -71,7 +72,7 @@ void task_receiver_apex(void *arg) {
 process_attribute_t p1_task_conf_list[P1_TASK_NUM] = {
         {
                 .name = "p1t1",
-                .entry_point = (u32) task_receiver_apex,
+                .entry_point = (u32) p1_task_entry,
                 .stack_size = 2048,
                 .arg = p1t1_arg,
                 .base_priority = 11
@@ -119,7 +120,7 @@ partition_conf_t p1_conf = {
         .stack_size = P1_STACK_SIZE,
         .task_num = P1_TASK_NUM,
         .task_conf_list = p1_task_conf_list,
-        .slice_num = 2,
+        .slice_num = 1,
         .target_core = 0,
         .port_num = 1,
         .port_conf_list = p1_port_conf_list,

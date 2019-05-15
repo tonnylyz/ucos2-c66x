@@ -4,7 +4,7 @@
 #include "xmc.h"
 #include "mmio.h"
 
-//#define DISABLE_XMC_PROTECTION
+#define DISABLE_XMC_PROTECTION
 
 #define XMC_XPFCMD (0x08000300)
 #define XMC_XPFACS (0x08000304)

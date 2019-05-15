@@ -172,7 +172,8 @@ void OSExceptionISR(u32 efr, u32 ierr) {
 
 
 void OSPartitionTimerISR(void) {
-    printf("OSPartitionTimerISR called.\n");
+    InstructionCounterStart();
+    //printf("OSPartitionTimerISR called.\n");
     timer_irq_clear(GP_PART_TIMER_BASE);
     intc_event_clear(INTC_EVENT_PART_TIMER);
 
